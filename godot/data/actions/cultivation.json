@@ -218,5 +218,127 @@
   "age_cost_years": 0.0,
   "offline_allowed": false,
   "group": "cultivation"
+ },
+ {
+  "id": "learn_thanh_moc_duong_khi",
+  "visible_when": {
+   "type": "technique_known",
+   "technique": "dan_khi_nhap_mon"
+  },
+  "type": "INSTANT",
+  "name_key": "action.learn_thanh_moc_duong_khi",
+  "costs": {
+   "herb": 4
+  },
+  "effects": [
+   {
+    "type": "learn_technique",
+    "technique": "thanh_moc_duong_khi"
+   }
+  ],
+  "requirements": {
+   "all_of": [
+    {
+     "type": "technique_known",
+     "technique": "dan_khi_nhap_mon"
+    },
+    {
+     "type": "realm_at_least",
+     "realm": "luyen_khi_2"
+    },
+    {
+     "not": {
+      "type": "technique_known",
+      "technique": "thanh_moc_duong_khi"
+     }
+    }
+   ]
+  },
+  "age_cost_years": 0.0,
+  "offline_allowed": false,
+  "group": "cultivation"
+ },
+ {
+  "id": "learn_huyet_luyen_than_kinh",
+  "visible_when": {
+   "type": "technique_known",
+   "technique": "dan_khi_nhap_mon"
+  },
+  "type": "INSTANT",
+  "name_key": "action.learn_huyet_luyen_than_kinh",
+  "costs": {
+   "herb": 3,
+   "silver": 20
+  },
+  "effects": [
+   {
+    "type": "learn_technique",
+    "technique": "huyet_luyen_than_kinh"
+   }
+  ],
+  "requirements": {
+   "all_of": [
+    {
+     "type": "technique_known",
+     "technique": "dan_khi_nhap_mon"
+    },
+    {
+     "type": "realm_at_least",
+     "realm": "luyen_khi_2"
+    },
+    {
+     "not": {
+      "type": "technique_known",
+      "technique": "huyet_luyen_than_kinh"
+     }
+    }
+   ]
+  },
+  "age_cost_years": 0.0,
+  "offline_allowed": false,
+  "group": "cultivation"
+ },
+ {
+  "id": "learn_ngu_hanh_dan_khi",
+  "visible_when": {
+   "type": "technique_known",
+   "technique": "dan_khi_nhap_mon"
+  },
+  "type": "INSTANT",
+  "name_key": "action.learn_ngu_hanh_dan_khi",
+  "costs": {
+   "herb": 6
+  },
+  "effects": [
+   {
+    "type": "learn_technique",
+    "technique": "ngu_hanh_dan_khi"
+   }
+  ],
+  "requirements": {
+   "all_of": [
+    {
+     "type": "technique_known",
+     "technique": "dan_khi_nhap_mon"
+    },
+    {
+     "type": "realm_at_least",
+     "realm": "luyen_khi_2"
+    },
+    {
+     "not": {
+      "type": "technique_known",
+      "technique": "ngu_hanh_dan_khi"
+     }
+    },
+    {
+     "type": "knows",
+     "knowledge": "mem_cave_site"
+    }
+   ]
+  },
+  "age_cost_years": 0.0,
+  "offline_allowed": false,
+  "group": "cultivation"
  }
 ]

@@ -133,7 +133,7 @@ func test_v5_save_migrates_to_v6() -> void:
 	old.erase("dungeon_clears")
 	old["schema_version"] = 5
 	var m: Dictionary = sm.migrate(old)
-	assert_eq(m["schema_version"], 6)
+	assert_eq(m["schema_version"], GameState.SCHEMA_VERSION)
 	assert_eq(m["combat"], {})
 	assert_eq(m["dungeon_clears"], {})
 	sm.free()

@@ -4,6 +4,8 @@ extends RefCounted
 ## Each data file is a JSON array of definitions.
 
 const COST_TIMINGS: Array = ["start", "complete"]
+## Trade-off knobs of a technique (V2): wounds gained per dungeon run, extra wounds healed per rest.
+const TECHNIQUE_TRAITS: Array = ["injury_per_run", "heal_bonus"]
 const ACTION_TYPES: Array = ["INSTANT", "TIMED", "LOOP"]  # Phase 1 subset of GDD §5.1
 
 var resources: Dictionary = {}
@@ -46,6 +48,23 @@ func has_upgrade(id: Variant) -> bool: return upgrades.has(id)
 func has_realm(id: Variant) -> bool: return realms.has(id)
 func has_story_node(id: Variant) -> bool: return story.has(id)
 func has_technique(id: Variant) -> bool: return techniques.has(id)
+
+
+## Techniques whose bonuses count: every learned `base` technique plus the chosen main one.
+func active_techniques(state: GameState) -> Array:
+	var out: Array = []
+	for tid in state.techniques:
+		if techniques.get(tid, {}).get("role", "base") == "base" or tid == state.main_technique:
+			out.append(tid)
+	return out
+
+
+## Sum of `insight_modifier` over active techniques (GDD 6.4: raises the breakthrough chance).
+func insight_total(state: GameState) -> float:
+	var total: float = 0.0
+	for tid in active_techniques(state):
+		total += float(techniques[tid].get("insight_modifier", 0.0))
+	return total
 func has_relation(id: Variant) -> bool: return relations.has(id)
 func has_knowledge(id: Variant) -> bool: return knowledge.has(id)
 func has_dungeon(id: Variant) -> bool: return dungeons.has(id)
@@ -438,6 +457,15 @@ func _validate_techniques() -> void:
 		_validate_bonus_list(d.get("bonuses", []), p)
 		if d.has("insight_modifier") and not (GameState.is_number(d["insight_modifier"]) and float(d["insight_modifier"]) >= 0.0 and float(d["insight_modifier"]) <= 0.5):
 			errors.append("%s: insight_modifier must be in [0, 0.5]" % p)
+		if not ["base", "main"].has(d.get("role", "base")):
+			errors.append("%s: role must be 'base' or 'main'" % p)
+		var traits: Variant = d.get("traits", {})
+		if typeof(traits) != TYPE_DICTIONARY:
+			errors.append("%s: traits must be an object" % p)
+		else:
+			for k in traits:
+				if not TECHNIQUE_TRAITS.has(k) or not GameState.is_int(traits[k]) or int(traits[k]) < 0:
+					errors.append("%s: trait '%s' must be one of %s with an integer >= 0" % [p, k, TECHNIQUE_TRAITS])
 		if typeof(d.get("element", "")) != TYPE_STRING or typeof(d.get("grade", "")) != TYPE_STRING:
 			errors.append("%s: element and grade must be strings" % p)
 

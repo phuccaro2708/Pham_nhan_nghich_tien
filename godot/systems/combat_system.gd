@@ -38,7 +38,7 @@ func player_stats(state: GameState) -> Dictionary:
 	var out: Dictionary = {"hit": float(base["hit"]), "crit": float(base["crit"])}
 	for k in ["hp", "atk", "def"]:
 		out[k] = (float(base[k]) + effects.stat_bonus(state, "combat." + k)) * grow
-	out["hp"] = maxi(int(round(out["hp"])), 1)
+	out["hp"] = maxi(int(round(out["hp"] * (1.0 - float(_cfg()["wound_hp_penalty"]) * state.wounds))), 1)
 	out["spd"] = float(base["spd"]) + effects.stat_bonus(state, "combat.spd")
 	return out
 
@@ -134,6 +134,11 @@ func abort(state: GameState) -> void:
 		_end(state, "aborted")
 
 
+## Wounds are capped, so they hurt but never lock the character out.
+func add_wounds(state: GameState, n: int) -> void:
+	state.wounds = clampi(state.wounds + n, 0, int(_cfg()["max_wounds"]))
+
+
 func _end(state: GameState, result: String) -> void:
 	var id: String = state.combat["dungeon"]
 	var def: Dictionary = registry.dungeons[id]
@@ -142,5 +147,6 @@ func _end(state: GameState, result: String) -> void:
 		state.dungeon_clears[id] = int(state.dungeon_clears.get(id, 0)) + 1
 		effects.apply(state, def.get("clear_effects", []))
 	if result != "aborted":
+		add_wounds(state, (1 if result == "defeated" else 0) + effects.trait_total(state, "injury_per_run"))
 		lifespan.commit_age(state, float(def.get("age_cost_years", 0.0)))
 	run_ended.emit(id, result)

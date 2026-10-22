@@ -493,7 +493,7 @@ func _cultivation(s: GameState) -> void:
 	var rs: RealmSystem = GameController.actions.realms
 	var costs: Dictionary = rs.breakthrough_costs(s)
 	var chk: Dictionary = GameController.actions.check_can_start(s, "breakthrough")
-	var sig: String = "%s|%s|%s|%s|%s|%s" % [s.realm_id, s.techniques, s.flags, snappedf(rs.success_chance(s), 0.001), chk["ok"], GameController.registry.language]
+	var sig: String = "%s|%s|%s|%s|%s|%s|%s|%d" % [s.realm_id, s.techniques, s.flags, snappedf(rs.success_chance(s), 0.001), chk["ok"], GameController.registry.language, s.main_technique, s.wounds]
 	for rid in costs:
 		sig += "|%d" % int(float(s.resources.get(rid, 0.0)) / maxf(float(costs[rid]) / 50.0, 1.0))  # coarse: redraw per 2%
 	var box := _sync("cultivation", sig)
@@ -520,7 +520,25 @@ func _cultivation(s: GameState) -> void:
 	_label(box, _t("ui.cult.technique"), UiTheme.SIZE_HEADER)
 	if s.techniques.is_empty():
 		_label(box, _t("ui.cult.no_technique"), UiTheme.SIZE_BODY, UiTheme.INK_SECONDARY)
+	var has_main_choice: bool = false
 	for tid in s.techniques:
 		if reg.techniques.has(tid):
 			_label(box, _t(reg.techniques[tid]["name_key"]))
 			_label(box, _t(reg.techniques[tid]["desc_key"]), UiTheme.SIZE_SMALL, UiTheme.INK_SECONDARY)
+			if reg.techniques[tid].get("role", "base") == "main":
+				has_main_choice = true
+				if s.main_technique == tid:
+					_label(box, "   " + _t("ui.cult.is_main"), UiTheme.SIZE_SMALL, UiTheme.ACCENT_CINNABAR)
+				else:
+					var b := Button.new()
+					b.text = _t("ui.cult.set_main")
+					b.custom_minimum_size.y = 32
+					b.pressed.connect(func() -> void: GameController.set_main_technique(str(tid)))
+					box.add_child(b)
+	if has_main_choice:
+		if s.main_technique == "":
+			_label(box, _t("ui.cult.no_main"), UiTheme.SIZE_SMALL, UiTheme.ACCENT_CINNABAR)
+		else:
+			_label(box, _t("ui.cult.switch_cost") % snappedf(float(reg.config["technique"]["switch_age_years"]), 0.01), UiTheme.SIZE_SMALL, UiTheme.INK_SECONDARY)
+	if s.wounds > 0:
+		_label(box, _t("ui.cult.wounds") % [s.wounds, int(reg.config["combat"]["max_wounds"])], UiTheme.SIZE_SMALL, UiTheme.ACCENT_CINNABAR)

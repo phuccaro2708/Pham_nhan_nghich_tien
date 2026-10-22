@@ -5,7 +5,7 @@ extends RefCounted
 ## Story choices and mastery milestones may not advance_realm (the ritual is always a deliberate player action); only story choices may promote_realm, set_checkpoint or rewind.
 ## rewind (luân hồi, GDD X) restores the world saved by set_checkpoint, keeps knowledge/story, and consumes the checkpoint: a second rewind is a no-op.
 
-const EFFECT_TYPES: Array = ["add_resource", "set_flag", "add_upgrade_level", "advance_realm", "add_relation", "learn_technique", "learn_knowledge", "promote_realm", "set_checkpoint", "rewind"]
+const EFFECT_TYPES: Array = ["add_resource", "set_flag", "add_upgrade_level", "advance_realm", "add_relation", "learn_technique", "learn_knowledge", "promote_realm", "set_checkpoint", "rewind", "heal_wounds"]
 
 var registry: ContentRegistry
 var resource_system: ResourceSystem
@@ -42,6 +42,8 @@ func apply(state: GameState, effects: Array) -> void:
 				if not state.knowledge.has(e["knowledge"]):
 					state.knowledge.append(e["knowledge"])
 					state.knowledge.sort()
+			"heal_wounds":  # the active technique can add to the amount (Thanh Mộc)
+				state.wounds = maxi(state.wounds - int(e["amount"]) - trait_total(state, "heal_bonus"), 0)
 			"promote_realm":
 				realm_system.promote(state, str(e["realm"]))
 			"set_checkpoint":
@@ -93,7 +95,7 @@ func group_bonus(state: GameState, stat: String, group: String) -> float:
 					if b["stat"] == stat:
 						total += float(state.upgrades[uid]) * float(b["per_level"])
 		"techniques":
-			for tid in state.techniques:
+			for tid in registry.active_techniques(state):
 				for b in registry.techniques.get(tid, {}).get("bonuses", []):
 					if b["stat"] == stat:
 						total += float(b["value"])
@@ -106,6 +108,14 @@ func group_bonus(state: GameState, stat: String, group: String) -> float:
 					for b in m.get("bonuses", []):
 						if b["stat"] == stat:
 							total += float(b["value"])
+	return total
+
+
+## Sum of one integer trait over the active techniques.
+func trait_total(state: GameState, key: String) -> int:
+	var total: int = 0
+	for tid in registry.active_techniques(state):
+		total += int(registry.techniques[tid].get("traits", {}).get(key, 0))
 	return total
 
 
@@ -130,6 +140,9 @@ static func validate_effect(e: Variant, registry: ContentRegistry, path: String,
 				errs.append("%s: add_relation unknown relation" % path)
 			if not (GameState.is_int(e.get("amount")) and int(e["amount"]) != 0):
 				errs.append("%s: add_relation amount must be a non-zero integer" % path)
+		"heal_wounds":
+			if not (GameState.is_int(e.get("amount")) and int(e["amount"]) >= 1):
+				errs.append("%s: heal_wounds amount must be an integer >= 1" % path)
 		"learn_technique":
 			if not registry.has_technique(e.get("technique", "")):
 				errs.append("%s: learn_technique unknown technique" % path)

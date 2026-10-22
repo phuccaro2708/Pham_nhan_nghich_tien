@@ -39,3 +39,7 @@ OfflineSystem: ActionSystem.advance(ticks) với offline_mode = true (≤ 8 gi�
 ## V1 — Tiên Lộ (PathSystem)
 
 `systems/path_system.gd` (`act.path`) là lớp đọc thuần từ `GameState`, không lưu gì nên không nâng schema. `entries` chỉ trả mục có `visible_when` đúng, manh mối nhân vật đã biết và blocker có `visible_when` đúng mà `needs` chưa thỏa; `current` là mục mở đầu tiên; `choice_preview` chỉ liệt kê chi phí, tài nguyên chắc chắn và quan hệ (không lộ knowledge/flag); `ledger` liệt kê lựa chọn đã chọn kèm `later_hint_key`. `StorySystem.node_text_key` chọn `text_variants` theo lựa chọn trước đó. UI: tab Tiên Lộ, cột Next Action dùng `path.current`, dòng xem trước dưới mỗi nút lựa chọn.
+
+## V2 — Công pháp chủ tu và thương tích (schema 7)
+
+`GameState.main_technique` và `wounds` (thuộc `WORLD_KEYS`, nên mốc/luân hồi mang theo). `ContentRegistry.active_techniques` = công pháp `base` đã học + công pháp chủ tu; `EffectResolver.group_bonus`, `trait_total` và `RealmSystem.success_chance` (qua `insight_total`) chỉ dùng tập này. Lệnh `ActionSystem.set_main_technique` (UI → `GameController.set_main_technique`). `CombatSystem.add_wounds` giới hạn ở `combat.max_wounds`; hp người chơi giảm `wound_hp_penalty` mỗi điểm. Effect mới `heal_wounds` (cộng `heal_bonus`), condition mới `wounds_at_least`. Tương tác: combat, breakthrough, lifespan, knowledge, mốc/luân hồi.

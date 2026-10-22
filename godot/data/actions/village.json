@@ -108,5 +108,33 @@
   "age_cost_years": 0.003,
   "offline_allowed": true,
   "group": "village"
+ },
+ {
+  "id": "rest_heal",
+  "type": "TIMED",
+  "name_key": "action.rest_heal",
+  "duration": 10.0,
+  "costs": {},
+  "effects": [
+   {
+    "type": "heal_wounds",
+    "amount": 1
+   }
+  ],
+  "requirements": {
+   "all_of": [
+    {
+     "type": "wounds_at_least",
+     "value": 1
+    }
+   ]
+  },
+  "visible_when": {
+   "type": "wounds_at_least",
+   "value": 1
+  },
+  "age_cost_years": 0.01,
+  "offline_allowed": false,
+  "group": "village"
  }
 ]

@@ -125,6 +125,10 @@ func set_language(lang: String, persist: bool = true) -> void:
 		cfg.save(SETTINGS_PATH)
 
 
+func set_main_technique(id: String) -> Dictionary:
+	return actions.set_main_technique(state, id)
+
+
 func enter_dungeon(id: String) -> Dictionary:
 	return actions.enter_dungeon(state, id)
 

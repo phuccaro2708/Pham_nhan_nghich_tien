@@ -132,6 +132,12 @@ func migrate(data: Dictionary) -> Dictionary:
 			5:  # v6 adds dungeons: no run in progress, nothing cleared
 				d["combat"] = {}
 				d["dungeon_clears"] = {}
+			6:  # v7 adds công pháp chủ tu + thương tích; an old mốc gets the same two fields
+				d["main_technique"] = ""
+				d["wounds"] = 0
+				if not (d.get("checkpoint", {}) as Dictionary).is_empty():
+					d["checkpoint"]["main_technique"] = ""
+					d["checkpoint"]["wounds"] = 0
 			_:
 				return {"error": "no migration from version %d" % v}
 		v += 1
@@ -296,6 +302,12 @@ func _validate_phase2b(d: Dictionary, registry: ContentRegistry, errs: Array) ->
 	for tid in d["techniques"]:
 		if typeof(tid) != TYPE_STRING or not registry.has_technique(tid):
 			errs.append("unknown technique %s" % tid)
+	var mt: Variant = d.get("main_technique")
+	if typeof(mt) != TYPE_STRING or (mt != "" and (not d["techniques"].has(mt) or registry.techniques[mt].get("role", "base") != "main")):
+		errs.append("bad main_technique")
+	var max_w: int = int(registry.config.get("combat", {}).get("max_wounds", 0))
+	if not GameState.is_int(d.get("wounds")) or int(d["wounds"]) < 0 or int(d["wounds"]) > max_w:
+		errs.append("bad wounds")
 	for kid in d["knowledge"]:
 		if typeof(kid) != TYPE_STRING or not registry.has_knowledge(kid):
 			errs.append("unknown knowledge %s" % kid)

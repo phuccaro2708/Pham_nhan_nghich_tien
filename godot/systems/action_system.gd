@@ -138,6 +138,26 @@ func start_action(state: GameState, action_id: String, from_queue: bool = false)
 
 
 ## Enters a dungeon: whatever is running stops (costs refunded) and fighting takes over the clock.
+## Chooses the main technique. The first choice is free; changing it costs `technique.switch_age_years` of life.
+func set_main_technique(state: GameState, technique_id: String) -> Dictionary:
+	if not registry.has_technique(technique_id):
+		return {"ok": false, "reason": "unknown_technique"}
+	if not state.techniques.has(technique_id):
+		return {"ok": false, "reason": "not_known"}
+	if registry.techniques[technique_id].get("role", "base") != "main":
+		return {"ok": false, "reason": "not_main_technique"}
+	if state.main_technique == technique_id:
+		return {"ok": false, "reason": "already_main"}
+	if combat.is_active(state):
+		return {"ok": false, "reason": "in_dungeon"}
+	if not lifespan.is_alive(state):
+		return {"ok": false, "reason": "deceased"}
+	if state.main_technique != "":
+		lifespan.commit_age(state, float(registry.config["technique"]["switch_age_years"]))
+	state.main_technique = technique_id
+	return {"ok": true, "reason": ""}
+
+
 func enter_dungeon(state: GameState, dungeon_id: String) -> Dictionary:
 	var check: Dictionary = combat.check_enter(state, dungeon_id)
 	if not check["ok"]:

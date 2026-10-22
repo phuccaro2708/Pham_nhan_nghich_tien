@@ -5,7 +5,7 @@ extends RefCounted
 
 const LEAF_TYPES: Array = [
 	"resource_at_least", "flag_is", "stat_at_least", "upgrade_level_at_least", "action_count_at_least", "realm_at_least",
-	"mastery_level_at_least", "story_done", "choice_is", "relation_at_least", "technique_known", "knows",
+	"mastery_level_at_least", "story_done", "choice_is", "relation_at_least", "technique_known", "knows", "wounds_at_least",
 ]
 
 
@@ -68,6 +68,8 @@ func _leaf(c: Dictionary, s: GameState) -> bool:
 			return s.techniques.has(c["technique"])
 		"knows":
 			return s.knowledge.has(c["knowledge"])
+		"wounds_at_least":
+			return s.wounds >= int(c["value"])
 	return false  # unknown type never unlocks anything
 
 
@@ -123,6 +125,7 @@ func validate(cond: Variant, registry: ContentRegistry, path: String = "requirem
 		"relation_at_least": req = ["relation", "value"]
 		"technique_known": req = ["technique"]
 		"knows": req = ["knowledge"]
+		"wounds_at_least": req = ["value"]
 	for k in req:
 		if not d.has(k):
 			errs.append("%s: '%s' missing field '%s'" % [path, t, k])

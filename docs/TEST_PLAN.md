@@ -40,3 +40,7 @@ Kết quả chạy đầy đủ (headless): **183/183 pass**, 11 script, 1852 as
 ## V1 — `tests/unit/test_path.gd`
 
 Ẩn mục chưa khám phá, lý do chặn + việc kế, chỉ manh mối đã biết, PathSystem thuần (không đổi `to_dict`), key vi/en đủ, validate tham chiếu sai, xem trước lựa chọn không spoil, biến thể văn bản, sổ nhân quả. Kết quả: 194/194 pass.
+
+## V2 — `tests/unit/test_main_technique.gd`
+
+Chỉ chủ tu có bonus; 3 build khác biệt; luật + chi phí đổi chủ tu; 3 hành động học; thương tích (thua, Huyết Luyện, abort, trần, hồi, Thanh Mộc); save round-trip + validate; migration v6→v7 (cả mốc); mốc mang build/thương; validate traits/role. Kết quả: 205/205 pass.

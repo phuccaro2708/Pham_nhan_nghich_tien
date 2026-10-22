@@ -692,3 +692,12 @@ Casual · Optimizer · Idle (rời game nhiều giờ) · Explorer · Risk Playe
 - **Tuyến mở đầu**: Phàm Nhân → học nghề → võ học nhập môn (Đoán Thể) → phát hiện tiên duyên → cảm ứng linh khí → Luyện Khí. Phase 1 làm tới Đoán Thể + bước đệm tới Cảm Khí; Chương 4–5 thuộc Phase 2.
 - **Ba đường tới võ học nhập môn**: học hỏi, giúp người, thám hiểm; đều có lựa chọn miễn phí, không softlock.
 - **Tuổi**: hiển thị "16 tuổi" không giới hạn thọ nguyên tới khi nhập đạo (`dao_entry`, từ chuỗi đạo sĩ); tin đồn Ch2 chỉ cho `heard_of_cultivators`. Trước đó header luôn hiện thân phận Phàm Nhân (không lộ cảnh giới thật như Đoán Thể) và log không báo sắp hết thọ.
+
+### 6.4.1. Công pháp chủ tu và thương tích (V2, GĐ1)
+
+Lý do: trước V2 mọi công pháp đã học đều cộng thưởng cùng lúc nên không có lựa chọn. Nay công pháp có `role`: `base` (Dẫn Khí Nhập Môn, luôn có tác dụng) và `main` (Thanh Mộc, Huyết Luyện, Ngũ Hành). Chỉ **một** công pháp `main` được chọn làm chủ tu; lần chọn đầu miễn phí, đổi tốn 0,1 năm tuổi thọ (`technique.switch_age_years`), không đổi được khi đang trong bí cảnh.
+
+- Thanh Mộc: +hấp thu, +10 sinh lực, nghỉ ngơi hồi thêm 1 thương tích; không tăng sát thương.
+- Huyết Luyện: +3 công, +30% tốc độ rèn thể; **mỗi lần vào bí cảnh** (thắng, thua hay rút lui) thêm 1 thương tích.
+- Ngũ Hành: bonus nhỏ, `insight_modifier` +8% khi đột phá; cần manh mối `mem_cave_site` và 6 Thảo Dược để học.
+- Thương tích (`wounds`, tối đa 5): mỗi điểm giảm 8% sinh lực trong bí cảnh; thua thêm 1; hồi bằng hành động `rest_heal` (miễn phí tài nguyên, tốn 0,01 năm). Run bị hủy (offline) không gây thương. Thương tích không bao giờ chặn hành động nào.

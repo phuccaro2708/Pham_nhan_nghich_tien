@@ -157,3 +157,10 @@ Sửa so với Phase 1: `MAX_AMOUNT` 1e7 → 1e15 (mục "Quy tắc bổ sung" �
 - Path entry: `{id, name_key, goal_key, visible_when?, done_when?, clues?: [knowledge id], blockers?: [{needs, reason_key, visible_when?}]}`. Thứ tự file = thứ tự hiển thị. Validator kiểm key vi, condition, clue là knowledge có thật.
 - Story choice: `later_hint_key?` (gợi ý hệ quả về sau, hiện ở sổ Nhân Quả).
 - Story node: `text_variants?: [{when: condition, text_key}]`, lấy mục đầu tiên đúng, không có thì dùng `text_key`.
+
+## V2 — technique `role`/`traits`, `heal_wounds`, `wounds_at_least`, config
+
+- Technique: `role: "base"|"main"` (mặc định `base`), `traits: {injury_per_run?, heal_bonus?}` (số nguyên ≥ 0), bonuses vẫn ≥ 0.
+- Effect `heal_wounds {amount ≥ 1}`; condition `wounds_at_least {value}`.
+- `config/progression.json`: `combat.max_wounds`, `combat.wound_hp_penalty`, `technique.switch_age_years`.
+- Save v7: `main_technique` ("" hoặc công pháp `main` đã học), `wounds` ∈ [0, max_wounds]; mốc cũ được migration bổ sung 2 trường.

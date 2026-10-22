@@ -15,6 +15,65 @@
     "value": 0.5
    }
   ],
-  "insight_modifier": 0.05
+  "insight_modifier": 0.05,
+  "role": "base"
+ },
+ {
+  "id": "thanh_moc_duong_khi",
+  "name_key": "technique.thanh_moc_duong_khi",
+  "desc_key": "technique.thanh_moc_duong_khi.desc",
+  "element": "moc",
+  "grade": "co_ban",
+  "role": "main",
+  "bonuses": [
+   {
+    "stat": "speed.absorb_qi",
+    "value": 0.15
+   },
+   {
+    "stat": "combat.hp",
+    "value": 10
+   }
+  ],
+  "traits": {
+   "heal_bonus": 1
+  },
+  "insight_modifier": 0.03
+ },
+ {
+  "id": "huyet_luyen_than_kinh",
+  "name_key": "technique.huyet_luyen_than_kinh",
+  "desc_key": "technique.huyet_luyen_than_kinh.desc",
+  "element": "none",
+  "grade": "co_ban",
+  "role": "main",
+  "bonuses": [
+   {
+    "stat": "combat.atk",
+    "value": 3
+   },
+   {
+    "stat": "speed.train_body",
+    "value": 0.3
+   }
+  ],
+  "traits": {
+   "injury_per_run": 1
+  }
+ },
+ {
+  "id": "ngu_hanh_dan_khi",
+  "name_key": "technique.ngu_hanh_dan_khi",
+  "desc_key": "technique.ngu_hanh_dan_khi.desc",
+  "element": "ngu_hanh",
+  "grade": "co_ban",
+  "role": "main",
+  "bonuses": [
+   {
+    "stat": "speed.absorb_qi",
+    "value": 0.05
+   }
+  ],
+  "insight_modifier": 0.08
  }
 ]
