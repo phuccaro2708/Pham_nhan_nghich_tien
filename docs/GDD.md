@@ -61,7 +61,7 @@ Tham khảo nguyên lý (không sao chép công thức/nội dung): *Your Chroni
 
 | Đại cảnh giới | Tiểu cảnh giới | Hệ thống mở |
 |---|---|---|
-| Phàm Nhân | Vô → Cường thân → Cảm khí | Sinh tồn, lao động, luyện thể |
+| Phàm Nhân | Vô → Đoán thể → Cảm khí | Sinh tồn, lao động, luyện thể |
 | Luyện Khí | Tầng 1–9 | Linh khí, pháp thuật, công pháp |
 | Trúc Cơ | Sơ → Trung → Hậu → Viên Mãn | Đạo cơ, động phủ, trận pháp |
 | Kim Đan | Sơ → Trung → Hậu → Viên Mãn | Bản mệnh Kim Đan |

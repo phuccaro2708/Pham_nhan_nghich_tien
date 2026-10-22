@@ -8,7 +8,7 @@ def q(level):  # GDD 6.3: Q(L) = round(100 * 1.8^(L-1))
 
 stages = [
     ("vo", "Vô", 80, 0, {"body": 30}, {}),
-    ("cuong_than", "Cường Thân", 80, 0, {"body": 100}, {}),
+    ("cuong_than", "Đoán Thể", 80, 0, {"body": 100}, {}),
     ("cam_khi", "Cảm Khí", 80, 0, {"body": 200, "silver": 50}, {}),
 ]
 for lvl in range(1, 10):
