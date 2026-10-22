@@ -27,7 +27,7 @@ var _pages: StoryPages
 func _ready() -> void:
 	if not GameController.ready_ok:
 		var l := Label.new()
-		l.text = "Data load error — see Output."  # registry unavailable, so no localization either
+		l.text = "Lỗi nạp dữ liệu / Data load error — xem Output / see Output."  # registry unavailable, so no localization: fixed bilingual text
 		add_child(l)
 		return
 	_build()

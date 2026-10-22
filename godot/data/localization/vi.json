@@ -223,7 +223,7 @@
  "knowledge.meridian_lore": "Hiểu về kinh mạch",
  "knowledge.meridian_lore.desc": "Biết trong người có đường khí huyết và vì sao nó có thể tổn thương.",
  "knowledge.heard_of_cultivators": "Nghe chuyện người tu hành",
- "knowledge.heard_of_cultivators.desc": "Biết thế gian có người bay trên trời; đời người cũng có giới hạn tuổi thọ.",
+ "knowledge.heard_of_cultivators.desc": "Biết thế gian có kẻ ngự không mà đi, vượt xa phàm nhân.",
  "knowledge.qi_awareness": "Cảm nhận linh khí",
  "knowledge.qi_awareness.desc": "Nhận ra thứ khí mỏng manh lưu chuyển trong trời đất.",
  "knowledge.spirit_root_lore": "Hiểu về linh căn",
@@ -408,5 +408,15 @@
  "story.ch5_path_rogue.text": "Vị tán tu ngươi từng gặp rủ ngươi cùng truy tìm tài nguyên tu luyện. Không có tông môn che chở, song cũng chẳng chịu ai trói buộc.",
  "story.ch5_path_rogue.prepare": "Chuẩn bị cho Trúc Cơ",
  "story.ch5_path_rogue.prepare.result": "Ngươi nhận lời, tự biết con đường này đầy hiểm nguy.",
- "story.ch5.name": "Chương 5: Ngưỡng Trúc Cơ"
+ "story.ch5.name": "Chương 5: Ngưỡng Trúc Cơ",
+ "ui.auto.error.automation_locked": "Hàng đợi tự động chưa mở khóa.",
+ "ui.auto.error.too_many_slots": "Số ô vượt quá giới hạn hiện có.",
+ "ui.auto.error.not_discovered": "Có hành động ngươi chưa từng biết đến.",
+ "ui.auto.error.empty_queue": "Hàng đợi đang trống.",
+ "ui.auto.error.unknown_action": "Hành động không hợp lệ.",
+ "ui.auto.error.not_automatable": "Hành động này không thể tự động hóa.",
+ "ui.auto.error.bad_repeat": "Số lần lặp không hợp lệ.",
+ "ui.auto.error.bad_on_block": "Cách xử lý khi bị chặn không hợp lệ.",
+ "ui.auto.error.bad_until": "Điều kiện dừng không hợp lệ.",
+ "ui.auto.error.unknown": "Lỗi không xác định."
 }
