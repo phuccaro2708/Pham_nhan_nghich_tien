@@ -1,0 +1,359 @@
+extends Control
+## Main game screen: tab column | area | action columns by kind | resource panel | log.
+## Everything is generated from the registry. Reads state for display only;
+## all changes go through GameController commands.
+
+const REFRESH_SECONDS: float = 0.1
+const UiTheme = preload("res://scenes/ui/ui_theme.gd")
+const PINK: Color = Color(UiTheme.FILL_PROGRESS, 0.6)  # translucent so the button label stays readable
+const COL_ORDER: Array = ["instant", "loop", "upgrade"]
+
+var _age_label: Label
+var _new_life: Button
+var _confirm_new_life: bool = false
+var _active_label: Label
+var _log: RichTextLabel
+var _buttons: Dictionary = {}  # action_id -> Button
+var _bars: Dictionary = {}  # action_id -> progress overlay on its button
+var _res_rows: Dictionary = {}  # resource_id -> {"bar": ProgressBar, "value": Label}
+var _groups: Dictionary = {}  # "column|group" -> VBoxContainer body
+var _since: float = 0.0
+
+
+func _ready() -> void:
+	if not GameController.ready_ok:
+		var l := Label.new()
+		l.text = "Data load error — see Output."  # registry unavailable, so no localization either
+		add_child(l)
+		return
+	_build()
+	EventBus.game_loaded.connect(_on_loaded)
+	EventBus.action_stopped.connect(func(id: String, why: String) -> void: _say(GameController.registry.text("ui.stopped") % [GameController.registry.text(GameController.registry.actions[id]["name_key"]), _reason(why)]))
+	EventBus.lifespan_warning.connect(func(r: float) -> void: _say(GameController.registry.text("ui.log_warning") % r, UiTheme.ACCENT_CINNABAR))
+	EventBus.life_ended.connect(func(a: float) -> void: _say(GameController.registry.text("ui.log_death") % a, UiTheme.ACCENT_CINNABAR))
+	EventBus.breakthrough_resolved.connect(func(ok: bool, f: String, t: String) -> void:
+		var r: ContentRegistry = GameController.registry
+		_say(r.text("ui.breakthrough_ok") % [r.text(r.stage_of(f)["name_key"]), r.text(r.stage_of(t)["name_key"])] if ok else r.text("ui.breakthrough_fail")))
+	_on_loaded(GameController.last_offline_report)
+	GameController.last_offline_report = {}  # shown once, not again on every return from the menu
+	_refresh()
+
+
+func _build() -> void:
+	var reg: ContentRegistry = GameController.registry
+	theme = UiTheme.make()
+	add_child(UiTheme.page_background())
+	var margin := MarginContainer.new()
+	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	for side in ["left", "right", "top", "bottom"]:
+		margin.add_theme_constant_override("margin_" + side, 10)
+	add_child(margin)
+	var page := VBoxContainer.new()
+	margin.add_child(page)
+
+	# Header: area title + description (left), realm/age (right).
+	var top := HBoxContainer.new()
+	top.add_theme_constant_override("separation", 16)
+	page.add_child(top)
+	top.add_child(UiTheme.title_label(reg.text("area.village.name")))
+	var desc := Label.new()
+	desc.text = reg.text("area.village.desc")
+	desc.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	desc.size_flags_vertical = Control.SIZE_SHRINK_END
+	top.add_child(desc)
+	_age_label = Label.new()
+	_age_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	top.add_child(_age_label)
+
+	var body := HBoxContainer.new()
+	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	page.add_child(body)
+	_build_nav(body)
+
+	var area := _column(body, "", 100)
+	var area_btn := Button.new()
+	area_btn.text = reg.text("area.village.name")
+	area_btn.disabled = true  # the MVP has a single area; this column is the slot for future ones
+	UiTheme.primary_button(area_btn)  # shown as the selected area, not as an unavailable button
+	area.add_child(area_btn)
+
+	var cols: Dictionary = {}
+	for c in COL_ORDER:
+		cols[c] = _column(body, reg.text("ui.col_" + c), 0)
+	for id in reg.actions:
+		var def: Dictionary = reg.actions[id]
+		var col: String = "upgrade" if def.has("upgrade") else ("instant" if def["type"] == "INSTANT" else "loop")
+		_add_action(_group_body("c|" + col, cols[col], str(def.get("group", ""))), id)
+
+	var res := _column(body, "", 230)
+	for id in reg.resources:
+		_add_resource(_group_body("r", res, str(reg.resources[id].get("group", ""))), id)
+
+	_active_label = Label.new()
+	page.add_child(_active_label)
+	var log_panel := PanelContainer.new()
+	log_panel.custom_minimum_size.y = 110
+	page.add_child(log_panel)
+	_log = RichTextLabel.new()
+	_log.scroll_following = true
+	log_panel.add_child(_log)
+
+
+## Left tab-style column: game controls.
+func _build_nav(parent: Control) -> void:
+	var reg: ContentRegistry = GameController.registry
+	var nav := _column(parent, "", 130)
+	var main := Button.new()
+	main.text = reg.text("ui.nav_main")
+	main.disabled = true  # the only page for now
+	UiTheme.primary_button(main)  # shown as the selected tab, not as an unavailable button
+	nav.add_child(main)
+	var stop := Button.new()
+	stop.text = reg.text("ui.stop_action")
+	stop.pressed.connect(func() -> void: GameController.stop_action())
+	nav.add_child(stop)
+	var pause := Button.new()
+	pause.text = reg.text("ui.pause")
+	pause.toggle_mode = true
+	pause.set_pressed_no_signal(GameController.clock.paused)  # clock outlives this scene
+	pause.toggled.connect(func(on: bool) -> void: GameController.set_paused(on))
+	nav.add_child(pause)
+	var speeds := HBoxContainer.new()
+	nav.add_child(speeds)
+	var speed_group := ButtonGroup.new()
+	for sp in [1, 2, 5]:
+		var sb := Button.new()
+		sb.text = "×%d" % sp
+		sb.toggle_mode = true
+		sb.button_group = speed_group
+		sb.set_pressed_no_signal(is_equal_approx(GameController.clock.speed, float(sp)))  # clock outlives this scene
+		sb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		sb.pressed.connect(func() -> void: GameController.set_speed(float(sp)))
+		speeds.add_child(sb)
+	var save := Button.new()
+	save.text = reg.text("ui.save")
+	save.pressed.connect(func() -> void: _say(reg.text("ui.saved" if GameController.save() else "ui.save_failed")))
+	nav.add_child(save)
+	var load_b := Button.new()
+	load_b.text = reg.text("ui.load")
+	load_b.pressed.connect(func() -> void: _say(reg.text("ui.loaded" if GameController.load_save() else "ui.load_failed")))
+	nav.add_child(load_b)
+	var menu := Button.new()
+	menu.text = reg.text("menu.to_menu")
+	menu.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	menu.pressed.connect(func() -> void:
+		GameController.save()
+		get_tree().change_scene_to_file("res://scenes/main_menu.tscn"))
+	nav.add_child(menu)
+	_new_life = Button.new()
+	_new_life.text = reg.text("ui.new_life")
+	_new_life.visible = false
+	_new_life.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_new_life.pressed.connect(func() -> void:
+		if not _confirm_new_life:
+			_confirm_new_life = true
+			_new_life.text = reg.text("ui.new_life_confirm")
+			return
+		_confirm_new_life = false
+		_new_life.text = reg.text("ui.new_life")
+		GameController.new_game()
+		GameController.clock.reset()
+		_say(reg.text("ui.new_life_log")))
+	nav.add_child(_new_life)
+
+
+## Vertical scrollable column with an optional header. width 0 = expand.
+func _column(parent: Control, header: String, width: int) -> VBoxContainer:
+	var panel := PanelContainer.new()
+	if width > 0:
+		panel.custom_minimum_size.x = width
+	else:
+		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	parent.add_child(panel)
+	var sc := ScrollContainer.new()
+	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	panel.add_child(sc)
+	var v := VBoxContainer.new()
+	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sc.add_child(v)
+	if header != "":
+		var l := Label.new()
+		l.text = header
+		l.add_theme_font_size_override("font_size", UiTheme.SIZE_HEADER)
+		v.add_child(l)
+	return v
+
+
+## Body of a collapsible group inside `parent`; an empty group name means no header.
+func _group_body(key: String, parent: VBoxContainer, group: String) -> VBoxContainer:
+	if group == "":
+		return parent
+	var k: String = "%s|%s" % [key, group]
+	if _groups.has(k):
+		return _groups[k]
+	var group_name: String = GameController.registry.text("group." + group)
+	var head := Button.new()
+	head.flat = true
+	head.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	head.text = "▾ " + group_name
+	parent.add_child(head)
+	var body := VBoxContainer.new()
+	parent.add_child(body)
+	head.pressed.connect(func() -> void:
+		body.visible = not body.visible
+		head.text = ("▾ " if body.visible else "▸ ") + group_name)
+	_groups[k] = body
+	return body
+
+
+func _add_action(parent: VBoxContainer, id: String) -> void:
+	var b := Button.new()
+	b.text = GameController.registry.text(GameController.registry.actions[id]["name_key"])
+	b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	b.custom_minimum_size.y = 44
+	b.pressed.connect(_on_action.bind(id))
+	var bar := _fill_bar()
+	b.add_child(bar)
+	parent.add_child(b)
+	_buttons[id] = b
+	_bars[id] = bar
+
+
+func _add_resource(parent: VBoxContainer, id: String) -> void:
+	var bar := _fill_bar()
+	bar.custom_minimum_size.y = 24
+	var row := HBoxContainer.new()
+	row.set_anchors_preset(Control.PRESET_FULL_RECT)
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var name_l := Label.new()
+	name_l.text = GameController.registry.text(GameController.registry.resources[id]["name_key"])
+	name_l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var val := Label.new()
+	val.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	row.add_child(name_l)
+	row.add_child(val)
+	bar.add_child(row)
+	parent.add_child(bar)
+	_res_rows[id] = {"bar": bar, "value": val}
+
+
+## Pink fill (no percentage text) that lets clicks through.
+func _fill_bar() -> ProgressBar:
+	var bar := ProgressBar.new()
+	bar.show_percentage = false
+	bar.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = PINK
+	bar.add_theme_stylebox_override("fill", fill)
+	bar.add_theme_stylebox_override("background", StyleBoxEmpty.new())
+	return bar
+
+
+func _on_action(id: String) -> void:
+	var r: Dictionary = GameController.start_action(id)
+	if not r["ok"]:
+		_say(GameController.registry.text("ui.cannot") % _explain(r))
+
+
+func _explain(r: Dictionary) -> String:
+	return _reason(str(r["reason"]), r["detail"])
+
+
+## Stop/refusal codes come from the simulation; the player only ever sees localized text.
+func _reason(code: String, detail: Variant = null) -> String:
+	var reg: ContentRegistry = GameController.registry
+	var s: String = reg.text("reason." + code)
+	if code == "insufficient_resources" and typeof(detail) == TYPE_DICTIONARY:
+		var parts: PackedStringArray = []
+		for id in detail:
+			parts.append("%s %s" % [_fmt(float(detail[id])), reg.text(reg.resources[id]["name_key"]) if reg.resources.has(id) else str(id)])
+		s += ": " + ", ".join(parts)
+	return s
+
+
+## Offline reports carry "action_id:reason".
+func _stop_text(raw: String) -> String:
+	if raw == "":
+		return ""
+	var parts: PackedStringArray = raw.split(":", true, 1)
+	if parts.size() < 2:
+		return _reason(raw)
+	var reg: ContentRegistry = GameController.registry
+	return "%s — %s" % [reg.text(reg.actions[parts[0]]["name_key"]) if reg.actions.has(parts[0]) else parts[0], _reason(parts[1])]
+
+
+func _named(d: Dictionary, defs: Dictionary, signed: bool) -> String:
+	var parts: PackedStringArray = []
+	for id in d:
+		var v: float = float(d[id])
+		var n: String = GameController.registry.text(defs[id]["name_key"]) if defs.has(id) else str(id)
+		parts.append("%s %s%s" % [n, ("+" if v > 0.0 else "") if signed else "×", _fmt(v)])
+	return ", ".join(parts)
+
+
+func _on_loaded(report: Dictionary) -> void:
+	if report.is_empty() or float(report.get("seconds_simulated", 0.0)) <= 0.0:
+		return
+	var r: ContentRegistry = GameController.registry
+	_say(r.text("ui.offline") % [
+		report["seconds_simulated"], r.text("ui.offline_capped") if report["capped"] else "",
+		_named(report["resources_delta"], r.resources, true) if not report["resources_delta"].is_empty() else "—",
+		_named(report["completions"], r.actions, false) if not report["completions"].is_empty() else "—",
+		report["age_delta"], _stop_text(str(report["stop_reason"]))])
+
+
+func _say(t: String, color: Color = UiTheme.INK_PRIMARY) -> void:
+	_log.push_color(color)
+	_log.append_text(t + "\n")
+	_log.pop()
+
+
+func _process(delta: float) -> void:
+	_since += delta
+	if _since >= REFRESH_SECONDS:
+		_since = 0.0
+		_refresh()
+
+
+func _refresh() -> void:
+	if not GameController.ready_ok:
+		return
+	var s: GameState = GameController.state
+	var reg: ContentRegistry = GameController.registry
+	var stage: Dictionary = GameController.actions.realms.stage(s)
+	var life: LifespanSystem = GameController.actions.lifespan
+	_age_label.text = reg.text("ui.realm_line") % [
+		reg.text(stage["name_key"]), s.age_years, life.limit(s),
+		reg.text("ui.deceased_suffix") if not life.is_alive(s) else (reg.text("ui.warning_suffix") if life.is_warning(s) else "")]
+	_new_life.visible = not life.is_alive(s)
+	var rs: ResourceSystem = GameController.actions.resources
+	for id in _res_rows:
+		var v: float = float(s.resources.get(id, 0.0))
+		var cap: float = rs.cap_of(id, s)
+		var capped: bool = cap < ResourceSystem.MAX_AMOUNT
+		var bar: ProgressBar = _res_rows[id]["bar"]
+		bar.max_value = maxf(cap, 1.0) if capped else 1.0
+		bar.value = v if capped else 0.0
+		_res_rows[id]["value"].text = ("%s/%s" % [_fmt(v), _fmt(cap)]) if capped else _fmt(v)
+	var active: String = str(s.active_action.get("id", ""))
+	for id in _buttons:
+		var chk: Dictionary = GameController.actions.check_can_start(s, id)
+		var def: Dictionary = reg.actions[id]
+		var label: String = reg.text(def["name_key"])
+		if def.has("upgrade"):
+			label += " (%s)" % (reg.text("ui.level_short") % int(s.upgrades.get(def["upgrade"], 0)))
+		_buttons[id].text = label
+		UiTheme.set_locked(_buttons[id], not (chk["ok"] or id == active))
+		_buttons[id].tooltip_text = "" if chk["ok"] else _explain(chk)
+		var pbar: ProgressBar = _bars[id]
+		if id == active:
+			pbar.max_value = float(s.active_action["duration_ticks"])
+			pbar.value = float(s.active_action["progress_ticks"])
+		else:
+			pbar.value = 0.0
+	_active_label.text = reg.text("ui.idle") if active == "" else reg.text("ui.doing") % reg.text(reg.actions[active]["name_key"])
+
+
+func _fmt(v: float) -> String:
+	return str(snappedf(v, 0.01))

@@ -1,0 +1,11 @@
+[
+  {
+    "id": "iron_axe",
+    "name_key": "upgrade.iron_axe",
+    "cost_resource": "silver",
+    "base_cost": 20,
+    "cost_growth": 1.18,
+    "max_level": 10,
+    "bonuses": [ { "stat": "yield.wood", "per_level": 0.5 } ]
+  }
+]

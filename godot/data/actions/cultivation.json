@@ -1,0 +1,123 @@
+[
+ {
+  "id": "train_body",
+  "type": "LOOP",
+  "name_key": "action.train_body",
+  "duration": 4.0,
+  "costs": {},
+  "effects": [
+   {
+    "type": "add_resource",
+    "resource": "body",
+    "amount": 2
+   }
+  ],
+  "requirements": {
+   "all_of": [
+    {
+     "type": "flag_is",
+     "flag": "tutorial_started",
+     "value": true
+    }
+   ]
+  },
+  "age_cost_years": 0.002,
+  "offline_allowed": true,
+  "group": "cultivation"
+ },
+ {
+  "id": "absorb_qi",
+  "type": "LOOP",
+  "name_key": "action.absorb_qi",
+  "duration": 4.0,
+  "costs": {},
+  "effects": [
+   {
+    "type": "add_resource",
+    "resource": "spirit_qi",
+    "amount": 8
+   }
+  ],
+  "requirements": {
+   "all_of": [
+    {
+     "type": "realm_at_least",
+     "realm": "luyen_khi_1"
+    }
+   ]
+  },
+  "age_cost_years": 0.004,
+  "offline_allowed": true,
+  "group": "cultivation"
+ },
+ {
+  "id": "refine_qi",
+  "type": "LOOP",
+  "name_key": "action.refine_qi",
+  "duration": 4.0,
+  "costs": {
+   "spirit_qi": 8
+  },
+  "effects": [
+   {
+    "type": "add_resource",
+    "resource": "cultivation",
+    "amount": 8
+   }
+  ],
+  "requirements": {
+   "all_of": [
+    {
+     "type": "realm_at_least",
+     "realm": "luyen_khi_1"
+    }
+   ]
+  },
+  "age_cost_years": 0.004,
+  "offline_allowed": true,
+  "group": "cultivation"
+ },
+ {
+  "id": "breakthrough",
+  "type": "INSTANT",
+  "name_key": "action.breakthrough",
+  "breakthrough": true,
+  "effects": [
+   {
+    "type": "advance_realm"
+   }
+  ],
+  "requirements": {},
+  "age_cost_years": 0.0,
+  "offline_allowed": false,
+  "group": "cultivation"
+ },
+ {
+  "id": "treat_meridian",
+  "type": "TIMED",
+  "name_key": "action.treat_meridian",
+  "duration": 20.0,
+  "costs": {
+   "silver": 50
+  },
+  "effects": [
+   {
+    "type": "set_flag",
+    "flag": "meridian_damaged",
+    "value": false
+   }
+  ],
+  "requirements": {
+   "all_of": [
+    {
+     "type": "flag_is",
+     "flag": "meridian_damaged",
+     "value": true
+    }
+   ]
+  },
+  "age_cost_years": 0.05,
+  "offline_allowed": false,
+  "group": "cultivation"
+ }
+]

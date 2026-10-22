@@ -1,0 +1,37 @@
+[
+ {
+  "id": "wood",
+  "name_key": "resource.wood",
+  "cap": 200,
+  "initial": 0,
+  "group": "materials"
+ },
+ {
+  "id": "silver",
+  "name_key": "resource.silver",
+  "cap": null,
+  "initial": 0,
+  "group": "materials"
+ },
+ {
+  "id": "body",
+  "name_key": "resource.body",
+  "cap": 1000,
+  "initial": 0,
+  "group": "cultivation"
+ },
+ {
+  "id": "spirit_qi",
+  "name_key": "resource.spirit_qi",
+  "cap": 100,
+  "initial": 0,
+  "group": "cultivation"
+ },
+ {
+  "id": "cultivation",
+  "name_key": "resource.cultivation",
+  "cap_from": "cultivation_cap",
+  "initial": 0,
+  "group": "cultivation"
+ }
+]

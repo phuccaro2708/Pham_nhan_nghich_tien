@@ -1,0 +1,170 @@
+[
+ {
+  "id": "pham_the",
+  "name_key": "realm.pham_the",
+  "lifespan_years": 80,
+  "cultivation_cap": 0,
+  "breakthrough": {
+   "costs": {
+    "body": 30
+   },
+   "requirements": {}
+  }
+ },
+ {
+  "id": "cuong_than",
+  "name_key": "realm.cuong_than",
+  "lifespan_years": 80,
+  "cultivation_cap": 0,
+  "breakthrough": {
+   "costs": {
+    "body": 100
+   },
+   "requirements": {}
+  }
+ },
+ {
+  "id": "cam_khi",
+  "name_key": "realm.cam_khi",
+  "lifespan_years": 80,
+  "cultivation_cap": 0,
+  "breakthrough": {
+   "costs": {
+    "body": 200,
+    "silver": 50
+   },
+   "requirements": {}
+  }
+ },
+ {
+  "id": "luyen_khi_1",
+  "name_key": "realm.luyen_khi_1",
+  "lifespan_years": 120,
+  "cultivation_cap": 200,
+  "breakthrough": {
+   "costs": {
+    "cultivation": 100
+   },
+   "requirements": {}
+  }
+ },
+ {
+  "id": "luyen_khi_2",
+  "name_key": "realm.luyen_khi_2",
+  "lifespan_years": 120,
+  "cultivation_cap": 360,
+  "breakthrough": {
+   "costs": {
+    "cultivation": 180
+   },
+   "requirements": {}
+  }
+ },
+ {
+  "id": "luyen_khi_3",
+  "name_key": "realm.luyen_khi_3",
+  "lifespan_years": 120,
+  "cultivation_cap": 648,
+  "breakthrough": {
+   "costs": {
+    "cultivation": 324
+   },
+   "requirements": {}
+  }
+ },
+ {
+  "id": "luyen_khi_4",
+  "name_key": "realm.luyen_khi_4",
+  "lifespan_years": 120,
+  "cultivation_cap": 1166,
+  "breakthrough": {
+   "costs": {
+    "cultivation": 583
+   },
+   "requirements": {}
+  }
+ },
+ {
+  "id": "luyen_khi_5",
+  "name_key": "realm.luyen_khi_5",
+  "lifespan_years": 120,
+  "cultivation_cap": 2100,
+  "breakthrough": {
+   "costs": {
+    "cultivation": 1050
+   },
+   "requirements": {}
+  }
+ },
+ {
+  "id": "luyen_khi_6",
+  "name_key": "realm.luyen_khi_6",
+  "lifespan_years": 120,
+  "cultivation_cap": 3780,
+  "breakthrough": {
+   "costs": {
+    "cultivation": 1890
+   },
+   "requirements": {}
+  }
+ },
+ {
+  "id": "luyen_khi_7",
+  "name_key": "realm.luyen_khi_7",
+  "lifespan_years": 120,
+  "cultivation_cap": 6802,
+  "breakthrough": {
+   "costs": {
+    "cultivation": 3401
+   },
+   "requirements": {}
+  }
+ },
+ {
+  "id": "luyen_khi_8",
+  "name_key": "realm.luyen_khi_8",
+  "lifespan_years": 120,
+  "cultivation_cap": 12244,
+  "breakthrough": {
+   "costs": {
+    "cultivation": 6122
+   },
+   "requirements": {}
+  }
+ },
+ {
+  "id": "luyen_khi_9",
+  "name_key": "realm.luyen_khi_9",
+  "lifespan_years": 120,
+  "cultivation_cap": 22040,
+  "breakthrough": {
+   "costs": {
+    "cultivation": 11020,
+    "silver": 500
+   },
+   "requirements": {
+    "all_of": [
+     {
+      "type": "flag_is",
+      "flag": "meridian_damaged",
+      "value": false
+     }
+    ]
+   },
+   "chance": {
+    "base": 0.45,
+    "min": 0.3,
+    "max": 0.95,
+    "pity_failures": 3,
+    "terms": []
+   },
+   "on_fail_flag": "meridian_damaged"
+  }
+ },
+ {
+  "id": "truc_co_so",
+  "name_key": "realm.truc_co_so",
+  "lifespan_years": 200,
+  "cultivation_cap": 22040
+ }
+]
