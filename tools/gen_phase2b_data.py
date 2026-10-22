@@ -1,4 +1,5 @@
-"""Phase 2B content: herb, relations, technique, mastery, chapter 1, new actions, automation config.
+"""WARNING: chapter1.json and the ch1/ch4/ch5 localization are hand-edited since v1.1 (luan hoi); running this overwrites them.
+Phase 2B content: herb, relations, technique, mastery, chapter 1, new actions, automation config.
 Idempotent: patches the Phase 2A JSON in place and (re)writes the new files. Run from anywhere.
 gen_cultivation_data.py is the Phase 2A generator and is NOT re-run after this (it would drop these patches)."""
 import json, os

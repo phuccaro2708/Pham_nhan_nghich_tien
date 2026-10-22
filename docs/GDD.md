@@ -269,24 +269,48 @@ Thiên địa từng trải qua **Đoạn Tiên Kỷ**, khiến các phương ph
 
 Người chơi sinh ra tại **Thanh Khê Thôn**, nơi từng có một tu sĩ vô danh mất tích. Trong một lần lên núi, tìm được **Nghịch Mệnh Tàn Kinh** — không trực tiếp cho sức mạnh mà cho phép thấy **khiếm khuyết và khả năng cải tiến** của công pháp đã lĩnh ngộ. Đây là cơ chế đặc trưng: người chơi học cách *thay đổi* con đường tu luyện, không chỉ nhận công pháp mạnh hơn.
 
-### 7.2. Ba chương đầu
+### 7.2. Ba chương đầu (sửa v1.1 — luân hồi lần đầu vào MVP)
+
+> **Lý do đổi (v1.1):** bản cũ để chương I kết thúc bằng "manh mối" nhưng dữ liệu thực tế cho `knows_qi_method` ngay trong chương I (Codex F3), nên không có khoảng trống nào để lựa chọn tạo khác biệt thật. Luân hồi lần đầu cho đúng thứ GDD thiếu: một cái chết, một mốc, và bốn cách quay lại có hậu quả khác nhau lên NPC, quan hệ, tri thức, **nguồn pháp môn** và kết chương. Chỉ **một** lần luân hồi theo cốt truyện, không có vòng lặp tự do; hệ thống nhiều kiếp (§X) vẫn hậu MVP.
 
 | Chương | Nội dung | Kết thúc |
 |---|---|---|
-| **I — Khói Bếp Phàm Trần** | Thanh Khê Thôn: lao động, nhân vật, mở rừng Trúc Ảnh, khám phá hang động | Manh mối về Dẫn Khí Tàn Quyển |
-| **II — Tiên Lộ Vô Môn** | Gặp tán tu già hoặc di vật (tùy nhánh trước); mở linh căn, nghiên cứu công pháp, cảm ứng linh khí | Bước vào Luyện Khí |
-| **III — Bách Luyện Thành Đạo** | Tông môn Thanh Huyền, bí cảnh đầu tiên, manh mối Đoạn Tiên Kỷ | Lựa chọn chuẩn bị Trúc Cơ: chính đạo / tán tu / lối cải biến |
+| **I — Khói Bếp Phàm Trần** | Thanh Khê Thôn: lao động, bà Lý / trưởng thôn / lão thợ săn, học nghề, **mốc "Ngày lên núi"**, đạo sĩ bị thương, **sự cố trên núi** (chết) → **luân hồi lần đầu**. KHÔNG cấp pháp môn. | Mở mắt ở mốc, mang theo ký ức |
+| **II — Tiên Lộ Vô Môn** *(chương "ch4" trong dữ liệu)* | Bốn nhánh quay lại (xem 7.4): cứu đạo sĩ / theo thợ săn tới hang / cảnh báo cả làng / giữ bí mật. Mỗi nhánh kết bằng `dao_entry` + `qi_source` khác nhau. Đến **Cảm Khí** mới có node cấp pháp môn theo nguồn. | Có pháp môn, cảm ứng linh khí, bước vào Luyện Khí |
+| **III — Bách Luyện Thành Đạo** *(stub "ch5")* | Luyện Khí 9: Thanh Huyền ngoại môn / Tàn Kinh / tán tu | Chuẩn bị Trúc Cơ: chính đạo / tán tu / lối cải biến |
+
+Chương cũ "ch2/ch3" trong dữ liệu (tin đồn núi, ngã ba) là phần mở đầu của chương I và chạy **trước** mốc luân hồi (vì Đoán Thể là điều kiện của mốc, xem 7.4).
 
 ### 7.3. Story Graph
 
-Mỗi sự kiện là một node: ID ổn định, điều kiện kích hoạt, đoạn văn, lựa chọn, kết quả, node kế tiếp. Lựa chọn có thể mở nhánh nhưng **không được khóa vĩnh viễn** hệ thống thiết yếu.
+Mỗi sự kiện là một node: ID ổn định, điều kiện kích hoạt, đoạn văn, lựa chọn, kết quả, node kế tiếp. Lựa chọn có thể mở nhánh nhưng **không được khóa vĩnh viễn** hệ thống thiết yếu. Đồ thị đầy đủ và bảng trạng thái khi tua: [STORY_GRAPH.md](STORY_GRAPH.md).
 
-**Mẫu sự kiện — Đạo sĩ bị thương** *(bản mẫu, chưa chạy trong game)*: đạo sĩ áo xám hấp hối giữ túi trữ vật rách.
-- Dùng dược thảo cứu người → mất 5 dược thảo, nhận tín vật, mở cơ hội được chỉ dạy công pháp an toàn (Nhân Duyên).
-- Lấy túi trữ vật rồi đi.
-- Hỏi về tiên đạo trước khi quyết định.
+**Nút "Đạo sĩ bị thương"** (chạy thật, `ch1_wounded_taoist`): dùng 3 thảo dược băng bó (quan hệ +3, biết ơn) · lục túi lấy 30 bạc (quan hệ −2, cờ `taoist_robbed`) · hỏi han (miễn phí, quan hệ +1). Ba lựa chọn khác nhau về giá **và** hậu quả; không lựa chọn miễn phí nào trội hơn (lựa chọn tốn kém mở thêm tuyến sau luân hồi).
 
-### 7.4. Nhân quả
+### 7.4. Luân hồi lần đầu (MVP) — quy tắc bất biến
+
+Luân hồi là cơ chế truyện, không phải vòng lặp farm. Tái dùng hệ tri thức (`knowledge`, nhóm `memory`) thay vì thêm hệ ký ức riêng, để nó tương tác với **Knowledge** (điều kiện `knows`), **Story** (mở/đóng lựa chọn), **Save** (checkpoint trong schema v5), **Quan hệ** và **Cultivation** (nguồn pháp môn → `sense_qi`).
+
+1. **Ký ức nhân vật giữ lại:** sự kiện đã trải qua (`story.done`), bí mật và kỹ thuật đã biết (`knowledge`, kể cả nhóm `memory`). Đồng hồ, RNG, metadata save không tua.
+2. **Thế giới tại mốc được đặt lại:** tài nguyên, nâng cấp, cờ, quan hệ, đếm hành động, thành thạo, công pháp, cảnh giới, tuổi, số lần thất bại đột phá. Niềm tin phải xây lại. Hành động đang chạy bị hủy **không hoàn chi phí** (snapshot đã là thế giới trước khi nó bắt đầu).
+3. **Lựa chọn mới chỉ mở khi ký ức liên quan đã được chứng kiến** (`requirements: knows mem_*`). Ký ức nào có được phụ thuộc vào lựa chọn ở sự cố; một lần chơi chỉ chứng kiến một phần, nên các nhánh có yêu cầu ký ức loại trừ nhau, còn nhánh tự do thì luôn mở.
+4. **Mốc là điều nhân vật đã sống qua:** `set_checkpoint` chỉ xuất hiện trong lựa chọn story của node đã xong. Mốc nằm **sau Đoán Thể**, nếu không effect một lần của các node sau mốc (như `promote_realm cuong_than`) sẽ mất vĩnh viễn vì `story.done` được giữ.
+5. **Chết luôn có đường về, tua chủ động bị giới hạn:** `rewind` dùng hết checkpoint (rỗng thì là no-op). Không có hàng tồn, không farm được. Cái giá trong truyện: tua là một lần duy nhất, nên các nhánh sau là cam kết thật.
+6. **Không lựa chọn nào khóa hết đường chính:** mọi node có lựa chọn miễn phí, mọi nhánh tới `dao_entry` và một `qi_source`; mỗi nguồn có node pháp môn với lựa chọn miễn phí.
+7. **Mỗi nhánh đổi khác thật** NPC còn sống, quan hệ, tri thức, cách có pháp môn và kết chương (bảng ở STORY_GRAPH).
+
+**Nguồn pháp môn (`qi_source`)** — pháp môn (`knows_qi_method`) chỉ cấp ở node `ch4_method_*` khi đã tới Cảm Khí, theo nguồn:
+
+| Nhánh | `qi_source` | Nguồn | Ai còn sống / quan hệ chính | Kết chương |
+|---|---|---|---|---|
+| (a) Cứu đạo sĩ | `guided` | Lời chỉ dẫn của đạo sĩ | đạo sĩ sống, `dao_si` cao | Thanh Huyền ngoại môn |
+| (b) Theo thợ săn tới hang | `relic` | Tàn Kinh trong hang | thợ săn sống, đạo sĩ chết | Tàn Kinh tầng sâu |
+| (c) Cảnh báo công khai | `evidence` | Sách người tu hành của trưởng thôn | làng nghi rồi tin, `truong_thon` | Sứ giả Thanh Huyền |
+| (d) Giữ bí mật | `rogue` | Tán tu ở phiên chợ (cướp túi mở thêm hang riêng) | đạo sĩ chết, `ba_ly` | Con đường tán tu |
+
+**Ngoài MVP:** nhiều kiếp tự do, Đạo Quả, chuyển hậu duệ (§X). Mỗi hệ thống luân hồi mới phải qua cổng "≥ 2 hệ thống có sẵn" trước khi thêm.
+
+### 7.5. Nhân quả
 
 Dữ liệu kiểm tra được, không phải đạo đức một chiều. Ba trục: `faction_reputation`, `karma_debt`, `relationships`. **Không dùng chỉ số Thiện/Ác toàn cục.** Một hành động có thể giúp người này và gây thù với người khác.
 
@@ -596,6 +620,7 @@ Casual · Optimizer · Idle (rời game nhiều giờ) · Explorer · Risk Playe
 | Cảnh giới đầu | "Vô" (id `vo`, trước là Phàm Thể): nông dân chưa có cảnh giới; Tu Vi/Linh Khí ẩn trên UI tới Cảm Khí (`visible_when` trong resource), xưng hô lời kể là "ngươi" |
 | Thất bại đột phá | Hoàn một phần tu vi (`on_fail_refund`, Phase 2B) — xem §6.5 |
 | Story | Đồ thị nút, một sự kiện treo tại một thời điểm, mỗi nút có lựa chọn miễn phí (không softlock) |
+| Luân hồi lần đầu | Một lần theo cốt truyện trong MVP (§7.4): `set_checkpoint` + `rewind`, ký ức = knowledge nhóm `memory`, save v5 |
 | Prestige | Thiết kế trước, triển khai sau MVP |
 | Multiplayer / Monetization | Không |
 | Công nghệ nội dung | Data-driven |
@@ -645,4 +670,4 @@ Casual · Optimizer · Idle (rời game nhiều giờ) · Explorer · Risk Playe
 - **Cảnh giới (đổi nghĩa, giữ id)**: Vô = *Phàm Nhân* (thân phận); Cường Thân = **Đoán Thể** (võ học nhập môn, chỉ đạt qua cốt truyện); Cảm Khí = nhập đạo; Luyện Khí… giữ nguyên.
 - **Tuyến mở đầu**: Phàm Nhân → học nghề → võ học nhập môn (Đoán Thể) → phát hiện tiên duyên → cảm ứng linh khí → Luyện Khí. Phase 1 làm tới Đoán Thể + bước đệm tới Cảm Khí; Chương 4–5 thuộc Phase 2.
 - **Ba đường tới võ học nhập môn**: học hỏi, giúp người, thám hiểm; đều có lựa chọn miễn phí, không softlock.
-- **Tuổi**: hiển thị "16 tuổi" không giới hạn thọ nguyên tới khi nghe chuyện người tu hành.
+- **Tuổi**: hiển thị "16 tuổi" không giới hạn thọ nguyên tới khi nhập đạo (`dao_entry`, từ chuỗi đạo sĩ); tin đồn Ch2 chỉ cho `heard_of_cultivators`. Trước đó header luôn hiện thân phận Phàm Nhân (không lộ cảnh giới thật như Đoán Thể) và log không báo sắp hết thọ.

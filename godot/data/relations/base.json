@@ -16,5 +16,11 @@
   "name_key": "relation.dao_si",
   "min": -5,
   "max": 10
+ },
+ {
+  "id": "tho_san",
+  "name_key": "relation.tho_san",
+  "min": -5,
+  "max": 10
  }
 ]

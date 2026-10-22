@@ -106,7 +106,7 @@ Sửa so với Phase 1: `MAX_AMOUNT` 1e7 → 1e15 (mục "Quy tắc bổ sung" �
 
 ## Localization (menu + đa ngôn ngữ)
 
-- `data/localization/vi.json` là bản gốc và là cơ sở kiểm tra `name_key`/`group`; `en.json` phải có **đủ mọi key** của `vi.json` (thiếu → lỗi nạp content). Key thiếu lúc chạy rơi về tiếng Việt, rồi về chính key.
+- `data/localization/vi.json` là bản gốc và là cơ sở kiểm tra `name_key`/`group`; `en.json` phải có **đủ mọi key** của `vi.json` (thiếu → lỗi nạp content). Key thiếu lúc chạy rơi về tiếng Việt, rồi về chính key. Ngoại lệ duy nhất cho chuỗi hardcode: thông báo lỗi nạp dữ liệu ở `main_ui.gd` (song ngữ cố định, vì registry/bảng dịch có thể chính là thứ hỏng). Mã lỗi hàng đợi cần key `ui.auto.error.<code>` (test kiểm đủ).
 - Danh sách ngôn ngữ: `GameController.LANGUAGES` (tên bản ngữ, không dịch). Lựa chọn lưu ở `user://settings.cfg`, đổi được ở menu chính.
 - Tiền tố key: `resource.` `upgrade.` `action.` `realm.` `group.` `area.` `ui.` `menu.` `reason.` (mã lý do dừng/từ chối từ simulation, UI luôn hiển thị qua `reason.<code>`).
 
@@ -136,6 +136,10 @@ Sửa so với Phase 1: `MAX_AMOUNT` 1e7 → 1e15 (mục "Quy tắc bổ sung" �
 - **Knowledge** — `data/knowledge/*.json`: `{id, name_key, desc_key, group}`. `name_key`/`desc_key` phải có trong localization.
 - **Condition** `knows {knowledge}` — kiểm tra `GameState.knowledge`.
 - **Effect** `learn_knowledge {knowledge}` (idempotent) và `promote_realm {realm}` (chỉ cho stage kế tiếp của stage có `story_promotion: true`; cốt truyện dùng, không phải `advance_realm`).
+- **Effect** `set_checkpoint {}` và `rewind {}` (luân hồi, GDD §7.4; **chỉ trong lựa chọn story**). `set_checkpoint` lưu ảnh thế giới vào `GameState.checkpoint`; `rewind` khôi phục nó (giữ `story`, `knowledge`, đồng hồ, RNG), xóa checkpoint và tăng `loop`. `rewind` phải là effect **cuối** của lựa chọn (validator báo lỗi nếu không) và là no-op khi không có checkpoint. Chi tiết trạng thái giữ/reset: `STORY_GRAPH.md` §4.
+- **Knowledge `group: "memory"`** — ký ức luân hồi (`mem_*`). Cổng lựa chọn bằng `requirements: {"knows": "mem_..."}`; không có loại điều kiện mới.
+- **Cờ `qi_source`** (`guided|relic|evidence|rogue`) do nhánh quay lại đặt; node `ch4_method_<nguồn>` và `ch5_path_<nguồn>` mở theo cờ này. `knows_qi_method` chỉ được cấp ở `ch4_method_*` (và `ch1_qi_clue` cho save cũ).
+- **Save schema v5**: thêm `loop` (int ≥ 0) và `checkpoint` (object rỗng hoặc đúng bộ khóa `GameState.WORLD_KEYS`, được validate như một state). Migration v4→v5: `loop=0`, `checkpoint={}`.
 - **Realm** thêm `mortal` (header hiện "Thân phận") và `story_promotion`.
 - **Action** `visible_when` nay là *cổng khám phá thật*: `check_can_start` trả `not_discovered`; `AutomationQueue.set_slots` từ chối ô đó.
 - **Config** `ui.lifespan_visible_when`: điều kiện hiện giới hạn thọ nguyên trong header; `ui.tab_visible_when` không còn trang `story`.

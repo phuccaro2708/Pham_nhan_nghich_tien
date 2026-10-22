@@ -21,7 +21,7 @@ Phase 2 (kế hoạch): Chương 4–5 (tiên duyên, Dẫn Khí Quyết, nhập
 - **Cổng thật**: `ActionSystem.check_can_start` trả `not_discovered` khi `visible_when` của action chưa thỏa. UI, `AutomationQueue.set_slots` (từ chối ô) và offline cùng dùng đường này. Tái dùng `ConditionEvaluator`, không có bộ điều kiện thứ hai.
 - **Cảnh giới giữ id, đổi nghĩa**: `vo` = Phàm Nhân (thân phận, không phải cảnh giới), `cuong_than` = Đoán Thể (võ học nhập môn), `cam_khi` = nhập đạo. Stage `vo` có cờ `story_promotion` + `mortal`: bước lên Đoán Thể chỉ qua effect `promote_realm` của cốt truyện (không rủi ro, không nghi thức).
 - **Đoán Thể → Cảm Khí** vẫn bằng hành động Đột phá, nhưng nút ẩn tới khi `knows dao_entry` (đạt qua chuỗi đạo sĩ ở Phase 1; Phase 2 sẽ có thêm đường).
-- **Tuổi**: chỉ hiện "Tuổi: 16" tới khi `knows heard_of_cultivators` (cấu hình `ui.lifespan_visible_when`), sau đó mới hiện giới hạn thọ nguyên.
+- **Tuổi**: chỉ hiện "Tuổi: 16" tới khi `knows dao_entry` (cấu hình `ui.lifespan_visible_when`), sau đó mới hiện giới hạn thọ nguyên.
 - **Đổi tên theo hiểu biết**: Rèn thể → "Làm việc nặng" (+Sức Bền, group Việc làng); Thể Phách → "Sức Bền"; Hái thảo dược → "Hái cây thuốc" (cần `herb_basics`).
 - **UI**: bỏ tab Cốt truyện; sự kiện đang chờ là thẻ trên cùng trang Chính; quan hệ + lịch sử ở cuối cột phải (cuộn được). Nhóm hành động/tài nguyên trống tự ẩn tiêu đề.
 
@@ -33,7 +33,7 @@ Phase 2 (kế hoạch): Chương 4–5 (tiên duyên, Dẫn Khí Quyết, nhập
 | `breathing` | `ch1_village_elder`/training; route Ch3 |
 | `herb_basics` | `ch1_forest_edge`/go_deeper; route help |
 | `literacy` | Ch3 route học hỏi |
-| `heard_of_cultivators` | Ch2 `ch2_mountain_rumor` (cả 3 lựa chọn, kể cả bỏ qua); chuỗi đạo sĩ |
+| `heard_of_cultivators` | Ch2 `ch2_mountain_rumor` (cả 3 lựa chọn, kể cả bỏ qua); chuỗi đạo sĩ. Chỉ là tin đồn: **không** mở giới hạn thọ nguyên (do `dao_entry`) |
 | `body_lore`, `martial_basics` | Ch3: 3 route × 2 lựa chọn; `martial_basics` luôn có |
 | `qi_awareness`, `meridian_lore`, `dao_entry` (+`spirit_root_lore`) | Chuỗi đạo sĩ (`ch1_taoist_tale`) hoặc `ch1_qi_clue` |
 
@@ -47,4 +47,4 @@ Phase 2 (kế hoạch): Chương 4–5 (tiên duyên, Dẫn Khí Quyết, nhập
 ## 5. Rủi ro đã biết
 
 - Điều kiện kích hoạt Ch2 (`gather_wood` ≥ 25) và Ch3 (Sức Bền ≥ 30) thay chi phí 30 Thể Phách cũ của nghi thức vô → cuong_than; Sức Bền không bị tiêu. Simulator: casual 5,31 h (trước 5,22 h), optimizer 4,74 h, idle 4,01 h.
-- Văn bản tiếng Anh của Ch2–3 đang là bản giữ chỗ (copy tiếng Việt) tới khi có đợt dịch.
+- Văn bản tiếng Anh của Ch2–3 đã được dịch (trước đây là bản giữ chỗ copy tiếng Việt).

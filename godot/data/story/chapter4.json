@@ -1,0 +1,289 @@
+[
+ {
+  "id": "ch4_method_guided",
+  "chapter": "ch4",
+  "title_key": "story.ch4_method_guided.title",
+  "text_key": "story.ch4_method_guided.text",
+  "choices": [
+   {
+    "id": "recall_words",
+    "text_key": "story.ch4_method_guided.recall_words",
+    "result_key": "story.ch4_method_guided.recall_words.result",
+    "effects": [
+     {
+      "type": "set_flag",
+      "flag": "knows_qi_method",
+      "value": true
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "qi_awareness"
+     }
+    ]
+   },
+   {
+    "id": "offer_herb",
+    "text_key": "story.ch4_method_guided.offer_herb",
+    "result_key": "story.ch4_method_guided.offer_herb.result",
+    "costs": {
+     "herb": 2
+    },
+    "effects": [
+     {
+      "type": "set_flag",
+      "flag": "knows_qi_method",
+      "value": true
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "qi_awareness"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "spirit_root_lore"
+     },
+     {
+      "type": "add_relation",
+      "relation": "dao_si",
+      "amount": 1
+     }
+    ]
+   }
+  ],
+  "trigger": {
+   "all_of": [
+    {
+     "type": "realm_at_least",
+     "realm": "cam_khi"
+    },
+    {
+     "not": {
+      "type": "flag_is",
+      "flag": "knows_qi_method",
+      "value": true
+     }
+    },
+    {
+     "type": "flag_is",
+     "flag": "qi_source",
+     "value": "guided"
+    }
+   ]
+  }
+ },
+ {
+  "id": "ch4_method_relic",
+  "chapter": "ch4",
+  "title_key": "story.ch4_method_relic.title",
+  "text_key": "story.ch4_method_relic.text",
+  "choices": [
+   {
+    "id": "read_clean",
+    "text_key": "story.ch4_method_relic.read_clean",
+    "result_key": "story.ch4_method_relic.read_clean.result",
+    "effects": [
+     {
+      "type": "set_flag",
+      "flag": "knows_qi_method",
+      "value": true
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "qi_awareness"
+     }
+    ]
+   },
+   {
+    "id": "decipher_all",
+    "text_key": "story.ch4_method_relic.decipher_all",
+    "result_key": "story.ch4_method_relic.decipher_all.result",
+    "costs": {
+     "herb": 2
+    },
+    "effects": [
+     {
+      "type": "set_flag",
+      "flag": "knows_qi_method",
+      "value": true
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "qi_awareness"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "spirit_root_lore"
+     }
+    ]
+   }
+  ],
+  "trigger": {
+   "all_of": [
+    {
+     "type": "realm_at_least",
+     "realm": "cam_khi"
+    },
+    {
+     "not": {
+      "type": "flag_is",
+      "flag": "knows_qi_method",
+      "value": true
+     }
+    },
+    {
+     "type": "flag_is",
+     "flag": "qi_source",
+     "value": "relic"
+    }
+   ]
+  }
+ },
+ {
+  "id": "ch4_method_evidence",
+  "chapter": "ch4",
+  "title_key": "story.ch4_method_evidence.title",
+  "text_key": "story.ch4_method_evidence.text",
+  "choices": [
+   {
+    "id": "read_alone",
+    "text_key": "story.ch4_method_evidence.read_alone",
+    "result_key": "story.ch4_method_evidence.read_alone.result",
+    "effects": [
+     {
+      "type": "set_flag",
+      "flag": "knows_qi_method",
+      "value": true
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "qi_awareness"
+     }
+    ]
+   },
+   {
+    "id": "ask_elder_book",
+    "text_key": "story.ch4_method_evidence.ask_elder_book",
+    "result_key": "story.ch4_method_evidence.ask_elder_book.result",
+    "requirements": {
+     "type": "relation_at_least",
+     "relation": "truong_thon",
+     "value": 2
+    },
+    "effects": [
+     {
+      "type": "set_flag",
+      "flag": "knows_qi_method",
+      "value": true
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "qi_awareness"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "spirit_root_lore"
+     },
+     {
+      "type": "add_relation",
+      "relation": "truong_thon",
+      "amount": 1
+     }
+    ]
+   }
+  ],
+  "trigger": {
+   "all_of": [
+    {
+     "type": "realm_at_least",
+     "realm": "cam_khi"
+    },
+    {
+     "not": {
+      "type": "flag_is",
+      "flag": "knows_qi_method",
+      "value": true
+     }
+    },
+    {
+     "type": "flag_is",
+     "flag": "qi_source",
+     "value": "evidence"
+    }
+   ]
+  }
+ },
+ {
+  "id": "ch4_method_rogue",
+  "chapter": "ch4",
+  "title_key": "story.ch4_method_rogue.title",
+  "text_key": "story.ch4_method_rogue.text",
+  "choices": [
+   {
+    "id": "steal_glimpse",
+    "text_key": "story.ch4_method_rogue.steal_glimpse",
+    "result_key": "story.ch4_method_rogue.steal_glimpse.result",
+    "effects": [
+     {
+      "type": "set_flag",
+      "flag": "knows_qi_method",
+      "value": true
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "qi_awareness"
+     }
+    ]
+   },
+   {
+    "id": "trade_with_tan_tu",
+    "text_key": "story.ch4_method_rogue.trade_with_tan_tu",
+    "result_key": "story.ch4_method_rogue.trade_with_tan_tu.result",
+    "costs": {
+     "silver": 40
+    },
+    "requirements": {
+     "not": {
+      "type": "flag_is",
+      "flag": "taoist_robbed",
+      "value": true
+     }
+    },
+    "effects": [
+     {
+      "type": "set_flag",
+      "flag": "knows_qi_method",
+      "value": true
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "qi_awareness"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "spirit_root_lore"
+     }
+    ]
+   }
+  ],
+  "trigger": {
+   "all_of": [
+    {
+     "type": "realm_at_least",
+     "realm": "cam_khi"
+    },
+    {
+     "not": {
+      "type": "flag_is",
+      "flag": "knows_qi_method",
+      "value": true
+     }
+    },
+    {
+     "type": "flag_is",
+     "flag": "qi_source",
+     "value": "rogue"
+    }
+   ]
+  }
+ }
+]

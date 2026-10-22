@@ -9,7 +9,7 @@
   },
   "lifespan_visible_when": {
    "type": "knows",
-   "knowledge": "heard_of_cultivators"
+   "knowledge": "dao_entry"
   }
  },
  "automation": {

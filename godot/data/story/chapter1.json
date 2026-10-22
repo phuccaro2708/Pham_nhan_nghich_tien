@@ -177,6 +177,72 @@
   }
  },
  {
+  "id": "ch1_before_mountain",
+  "chapter": "ch1",
+  "title_key": "story.ch1_before_mountain.title",
+  "text_key": "story.ch1_before_mountain.text",
+  "choices": [
+   {
+    "id": "pack_food",
+    "text_key": "story.ch1_before_mountain.pack_food",
+    "result_key": "story.ch1_before_mountain.pack_food.result",
+    "costs": {
+     "wood": 5
+    },
+    "effects": [
+     {
+      "type": "add_relation",
+      "relation": "tho_san",
+      "amount": 1
+     },
+     {
+      "type": "set_flag",
+      "flag": "prepared_pack",
+      "value": true
+     },
+     {
+      "type": "set_checkpoint"
+     }
+    ]
+   },
+   {
+    "id": "go_empty_handed",
+    "text_key": "story.ch1_before_mountain.go_empty_handed",
+    "result_key": "story.ch1_before_mountain.go_empty_handed.result",
+    "effects": [
+     {
+      "type": "set_checkpoint"
+     }
+    ]
+   }
+  ],
+  "trigger": {
+   "all_of": [
+    {
+     "type": "story_done",
+     "node": "ch3_crossroads"
+    },
+    {
+     "type": "realm_at_least",
+     "realm": "cuong_than"
+    },
+    {
+     "not": {
+      "type": "knows",
+      "knowledge": "dao_entry"
+     }
+    },
+    {
+     "not": {
+      "type": "flag_is",
+      "flag": "ch1_complete",
+      "value": true
+     }
+    }
+   ]
+  }
+ },
+ {
   "id": "ch1_wounded_taoist",
   "chapter": "ch1",
   "title_key": "story.ch1_wounded_taoist.title",
@@ -199,9 +265,13 @@
       "type": "set_flag",
       "flag": "taoist_grateful",
       "value": true
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "mem_taoist_wound"
      }
     ],
-    "next": "ch1_taoist_tale"
+    "next": "ch1_mountain_incident"
    },
    {
     "id": "loot",
@@ -222,9 +292,13 @@
       "type": "set_flag",
       "flag": "taoist_robbed",
       "value": true
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "mem_taoist_wound"
      }
     ],
-    "next": "ch1_cave_rumor"
+    "next": "ch1_mountain_incident"
    },
    {
     "id": "ask_first",
@@ -235,23 +309,235 @@
       "type": "add_relation",
       "relation": "dao_si",
       "amount": 1
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "mem_taoist_wound"
      }
     ],
-    "next": "ch1_taoist_tale"
+    "next": "ch1_mountain_incident"
    }
   ],
   "trigger": {
    "all_of": [
     {
      "type": "story_done",
-     "node": "ch1_forest_edge"
+     "node": "ch1_before_mountain"
     },
     {
-     "type": "realm_at_least",
-     "realm": "cuong_than"
+     "not": {
+      "type": "flag_is",
+      "flag": "ch1_complete",
+      "value": true
+     }
     }
    ]
   }
+ },
+ {
+  "id": "ch1_mountain_incident",
+  "chapter": "ch1",
+  "title_key": "story.ch1_mountain_incident.title",
+  "text_key": "story.ch1_mountain_incident.text",
+  "choices": [
+   {
+    "id": "stay_by_taoist",
+    "text_key": "story.ch1_mountain_incident.stay_by_taoist",
+    "result_key": "story.ch1_mountain_incident.stay_by_taoist.result",
+    "requirements": {
+     "type": "relation_at_least",
+     "relation": "dao_si",
+     "value": 1
+    },
+    "effects": [
+     {
+      "type": "learn_knowledge",
+      "knowledge": "mem_last_words"
+     },
+     {
+      "type": "rewind"
+     }
+    ],
+    "next": "ch1_return"
+   },
+   {
+    "id": "watch_hunter",
+    "text_key": "story.ch1_mountain_incident.watch_hunter",
+    "result_key": "story.ch1_mountain_incident.watch_hunter.result",
+    "effects": [
+     {
+      "type": "learn_knowledge",
+      "knowledge": "mem_cave_site"
+     },
+     {
+      "type": "rewind"
+     }
+    ],
+    "next": "ch1_return"
+   },
+   {
+    "id": "run_to_village",
+    "text_key": "story.ch1_mountain_incident.run_to_village",
+    "result_key": "story.ch1_mountain_incident.run_to_village.result",
+    "effects": [
+     {
+      "type": "learn_knowledge",
+      "knowledge": "mem_pursuer_sign"
+     },
+     {
+      "type": "rewind"
+     }
+    ],
+    "next": "ch1_return"
+   }
+  ],
+  "chain_only": true
+ },
+ {
+  "id": "ch1_return",
+  "chapter": "ch4",
+  "title_key": "story.ch1_return.title",
+  "text_key": "story.ch1_return.text",
+  "choices": [
+   {
+    "id": "rescue",
+    "text_key": "story.ch1_return.rescue",
+    "result_key": "story.ch1_return.rescue.result",
+    "requirements": {
+     "type": "knows",
+     "knowledge": "mem_taoist_wound"
+    },
+    "next": "ch4_r_rescue"
+   },
+   {
+    "id": "trace_hunter",
+    "text_key": "story.ch1_return.trace_hunter",
+    "result_key": "story.ch1_return.trace_hunter.result",
+    "requirements": {
+     "type": "knows",
+     "knowledge": "mem_cave_site"
+    },
+    "next": "ch4_r_hunter"
+   },
+   {
+    "id": "warn_village",
+    "text_key": "story.ch1_return.warn_village",
+    "result_key": "story.ch1_return.warn_village.result",
+    "requirements": {
+     "type": "knows",
+     "knowledge": "mem_pursuer_sign"
+    },
+    "next": "ch4_r_warn"
+   },
+   {
+    "id": "keep_secret",
+    "text_key": "story.ch1_return.keep_secret",
+    "result_key": "story.ch1_return.keep_secret.result",
+    "next": "ch4_r_rogue"
+   }
+  ],
+  "chain_only": true
+ },
+ {
+  "id": "ch4_r_rescue",
+  "chapter": "ch4",
+  "title_key": "story.ch4_r_rescue.title",
+  "text_key": "story.ch4_r_rescue.text",
+  "choices": [
+   {
+    "id": "heal_fully",
+    "text_key": "story.ch4_r_rescue.heal_fully",
+    "result_key": "story.ch4_r_rescue.heal_fully.result",
+    "costs": {
+     "herb": 3
+    },
+    "effects": [
+     {
+      "type": "add_relation",
+      "relation": "dao_si",
+      "amount": 3
+     },
+     {
+      "type": "set_flag",
+      "flag": "taoist_grateful",
+      "value": true
+     },
+     {
+      "type": "set_flag",
+      "flag": "npc_taoist_alive",
+      "value": true
+     }
+    ],
+    "next": "ch1_taoist_tale"
+   },
+   {
+    "id": "bind_wound",
+    "text_key": "story.ch4_r_rescue.bind_wound",
+    "result_key": "story.ch4_r_rescue.bind_wound.result",
+    "costs": {
+     "wood": 2
+    },
+    "effects": [
+     {
+      "type": "add_relation",
+      "relation": "dao_si",
+      "amount": 2
+     },
+     {
+      "type": "set_flag",
+      "flag": "npc_taoist_alive",
+      "value": true
+     }
+    ],
+    "next": "ch1_taoist_tale"
+   },
+   {
+    "id": "repeat_last_words",
+    "text_key": "story.ch4_r_rescue.repeat_last_words",
+    "result_key": "story.ch4_r_rescue.repeat_last_words.result",
+    "requirements": {
+     "type": "knows",
+     "knowledge": "mem_last_words"
+    },
+    "effects": [
+     {
+      "type": "add_relation",
+      "relation": "dao_si",
+      "amount": 3
+     },
+     {
+      "type": "set_flag",
+      "flag": "npc_taoist_alive",
+      "value": true
+     },
+     {
+      "type": "set_flag",
+      "flag": "taoist_trusts_secret",
+      "value": true
+     }
+    ],
+    "next": "ch1_taoist_tale"
+   },
+   {
+    "id": "ask_first",
+    "text_key": "story.ch4_r_rescue.ask_first",
+    "result_key": "story.ch4_r_rescue.ask_first.result",
+    "effects": [
+     {
+      "type": "add_relation",
+      "relation": "dao_si",
+      "amount": 1
+     },
+     {
+      "type": "set_flag",
+      "flag": "npc_taoist_alive",
+      "value": true
+     }
+    ],
+    "next": "ch1_taoist_tale"
+   }
+  ],
+  "chain_only": true
  },
  {
   "id": "ch1_taoist_tale",
@@ -263,21 +549,21 @@
     "id": "listen_closely",
     "text_key": "story.ch1_taoist_tale.listen_closely",
     "result_key": "story.ch1_taoist_tale.listen_closely.result",
+    "requirements": {
+     "type": "relation_at_least",
+     "relation": "dao_si",
+     "value": 3
+    },
     "effects": [
-     {
-      "type": "set_flag",
-      "flag": "knows_qi_method",
-      "value": true
-     },
-     {
-      "type": "set_flag",
-      "flag": "ch1_complete",
-      "value": true
-     },
      {
       "type": "add_relation",
       "relation": "dao_si",
       "amount": 1
+     },
+     {
+      "type": "set_flag",
+      "flag": "qi_source",
+      "value": "guided"
      },
      {
       "type": "learn_knowledge",
@@ -285,15 +571,11 @@
      },
      {
       "type": "learn_knowledge",
-      "knowledge": "qi_awareness"
+      "knowledge": "dao_entry"
      },
      {
       "type": "learn_knowledge",
       "knowledge": "meridian_lore"
-     },
-     {
-      "type": "learn_knowledge",
-      "knowledge": "dao_entry"
      },
      {
       "type": "learn_knowledge",
@@ -308,12 +590,104 @@
     "effects": [
      {
       "type": "set_flag",
-      "flag": "knows_qi_method",
+      "flag": "qi_source",
+      "value": "guided"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "heard_of_cultivators"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "dao_entry"
+     }
+    ]
+   }
+  ],
+  "chain_only": true
+ },
+ {
+  "id": "ch4_r_hunter",
+  "chapter": "ch4",
+  "title_key": "story.ch4_r_hunter.title",
+  "text_key": "story.ch4_r_hunter.text",
+  "choices": [
+   {
+    "id": "help_hunter",
+    "text_key": "story.ch4_r_hunter.help_hunter",
+    "result_key": "story.ch4_r_hunter.help_hunter.result",
+    "costs": {
+     "wood": 5
+    },
+    "effects": [
+     {
+      "type": "add_relation",
+      "relation": "tho_san",
+      "amount": 2
+     },
+     {
+      "type": "set_flag",
+      "flag": "npc_hunter_alive",
       "value": true
      },
      {
       "type": "set_flag",
-      "flag": "ch1_complete",
+      "flag": "npc_taoist_dead",
+      "value": true
+     }
+    ],
+    "next": "ch4_cave_relic"
+   },
+   {
+    "id": "follow_quietly",
+    "text_key": "story.ch4_r_hunter.follow_quietly",
+    "result_key": "story.ch4_r_hunter.follow_quietly.result",
+    "effects": [
+     {
+      "type": "add_relation",
+      "relation": "tho_san",
+      "amount": -1
+     },
+     {
+      "type": "set_flag",
+      "flag": "hunter_wary",
+      "value": true
+     },
+     {
+      "type": "set_flag",
+      "flag": "npc_taoist_dead",
+      "value": true
+     },
+     {
+      "type": "set_flag",
+      "flag": "npc_hunter_alive",
+      "value": true
+     }
+    ],
+    "next": "ch4_cave_relic"
+   }
+  ],
+  "chain_only": true
+ },
+ {
+  "id": "ch4_cave_relic",
+  "chapter": "ch4",
+  "title_key": "story.ch4_cave_relic.title",
+  "text_key": "story.ch4_cave_relic.text",
+  "choices": [
+   {
+    "id": "copy_by_hand",
+    "text_key": "story.ch4_cave_relic.copy_by_hand",
+    "result_key": "story.ch4_cave_relic.copy_by_hand.result",
+    "effects": [
+     {
+      "type": "set_flag",
+      "flag": "qi_source",
+      "value": "relic"
+     },
+     {
+      "type": "set_flag",
+      "flag": "relic_copied",
       "value": true
      },
      {
@@ -322,11 +696,244 @@
      },
      {
       "type": "learn_knowledge",
-      "knowledge": "qi_awareness"
+      "knowledge": "dao_entry"
      },
      {
       "type": "learn_knowledge",
       "knowledge": "meridian_lore"
+     }
+    ]
+   },
+   {
+    "id": "take_scroll",
+    "text_key": "story.ch4_cave_relic.take_scroll",
+    "result_key": "story.ch4_cave_relic.take_scroll.result",
+    "effects": [
+     {
+      "type": "add_relation",
+      "relation": "tho_san",
+      "amount": -2
+     },
+     {
+      "type": "add_resource",
+      "resource": "body",
+      "amount": 15
+     },
+     {
+      "type": "set_flag",
+      "flag": "qi_source",
+      "value": "relic"
+     },
+     {
+      "type": "set_flag",
+      "flag": "relic_taken",
+      "value": true
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "heard_of_cultivators"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "dao_entry"
+     }
+    ]
+   }
+  ],
+  "chain_only": true
+ },
+ {
+  "id": "ch4_r_warn",
+  "chapter": "ch4",
+  "title_key": "story.ch4_r_warn.title",
+  "text_key": "story.ch4_r_warn.text",
+  "choices": [
+   {
+    "id": "warn_elder",
+    "text_key": "story.ch4_r_warn.warn_elder",
+    "result_key": "story.ch4_r_warn.warn_elder.result",
+    "effects": [
+     {
+      "type": "add_relation",
+      "relation": "truong_thon",
+      "amount": -2
+     },
+     {
+      "type": "set_flag",
+      "flag": "village_suspicious",
+      "value": true
+     },
+     {
+      "type": "set_flag",
+      "flag": "npc_taoist_dead",
+      "value": true
+     }
+    ],
+    "next": "ch4_r_proof"
+   },
+   {
+    "id": "warn_ba_ly",
+    "text_key": "story.ch4_r_warn.warn_ba_ly",
+    "result_key": "story.ch4_r_warn.warn_ba_ly.result",
+    "costs": {
+     "wood": 3
+    },
+    "effects": [
+     {
+      "type": "add_relation",
+      "relation": "ba_ly",
+      "amount": 2
+     },
+     {
+      "type": "add_relation",
+      "relation": "truong_thon",
+      "amount": -1
+     },
+     {
+      "type": "set_flag",
+      "flag": "village_suspicious",
+      "value": true
+     },
+     {
+      "type": "set_flag",
+      "flag": "npc_taoist_dead",
+      "value": true
+     }
+    ],
+    "next": "ch4_r_proof"
+   }
+  ],
+  "chain_only": true
+ },
+ {
+  "id": "ch4_r_proof",
+  "chapter": "ch4",
+  "title_key": "story.ch4_r_proof.title",
+  "text_key": "story.ch4_r_proof.text",
+  "choices": [
+   {
+    "id": "show_sigil",
+    "text_key": "story.ch4_r_proof.show_sigil",
+    "result_key": "story.ch4_r_proof.show_sigil.result",
+    "costs": {
+     "wood": 2
+    },
+    "effects": [
+     {
+      "type": "add_relation",
+      "relation": "truong_thon",
+      "amount": 3
+     },
+     {
+      "type": "set_flag",
+      "flag": "village_believes",
+      "value": true
+     },
+     {
+      "type": "set_flag",
+      "flag": "qi_source",
+      "value": "evidence"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "heard_of_cultivators"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "dao_entry"
+     }
+    ]
+   },
+   {
+    "id": "search_alone",
+    "text_key": "story.ch4_r_proof.search_alone",
+    "result_key": "story.ch4_r_proof.search_alone.result",
+    "effects": [
+     {
+      "type": "add_relation",
+      "relation": "truong_thon",
+      "amount": 1
+     },
+     {
+      "type": "set_flag",
+      "flag": "qi_source",
+      "value": "evidence"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "heard_of_cultivators"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "dao_entry"
+     },
+     {
+      "type": "set_flag",
+      "flag": "village_believes",
+      "value": true
+     }
+    ]
+   }
+  ],
+  "chain_only": true
+ },
+ {
+  "id": "ch4_r_rogue",
+  "chapter": "ch4",
+  "title_key": "story.ch4_r_rogue.title",
+  "text_key": "story.ch4_r_rogue.text",
+  "choices": [
+   {
+    "id": "rob_pouch",
+    "text_key": "story.ch4_r_rogue.rob_pouch",
+    "result_key": "story.ch4_r_rogue.rob_pouch.result",
+    "effects": [
+     {
+      "type": "add_resource",
+      "resource": "silver",
+      "amount": 30
+     },
+     {
+      "type": "add_relation",
+      "relation": "dao_si",
+      "amount": -2
+     },
+     {
+      "type": "set_flag",
+      "flag": "taoist_robbed",
+      "value": true
+     },
+     {
+      "type": "set_flag",
+      "flag": "npc_taoist_dead",
+      "value": true
+     }
+    ],
+    "next": "ch1_cave_rumor"
+   },
+   {
+    "id": "slip_away",
+    "text_key": "story.ch4_r_rogue.slip_away",
+    "result_key": "story.ch4_r_rogue.slip_away.result",
+    "effects": [
+     {
+      "type": "add_relation",
+      "relation": "ba_ly",
+      "amount": 1
+     },
+     {
+      "type": "set_flag",
+      "flag": "npc_taoist_dead",
+      "value": true
+     },
+     {
+      "type": "set_flag",
+      "flag": "qi_source",
+      "value": "rogue"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "heard_of_cultivators"
      },
      {
       "type": "learn_knowledge",
@@ -352,15 +959,56 @@
       "type": "add_resource",
       "resource": "body",
       "amount": 15
+     },
+     {
+      "type": "add_relation",
+      "relation": "ba_ly",
+      "amount": -1
+     },
+     {
+      "type": "set_flag",
+      "flag": "cave_explored",
+      "value": true
+     },
+     {
+      "type": "set_flag",
+      "flag": "qi_source",
+      "value": "rogue"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "heard_of_cultivators"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "dao_entry"
      }
-    ],
-    "next": "ch1_qi_clue"
+    ]
    },
    {
     "id": "skip",
     "text_key": "story.ch1_cave_rumor.skip",
     "result_key": "story.ch1_cave_rumor.skip.result",
-    "next": "ch1_qi_clue"
+    "effects": [
+     {
+      "type": "add_relation",
+      "relation": "ba_ly",
+      "amount": 1
+     },
+     {
+      "type": "set_flag",
+      "flag": "qi_source",
+      "value": "rogue"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "heard_of_cultivators"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "dao_entry"
+     }
+    ]
    }
   ],
   "chain_only": true
@@ -383,8 +1031,8 @@
      },
      {
       "type": "set_flag",
-      "flag": "ch1_complete",
-      "value": true
+      "flag": "qi_source",
+      "value": "legacy"
      },
      {
       "type": "learn_knowledge",
@@ -417,6 +1065,11 @@
       "flag": "knows_qi_method",
       "value": true
      }
+    },
+    {
+     "type": "flag_is",
+     "flag": "qi_source",
+     "value": false
     }
    ]
   }

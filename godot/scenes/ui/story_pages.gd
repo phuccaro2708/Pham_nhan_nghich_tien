@@ -320,6 +320,12 @@ func _auto_reason(why: String) -> String:
 	return t if t != key else why
 
 
+func _auto_error(code: String) -> String:
+	var key: String = "ui.auto.error." + code
+	var t: String = _t(key)
+	return t if t != key else _t("ui.auto.error.unknown")
+
+
 func _build_automation(s: GameState, box: VBoxContainer) -> void:
 	var reg: ContentRegistry = GameController.registry
 	var q: AutomationQueue = GameController.actions.automation
@@ -393,7 +399,7 @@ func _on_auto_toggle() -> void:
 		GameController.set_queue_loop(_auto_loop.button_pressed)
 		r = GameController.start_queue()
 	if not r["ok"]:
-		_auto_status.text = str(r["error"])
+		_auto_status.text = _auto_error(str(r["error"]))
 
 
 # ---------- cultivation ----------

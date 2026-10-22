@@ -27,7 +27,7 @@ var _pages: StoryPages
 func _ready() -> void:
 	if not GameController.ready_ok:
 		var l := Label.new()
-		l.text = "Data load error — see Output."  # registry unavailable, so no localization either
+		l.text = "Lỗi nạp dữ liệu / Data load error — xem Output / see Output."  # registry unavailable, so no localization: fixed bilingual text
 		add_child(l)
 		return
 	_build()
@@ -41,7 +41,9 @@ func _ready() -> void:
 		_pages.current_tab = 0  # bring the event to the player; the queue is already waiting for the choice
 		_pages.focus_event())
 	EventBus.action_stopped.connect(func(id: String, why: String) -> void: _say(GameController.registry.text("ui.stopped") % [GameController.registry.text(GameController.registry.actions[id]["name_key"]), _reason(why)]))
-	EventBus.lifespan_warning.connect(func(r: float) -> void: _say(GameController.registry.text("ui.log_warning") % r, UiTheme.ACCENT_CINNABAR))
+	EventBus.lifespan_warning.connect(func(r: float) -> void:
+		if _lifespan_known():  # the warning would itself reveal the limit
+			_say(GameController.registry.text("ui.log_warning") % r, UiTheme.ACCENT_CINNABAR))
 	EventBus.life_ended.connect(func(a: float) -> void: _say(GameController.registry.text("ui.log_death") % a, UiTheme.ACCENT_CINNABAR))
 	EventBus.breakthrough_resolved.connect(func(ok: bool, f: String, t: String) -> void:
 		var r: ContentRegistry = GameController.registry
@@ -331,6 +333,10 @@ func _process(delta: float) -> void:
 		_refresh()
 
 
+func _lifespan_known() -> bool:
+	return GameController.actions.conditions.is_met(GameController.registry.config.get("ui", {}).get("lifespan_visible_when", {}), GameController.state)
+
+
 func _refresh() -> void:
 	if not GameController.ready_ok:
 		return
@@ -338,9 +344,8 @@ func _refresh() -> void:
 	var reg: ContentRegistry = GameController.registry
 	var stage: Dictionary = GameController.actions.realms.stage(s)
 	var life: LifespanSystem = GameController.actions.lifespan
-	var lifespan_known: bool = GameController.actions.conditions.is_met(reg.config.get("ui", {}).get("lifespan_visible_when", {}), s)
-	if stage.get("mortal", false) and not lifespan_known:  # a commoner knows neither realms nor a lifespan limit
-		_age_label.text = reg.text("ui.status_line") % [reg.text(stage["name_key"]), int(s.age_years)]
+	if not _lifespan_known():  # until the Way is taught nobody knows realms or a lifespan limit, whatever their stage
+		_age_label.text = reg.text("ui.status_line") % [reg.text(reg.stage_of("")["name_key"]), int(s.age_years)]
 	else:
 		_age_label.text = reg.text("ui.realm_line") % [
 			reg.text(stage["name_key"]), s.age_years, life.limit(s),
