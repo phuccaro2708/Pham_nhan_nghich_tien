@@ -31,7 +31,9 @@ static func apply(state: GameState, actions: ActionSystem, elapsed_seconds: floa
 			actions.stop_action(state, "offline_not_allowed")
 
 	var ticks: int = int(elapsed * SimulationClock.TICKS_PER_SECOND + 1e-9)
+	actions.offline_mode = true
 	actions.advance(state, ticks)
+	actions.offline_mode = false
 	actions.action_stopped.disconnect(on_stop)
 
 	report["seconds_simulated"] = SimulationClock.ticks_to_seconds(ticks)

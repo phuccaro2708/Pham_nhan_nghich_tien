@@ -33,7 +33,11 @@
     "body": 200,
     "silver": 50
    },
-   "requirements": {}
+   "requirements": {
+    "type": "flag_is",
+    "flag": "qi_sensed",
+    "value": true
+   }
   }
  },
  {
@@ -158,7 +162,10 @@
     "pity_failures": 3,
     "terms": []
    },
-   "on_fail_flag": "meridian_damaged"
+   "on_fail_flag": "meridian_damaged",
+   "on_fail_refund": {
+    "cultivation": 0.8
+   }
   }
  },
  {

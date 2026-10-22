@@ -119,5 +119,80 @@
   "age_cost_years": 0.05,
   "offline_allowed": false,
   "group": "cultivation"
+ },
+ {
+  "id": "sense_qi",
+  "type": "TIMED",
+  "name_key": "action.sense_qi",
+  "duration": 30.0,
+  "costs": {
+   "herb": 3
+  },
+  "effects": [
+   {
+    "type": "set_flag",
+    "flag": "qi_sensed",
+    "value": true
+   }
+  ],
+  "requirements": {
+   "all_of": [
+    {
+     "type": "realm_at_least",
+     "realm": "cam_khi"
+    },
+    {
+     "type": "flag_is",
+     "flag": "knows_qi_method",
+     "value": true
+    },
+    {
+     "not": {
+      "type": "flag_is",
+      "flag": "qi_sensed",
+      "value": true
+     }
+    }
+   ]
+  },
+  "age_cost_years": 0.01,
+  "offline_allowed": false,
+  "group": "cultivation"
+ },
+ {
+  "id": "learn_dan_khi",
+  "type": "INSTANT",
+  "name_key": "action.learn_dan_khi",
+  "costs": {
+   "herb": 2
+  },
+  "effects": [
+   {
+    "type": "learn_technique",
+    "technique": "dan_khi_nhap_mon"
+   }
+  ],
+  "requirements": {
+   "all_of": [
+    {
+     "type": "realm_at_least",
+     "realm": "luyen_khi_1"
+    },
+    {
+     "type": "flag_is",
+     "flag": "knows_qi_method",
+     "value": true
+    },
+    {
+     "not": {
+      "type": "technique_known",
+      "technique": "dan_khi_nhap_mon"
+     }
+    }
+   ]
+  },
+  "age_cost_years": 0.0,
+  "offline_allowed": false,
+  "group": "cultivation"
  }
 ]

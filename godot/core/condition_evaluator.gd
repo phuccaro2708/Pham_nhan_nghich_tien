@@ -5,6 +5,7 @@ extends RefCounted
 
 const LEAF_TYPES: Array = [
 	"resource_at_least", "flag_is", "stat_at_least", "upgrade_level_at_least", "action_count_at_least", "realm_at_least",
+	"mastery_level_at_least", "story_done", "choice_is", "relation_at_least", "technique_known",
 ]
 
 
@@ -55,6 +56,16 @@ func _leaf(c: Dictionary, s: GameState) -> bool:
 		"realm_at_least":
 			return content != null and content.has_realm(c["realm"]) \
 					and content.realm_index(s.realm_id) >= content.realm_index(str(c["realm"]))
+		"mastery_level_at_least":
+			return int((s.mastery.get(c["action"], {}) as Dictionary).get("level", 0)) >= int(c["level"])
+		"story_done":
+			return (s.story["done"] as Dictionary).has(c["node"])
+		"choice_is":
+			return (s.story["done"] as Dictionary).get(c["node"], "") == c["choice"]
+		"relation_at_least":
+			return int(s.relations.get(c["relation"], 0)) >= int(c["value"])
+		"technique_known":
+			return s.techniques.has(c["technique"])
 	return false  # unknown type never unlocks anything
 
 
@@ -104,6 +115,11 @@ func validate(cond: Variant, registry: ContentRegistry, path: String = "requirem
 		"upgrade_level_at_least": req = ["upgrade", "level"]
 		"action_count_at_least": req = ["action", "count"]
 		"realm_at_least": req = ["realm"]
+		"mastery_level_at_least": req = ["action", "level"]
+		"story_done": req = ["node"]
+		"choice_is": req = ["node", "choice"]
+		"relation_at_least": req = ["relation", "value"]
+		"technique_known": req = ["technique"]
 	for k in req:
 		if not d.has(k):
 			errs.append("%s: '%s' missing field '%s'" % [path, t, k])
@@ -117,6 +133,23 @@ func validate(cond: Variant, registry: ContentRegistry, path: String = "requirem
 		errs.append("%s: unknown action '%s'" % [path, d["action"]])
 	if t == "realm_at_least" and not registry.has_realm(d["realm"]):
 		errs.append("%s: unknown realm '%s'" % [path, d["realm"]])
+	if t == "mastery_level_at_least" and not registry.has_action(d["action"]):
+		errs.append("%s: unknown action '%s'" % [path, d["action"]])
+	if (t == "story_done" or t == "choice_is") and not registry.has_story_node(d["node"]):
+		errs.append("%s: unknown story node '%s'" % [path, d["node"]])
+	if t == "choice_is" and registry.has_story_node(d["node"]) and not _node_has_choice(registry.story[d["node"]], d["choice"]):
+		errs.append("%s: story node '%s' has no choice '%s'" % [path, d["node"], d["choice"]])
+	if t == "relation_at_least" and not registry.has_relation(d["relation"]):
+		errs.append("%s: unknown relation '%s'" % [path, d["relation"]])
+	if t == "technique_known" and not registry.has_technique(d["technique"]):
+		errs.append("%s: unknown technique '%s'" % [path, d["technique"]])
 	if t == "stat_at_least" and not ["age_years"].has(d["stat"]):
 		errs.append("%s: unknown stat '%s'" % [path, d["stat"]])
 	return errs
+
+
+func _node_has_choice(node: Dictionary, choice_id: Variant) -> bool:
+	for c in node.get("choices", []):
+		if typeof(c) == TYPE_DICTIONARY and c.get("id") == choice_id:
+			return true
+	return false

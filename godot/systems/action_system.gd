@@ -15,6 +15,11 @@ var conditions: ConditionEvaluator
 var effects: EffectResolver
 var realms: RealmSystem
 var lifespan: LifespanSystem
+var mastery: MasterySystem
+var story: StorySystem
+var automation: AutomationQueue
+## Set by OfflineSystem while it simulates: the queue then refuses actions that are not offline_allowed.
+var offline_mode: bool = false
 
 
 func _init(p_registry: ContentRegistry) -> void:
@@ -25,6 +30,9 @@ func _init(p_registry: ContentRegistry) -> void:
 	realms = RealmSystem.new(registry)
 	lifespan = LifespanSystem.new(registry, realms)
 	effects = EffectResolver.new(registry, resources, realms)
+	mastery = MasterySystem.new(registry, effects)
+	story = StorySystem.new(registry, conditions, effects, resources)
+	automation = AutomationQueue.new(self)
 
 
 # ---------- queries ----------
@@ -89,7 +97,8 @@ func duration_ticks(def: Dictionary, state: GameState) -> int:
 
 # ---------- commands ----------
 
-func start_action(state: GameState, action_id: String) -> Dictionary:
+## `from_queue` is true only for AutomationQueue's own starts; any other timed start is a manual override that halts the queue.
+func start_action(state: GameState, action_id: String, from_queue: bool = false) -> Dictionary:
 	var replaces: bool = not state.active_action.is_empty() and registry.actions.get(action_id, {}).get("type", "INSTANT") != "INSTANT"
 	var prev: Dictionary = state.active_action.duplicate(true) if replaces else {}
 	var before: Dictionary = state.resources.duplicate() if replaces else {}
@@ -115,6 +124,8 @@ func start_action(state: GameState, action_id: String) -> Dictionary:
 		if not check["ok"]:
 			return check
 	_begin_cycle(state, def)
+	if not from_queue:
+		automation.stop(state, "manual_override")
 	return check
 
 
@@ -125,6 +136,8 @@ func stop_action(state: GameState, reason: String = "stopped_by_player") -> void
 	var id: String = state.active_action["id"]
 	resources.refund(state, state.active_action.get("costs_paid", {}))
 	state.active_action = {}
+	if reason != "insufficient_resources" and reason != "switched" and reason != "restarted":
+		automation.stop(state, reason)
 	action_stopped.emit(id, reason)
 
 
@@ -136,6 +149,8 @@ func advance(state: GameState, ticks: int) -> void:
 		return
 	var remaining: int = ticks
 	while remaining > 0:
+		if state.active_action.is_empty():
+			automation.pump(state)
 		if state.active_action.is_empty():
 			state.game_time_ticks += remaining
 			return
@@ -166,6 +181,7 @@ func _begin_cycle(state: GameState, def: Dictionary) -> void:
 
 func _finish_cycle(state: GameState) -> void:
 	var def: Dictionary = registry.actions[state.active_action["id"]]
+	var queue_slot: int = int(state.active_action.get("queue_slot", -1))
 	if def.get("cost_timing", "start") == "complete":
 		if not resources.spend(state, get_costs(def, state)):
 			state.active_action = {}
@@ -173,6 +189,9 @@ func _finish_cycle(state: GameState) -> void:
 			return
 	state.active_action = {}  # cleared before rewards so a re-entrant call cannot see a finished action
 	_complete(state, def)
+	if queue_slot >= 0:
+		automation.on_completed(state, queue_slot)
+		return  # the queue decides what runs next (it restarts this slot's LOOP itself)
 	if def["type"] != "LOOP":
 		return
 	if not state.active_action.is_empty():
@@ -198,6 +217,8 @@ func _complete(state: GameState, def: Dictionary) -> void:
 	effects.apply(state, def.get("effects", []))
 	var alive: bool = lifespan.commit_age(state, float(def.get("age_cost_years", 0.0)))
 	state.action_counts[def["id"]] = int(state.action_counts.get(def["id"], 0)) + 1
+	mastery.on_completed(state, str(def["id"]))
+	story.scan(state)
 	action_completed.emit(def["id"])
 	if not alive:
 		stop_action(state, "deceased")  # tọa hóa: nothing may keep running

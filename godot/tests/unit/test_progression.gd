@@ -131,7 +131,8 @@ func test_failed_ritual_damages_meridians_and_pity_guarantees() -> void:
 	assert_true(failed)
 	assert_eq(s.flags["meridian_damaged"], true)
 	assert_eq(s.breakthrough_failures, 1)
-	assert_eq(s.resources["cultivation"], 0.0)  # the price is paid even on failure
+	assert_almost_eq(s.resources["cultivation"], 11020.0 * float(act.realms.breakthrough_def(s)["on_fail_refund"]["cultivation"]), 0.001)  # on_fail_refund returns the data-defined share of the cultivation
+	assert_eq(s.resources["silver"], 0.0)  # the silver is burned
 	assert_false(act.start_action(s, "breakthrough")["ok"])  # blocked until treated
 	s.breakthrough_failures = 3
 	s.flags["meridian_damaged"] = false
@@ -195,14 +196,14 @@ func test_unknown_active_action_is_cancelled_with_refund() -> void:
 	assert_eq(m["orphans"]["active_actions"]["gone"]["id"], "gone")
 
 
-func test_v1_save_loads_as_v2() -> void:
+func test_v1_save_loads_as_current() -> void:
 	var sm: Node = load("res://autoload/save_manager.gd").new()
 	var d := GameState.new_game(3).to_dict()
 	for k in ["content_version", "realm_id", "breakthrough_failures", "life", "orphans"]:
 		d.erase(k)
 	d["schema_version"] = 1
 	var m: Dictionary = ContentMigration.apply(sm.migrate(d), reg)
-	assert_eq(m["schema_version"], 2)
+	assert_eq(m["schema_version"], GameState.SCHEMA_VERSION)
 	assert_eq(sm.validate_state(m, reg), [])
 	sm.free()
 

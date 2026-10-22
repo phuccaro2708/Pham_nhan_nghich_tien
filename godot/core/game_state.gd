@@ -2,7 +2,7 @@ class_name GameState
 extends RefCounted
 ## Pure runtime data. No Node references, no behaviour beyond (de)serialisation.
 
-const SCHEMA_VERSION: int = 2
+const SCHEMA_VERSION: int = 3
 const START_AGE_YEARS: float = 16.0
 ## Fixed precision so values survive a JSON round trip and never drift.
 const SNAP_SCALE: float = 1000000.0
@@ -29,6 +29,16 @@ var realm_id: String = ""
 var breakthrough_failures: int = 0
 ## status: "alive" | "deceased" (tọa hóa); warned: lifespan warning already sent for the current limit.
 var life: Dictionary = {"status": "alive", "warned": false, "ended": {}}
+## Action mastery (Phase 2B): action_id -> {level, xp (progress inside the level), claimed (milestone levels already paid)}.
+var mastery: Dictionary = {}
+## Story graph progress: done = node_id -> chosen choice id; pending = node waiting for the player's choice ("" = none).
+var story: Dictionary = {"done": {}, "pending": ""}
+## relation_id -> int. Causality data (GDD 7.4); there is no global good/evil stat.
+var relations: Dictionary = {}
+## Learned technique ids (công pháp), sorted.
+var techniques: Array = []
+## Automation queue (see AutomationQueue). Never holds a story choice or a breakthrough.
+var automation: Dictionary = {"slots": [], "cursor": 0, "loop": false, "status": "idle", "reason": "", "instant_streak": 0}
 ## Data the running content does not recognise. Preserved, never deleted: {resources, upgrades, action_counts, active_action}.
 var orphans: Dictionary = {}
 
@@ -76,6 +86,11 @@ func to_dict() -> Dictionary:
 		"breakthrough_failures": breakthrough_failures,
 		"life": life.duplicate(true),
 		"orphans": orphans.duplicate(true),
+		"mastery": mastery.duplicate(true),
+		"story": story.duplicate(true),
+		"relations": relations.duplicate(true),
+		"techniques": techniques.duplicate(),
+		"automation": automation.duplicate(true),
 	}
 
 
@@ -105,6 +120,8 @@ static func from_dict(d: Dictionary) -> GameState:
 			"duration_ticks": int(a["duration_ticks"]),
 			"costs_paid": paid,
 		}
+		if a.has("queue_slot"):
+			s.active_action["queue_slot"] = int(a["queue_slot"])
 	s.save_metadata = {"saved_at_unix": int((d.get("save_metadata", {}) as Dictionary).get("saved_at_unix", 0))}
 	s.content_version = int(d.get("content_version", 1))
 	s.realm_id = str(d.get("realm_id", ""))
@@ -113,4 +130,27 @@ static func from_dict(d: Dictionary) -> GameState:
 	s.life = {"status": str(lf.get("status", "alive")), "warned": bool(lf.get("warned", false)),
 		"ended": (lf.get("ended", {}) as Dictionary).duplicate(true)}
 	s.orphans = (d.get("orphans", {}) as Dictionary).duplicate(true)
+	for k in d.get("mastery", {}):
+		var m: Dictionary = d["mastery"][k]
+		s.mastery[str(k)] = {"level": int(m["level"]), "xp": float(m["xp"]), "claimed": _int_array(m.get("claimed", []))}
+	var st: Dictionary = d.get("story", {})
+	s.story = {"done": (st.get("done", {}) as Dictionary).duplicate(true), "pending": str(st.get("pending", ""))}
+	for k in d.get("relations", {}):
+		s.relations[str(k)] = int(d["relations"][k])
+	for tid in d.get("techniques", []):
+		s.techniques.append(str(tid))
+	var au: Dictionary = d.get("automation", {})
+	if not au.is_empty():
+		s.automation = {"slots": [], "cursor": int(au["cursor"]), "loop": bool(au["loop"]), "status": str(au["status"]),
+			"reason": str(au["reason"]), "instant_streak": int(au["instant_streak"])}
+		for sl in au["slots"]:
+			s.automation["slots"].append({"action": str(sl["action"]), "repeat": int(sl["repeat"]), "on_block": str(sl["on_block"]),
+				"until": (sl.get("until", {}) as Dictionary).duplicate(true), "done": int(sl["done"])})
 	return s
+
+
+static func _int_array(a: Array) -> Array:
+	var out: Array = []
+	for v in a:
+		out.append(int(v))
+	return out

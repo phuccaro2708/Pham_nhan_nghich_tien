@@ -33,6 +33,10 @@ func _ready() -> void:
 	actions.lifespan.lifespan_warning.connect(func(r: float) -> void: EventBus.lifespan_warning.emit(r))
 	actions.lifespan.life_ended.connect(func(a: float) -> void: EventBus.life_ended.emit(a))
 	actions.realms.breakthrough_resolved.connect(func(ok: bool, f: String, t: String) -> void: EventBus.breakthrough_resolved.emit(ok, f, t))
+	actions.mastery.level_up.connect(func(id: String, lv: int) -> void: EventBus.mastery_level_up.emit(id, lv))
+	actions.story.event_pending.connect(func(n: String) -> void: EventBus.story_pending.emit(n))
+	actions.story.choice_resolved.connect(func(n: String, c: String) -> void: EventBus.story_resolved.emit(n, c))
+	actions.automation.status_changed.connect(func(s: String, r: String) -> void: EventBus.automation_changed.emit(s, r))
 	var cfg := ConfigFile.new()
 	if cfg.load(SETTINGS_PATH) == OK:
 		set_language(str(cfg.get_value("game", "language", "vi")), false)
@@ -48,6 +52,7 @@ func _start_session() -> void:
 			push_warning("Save keeps data for unknown content ids (preserved): %s" % [state.orphans.keys()])
 		var elapsed: float = float(Time.get_unix_time_from_system()) - float(state.save_metadata["saved_at_unix"])
 		var report: Dictionary = OfflineSystem.apply(state, actions, elapsed)
+		actions.story.scan(state)
 		last_offline_report = report
 		EventBus.game_loaded.emit(report)
 	else:
@@ -84,6 +89,27 @@ func _process(delta: float) -> void:
 # Commands for the UI (UI -> command -> simulation).
 func start_action(id: String) -> Dictionary:
 	return actions.start_action(state, id)
+
+
+## Resolves the pending story event with one of its choices.
+func choose_story(choice_id: String) -> Dictionary:
+	return actions.story.choose(state, choice_id)
+
+
+func set_queue(slots: Array) -> Dictionary:
+	return actions.automation.set_slots(state, slots)
+
+
+func set_queue_loop(on: bool) -> void:
+	actions.automation.set_loop(state, on)
+
+
+func start_queue() -> Dictionary:
+	return actions.automation.start(state)
+
+
+func stop_queue() -> void:
+	actions.automation.stop(state)
 
 
 func set_language(lang: String, persist: bool = true) -> void:
@@ -123,6 +149,7 @@ func load_save() -> bool:
 	if not loaded.has("state"):
 		return false
 	state = loaded["state"]  # manual load restores exactly; no offline catch-up
+	actions.story.scan(state)
 	save_blocked = false
 	clock.reset()
 	_since_autosave = 0.0

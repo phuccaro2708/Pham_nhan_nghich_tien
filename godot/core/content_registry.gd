@@ -9,6 +9,13 @@ const ACTION_TYPES: Array = ["INSTANT", "TIMED", "LOOP"]  # Phase 1 subset of GD
 var resources: Dictionary = {}
 var actions: Dictionary = {}
 var upgrades: Dictionary = {}
+## Phase 2B content. `mastery` is keyed by definition id (one per action, see mastery_for_action);
+## `story` nodes keep file order in `story_order` (deterministic trigger scan); `relations` and `techniques` by id.
+var mastery: Dictionary = {}
+var story: Dictionary = {}
+var story_order: Array = []
+var techniques: Dictionary = {}
+var relations: Dictionary = {}
 ## `texts` is the primary language (vi) and the validation base; `texts_en` etc. live in `translations`.
 var texts: Dictionary = {}
 var translations: Dictionary = {}  # lang -> {key: text}
@@ -29,6 +36,17 @@ func has_resource(id: Variant) -> bool: return resources.has(id)
 func has_action(id: Variant) -> bool: return actions.has(id)
 func has_upgrade(id: Variant) -> bool: return upgrades.has(id)
 func has_realm(id: Variant) -> bool: return realms.has(id)
+func has_story_node(id: Variant) -> bool: return story.has(id)
+func has_technique(id: Variant) -> bool: return techniques.has(id)
+func has_relation(id: Variant) -> bool: return relations.has(id)
+
+
+## Mastery definition of an action, {} when it has none.
+func mastery_for_action(action_id: String) -> Dictionary:
+	for mid in mastery:
+		if mastery[mid]["action"] == action_id:
+			return mastery[mid]
+	return {}
 
 
 ## Stage definition for a realm id; "" means the first stage. {} when no realms are defined.
@@ -56,6 +74,10 @@ func load_all(base: String = "res://data") -> bool:
 	_load_dir(base + "/upgrades", upgrades, "upgrade")
 	_load_dir(base + "/actions", actions, "action")
 	_load_dir(base + "/realms", realms, "realm")
+	_load_dir(base + "/relations", relations, "relation")
+	_load_dir(base + "/techniques", techniques, "technique")
+	_load_dir(base + "/mastery", mastery, "mastery")
+	_load_dir(base + "/story", story, "story")
 	_load_texts(base + "/localization/vi.json")
 	translations = {"vi": texts}
 	_load_translation(base + "/localization/en.json", "en")
@@ -100,13 +122,24 @@ func _register(kind: String, d: Variant, source: String) -> void:
 	if typeof(d) != TYPE_DICTIONARY or typeof((d as Dictionary).get("id", null)) != TYPE_STRING or str(d["id"]) == "":
 		errors.append("%s: %s definition without string 'id'" % [source, kind])
 		return
-	var target: Dictionary = resources if kind == "resource" else (upgrades if kind == "upgrade" else (realms if kind == "realm" else actions))
+	var target: Dictionary
+	match kind:
+		"resource": target = resources
+		"upgrade": target = upgrades
+		"realm": target = realms
+		"relation": target = relations
+		"technique": target = techniques
+		"mastery": target = mastery
+		"story": target = story
+		_: target = actions
 	if target.has(d["id"]):
 		errors.append("%s: duplicate %s id '%s'" % [source, kind, d["id"]])
 		return
 	target[d["id"]] = d
 	if kind == "realm":
 		realm_order.append(d["id"])
+	elif kind == "story":
+		story_order.append(d["id"])
 
 
 func _load_texts(path: String) -> void:
@@ -149,7 +182,12 @@ func validate() -> void:
 	for id in actions:
 		_validate_action(actions[id])
 	_validate_realms()
+	_validate_relations()
+	_validate_techniques()
+	_validate_mastery()
+	_validate_story()
 	_validate_migrations()
+	_validate_automation_config()
 	if not config.is_empty() and not (GameState.is_number(config.get("lifespan_warning_years")) and float(config["lifespan_warning_years"]) > 0.0):
 		errors.append("config: lifespan_warning_years must be > 0")
 
@@ -244,6 +282,10 @@ func _validate_action(d: Dictionary) -> void:
 			advances = advances or (typeof(e) == TYPE_DICTIONARY and e.get("type") == "advance_realm")
 		if realms.is_empty() or not advances or d.has("costs") or d.has("upgrade"):
 			errors.append("%s: breakthrough action needs realms, an advance_realm effect, and no own costs/upgrade" % p)
+	if d.has("automation_allowed") and typeof(d["automation_allowed"]) != TYPE_BOOL:
+		errors.append("%s: automation_allowed must be boolean" % p)
+	if d.get("breakthrough", false) and d.get("automation_allowed", false):
+		errors.append("%s: a breakthrough can never be automated" % p)
 	errors.append_array(_conditions.validate(d.get("requirements", {}), self, p + ".requirements"))
 	if typeof(d.get("effects", [])) != TYPE_ARRAY:
 		errors.append("%s: effects must be an array" % p)
@@ -286,6 +328,13 @@ func _validate_breakthrough(b: Variant, p: String) -> void:
 	errors.append_array(_conditions.validate(b.get("requirements", {}), self, p + ".requirements"))
 	if b.has("on_fail_flag") and typeof(b["on_fail_flag"]) != TYPE_STRING:
 		errors.append("%s: on_fail_flag must be a string" % p)
+	var refund: Variant = b.get("on_fail_refund", {})
+	if typeof(refund) != TYPE_DICTIONARY:
+		errors.append("%s: on_fail_refund must be an object" % p)
+	else:
+		for rid in refund:
+			if not (b.get("costs", {}) as Dictionary).has(rid) or not GameState.is_number(refund[rid]) or float(refund[rid]) < 0.0 or float(refund[rid]) > 1.0:
+				errors.append("%s: on_fail_refund '%s' must be a ratio in [0,1] of a breakthrough cost" % [p, rid])
 	if not b.has("chance"):
 		return
 	var ch: Variant = b["chance"]
@@ -321,3 +370,158 @@ func _validate_migrations() -> void:
 					errors.append("migration %d: bad rename for '%s'" % [last, old])
 	if content_version < 1 or (not migrations.is_empty() and content_version != int(migrations[-1].get("to_version", 0))):
 		errors.append("content_version must equal the newest migration's to_version (or 1 without migrations)")
+
+
+# ---------- Phase 2B: relations, techniques, mastery, story, automation ----------
+
+func _need_text(d: Dictionary, p: String, key: String) -> void:
+	if not texts.is_empty() and not texts.has(d.get(key, "")):
+		errors.append("%s: %s missing in localization" % [p, key])
+
+
+func _validate_relations() -> void:
+	for id in relations:
+		var d: Dictionary = relations[id]
+		var p: String = "relation '%s'" % id
+		_need_text(d, p, "name_key")
+		if not (GameState.is_int(d.get("min", -10)) and GameState.is_int(d.get("max", 10)) and int(d.get("min", -10)) <= 0 and int(d.get("max", 10)) >= 0):
+			errors.append("%s: min/max must be integers with min <= 0 <= max" % p)
+
+
+func _validate_techniques() -> void:
+	for id in techniques:
+		var d: Dictionary = techniques[id]
+		var p: String = "technique '%s'" % id
+		_need_text(d, p, "name_key")
+		_need_text(d, p, "desc_key")
+		_validate_bonus_list(d.get("bonuses", []), p)
+		if d.has("insight_modifier") and not (GameState.is_number(d["insight_modifier"]) and float(d["insight_modifier"]) >= 0.0 and float(d["insight_modifier"]) <= 0.5):
+			errors.append("%s: insight_modifier must be in [0, 0.5]" % p)
+		if typeof(d.get("element", "")) != TYPE_STRING or typeof(d.get("grade", "")) != TYPE_STRING:
+			errors.append("%s: element and grade must be strings" % p)
+
+
+func _validate_bonus_list(list: Variant, p: String) -> void:
+	if typeof(list) != TYPE_ARRAY:
+		errors.append("%s: bonuses must be an array" % p)
+		return
+	for b in list:
+		if typeof(b) != TYPE_DICTIONARY or typeof(b.get("stat")) != TYPE_STRING or not GameState.is_number(b.get("value")) or float(b["value"]) < 0.0:
+			errors.append("%s: bonus needs string 'stat' and numeric 'value' >= 0" % p)
+		elif not _valid_stat(b["stat"]):
+			errors.append("%s: unknown bonus stat '%s'" % [p, b["stat"]])
+
+
+func _validate_effect_list(list: Variant, p: String) -> void:
+	if typeof(list) != TYPE_ARRAY:
+		errors.append("%s: effects must be an array" % p)
+		return
+	for e in list:
+		errors.append_array(EffectResolver.validate_effect(e, self, p, false))
+
+
+func _validate_mastery() -> void:
+	var seen: Dictionary = {}
+	for id in mastery:
+		var d: Dictionary = mastery[id]
+		var p: String = "mastery '%s'" % id
+		if not actions.has(d.get("action", "")):
+			errors.append("%s: unknown action" % p)
+		elif seen.has(d["action"]):
+			errors.append("%s: action '%s' already has mastery '%s'" % [p, d["action"], seen[d["action"]]])
+		else:
+			seen[d["action"]] = id
+		_need_text(d, p, "name_key")
+		if not (GameState.is_number(d.get("xp_base", 20)) and float(d.get("xp_base", 20)) > 0.0 \
+				and GameState.is_number(d.get("xp_growth", 1.35)) and float(d.get("xp_growth", 1.35)) >= 1.0 \
+				and GameState.is_number(d.get("xp_per_completion", 1)) and float(d.get("xp_per_completion", 1)) > 0.0):
+			errors.append("%s: xp_base > 0, xp_growth >= 1, xp_per_completion > 0" % p)
+		if not (GameState.is_int(d.get("max_level")) and int(d["max_level"]) >= 2 and int(d["max_level"]) <= 99):
+			errors.append("%s: max_level must be an integer in [2, 99]" % p)
+			continue
+		var last: int = 1
+		for m in d.get("milestones", []):
+			if typeof(m) != TYPE_DICTIONARY or not GameState.is_int(m.get("level")) or int(m["level"]) <= last or int(m["level"]) > int(d["max_level"]):
+				errors.append("%s: milestone levels must be increasing integers in (1, max_level]" % p)
+				break
+			last = int(m["level"])
+			_need_text(m, p + " milestone %d" % last, "name_key")
+			_validate_bonus_list(m.get("bonuses", []), "%s milestone %d" % [p, last])
+			_validate_effect_list(m.get("effects", []), "%s milestone %d" % [p, last])
+
+
+func _validate_story() -> void:
+	for id in story_order:
+		var d: Dictionary = story[id]
+		var p: String = "story '%s'" % id
+		_need_text(d, p, "title_key")
+		_need_text(d, p, "text_key")
+		if typeof(d.get("chapter", "")) != TYPE_STRING or str(d.get("chapter", "")) == "":
+			errors.append("%s: chapter required" % p)
+		if d.has("trigger"):
+			errors.append_array(_conditions.validate(d["trigger"], self, p + ".trigger"))
+		var choices: Variant = d.get("choices")
+		if typeof(choices) != TYPE_ARRAY or (choices as Array).is_empty():
+			errors.append("%s: needs at least one choice" % p)
+			continue
+		var ids: Dictionary = {}
+		var has_fallback: bool = false
+		for c in choices:
+			if typeof(c) != TYPE_DICTIONARY or typeof(c.get("id")) != TYPE_STRING or ids.has(c["id"]):
+				errors.append("%s: choice needs a unique string 'id'" % p)
+				continue
+			ids[c["id"]] = true
+			var cp: String = "%s choice '%s'" % [p, c["id"]]
+			_need_text(c, cp, "text_key")
+			if c.has("result_key"):
+				_need_text(c, cp, "result_key")
+			errors.append_array(_conditions.validate(c.get("requirements", {}), self, cp + ".requirements"))
+			_validate_effect_list(c.get("effects", []), cp)
+			var costs: Variant = c.get("costs", {})
+			if typeof(costs) != TYPE_DICTIONARY:
+				errors.append("%s: costs must be an object" % cp)
+				costs = {"?": 1}
+			else:
+				for rid in costs:
+					if not resources.has(rid) or not GameState.is_number(costs[rid]) or float(costs[rid]) <= 0.0:
+						errors.append("%s: invalid cost '%s'" % [cp, rid])
+			if c.has("next") and c["next"] != null and not story.has(c["next"]):
+				errors.append("%s: unknown next node '%s'" % [cp, c["next"]])
+			if (c.get("requirements", {}) as Dictionary).is_empty() and (costs as Dictionary).is_empty():
+				has_fallback = true
+		if not has_fallback:
+			errors.append("%s: needs a choice with no requirements and no costs (softlock guard, GDD 11.4)" % p)
+	_validate_story_cycles()
+
+
+## `next` links must form a DAG: a cycle could chain events without the player ever leaving the story.
+func _validate_story_cycles() -> void:
+	var state: Dictionary = {}  # id -> 1 visiting, 2 done
+	for id in story_order:
+		if _story_cycle(id, state):
+			errors.append("story: cycle through next links at '%s'" % id)
+			return
+
+
+func _story_cycle(id: String, state: Dictionary) -> bool:
+	if state.get(id, 0) == 1:
+		return true
+	if state.get(id, 0) == 2 or not story.has(id):
+		return false
+	state[id] = 1
+	for c in story[id].get("choices", []):
+		if typeof(c) == TYPE_DICTIONARY and c.get("next") != null and _story_cycle(str(c["next"]), state):
+			return true
+	state[id] = 2
+	return false
+
+
+func _validate_automation_config() -> void:
+	var a: Variant = config.get("automation")
+	if a == null:
+		return
+	if typeof(a) != TYPE_DICTIONARY or not (GameState.is_int(a.get("max_slots")) and int(a["max_slots"]) >= 1 and int(a["max_slots"]) <= 3):
+		errors.append("config.automation: max_slots must be an integer in [1, 3] (GDD 9.1)")
+		return
+	errors.append_array(_conditions.validate(a.get("requirements", {}), self, "config.automation.requirements"))
+	errors.append_array(_conditions.validate(a.get("wait_requirements", {}), self, "config.automation.wait_requirements"))

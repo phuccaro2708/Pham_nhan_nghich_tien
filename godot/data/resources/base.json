@@ -33,5 +33,12 @@
   "cap_from": "cultivation_cap",
   "initial": 0,
   "group": "cultivation"
+ },
+ {
+  "id": "herb",
+  "name_key": "resource.herb",
+  "cap": 100,
+  "initial": 0,
+  "group": "materials"
  }
 ]

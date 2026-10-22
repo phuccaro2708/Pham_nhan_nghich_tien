@@ -1,0 +1,20 @@
+[
+ {
+  "id": "dan_khi_nhap_mon",
+  "name_key": "technique.dan_khi_nhap_mon",
+  "desc_key": "technique.dan_khi_nhap_mon.desc",
+  "element": "none",
+  "grade": "nhap_mon",
+  "bonuses": [
+   {
+    "stat": "speed.absorb_qi",
+    "value": 0.5
+   },
+   {
+    "stat": "speed.refine_qi",
+    "value": 0.5
+   }
+  ],
+  "insight_modifier": 0.05
+ }
+]

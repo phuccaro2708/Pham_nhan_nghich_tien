@@ -109,3 +109,24 @@ Sửa so với Phase 1: `MAX_AMOUNT` 1e7 → 1e15 (mục "Quy tắc bổ sung" �
 - `data/localization/vi.json` là bản gốc và là cơ sở kiểm tra `name_key`/`group`; `en.json` phải có **đủ mọi key** của `vi.json` (thiếu → lỗi nạp content). Key thiếu lúc chạy rơi về tiếng Việt, rồi về chính key.
 - Danh sách ngôn ngữ: `GameController.LANGUAGES` (tên bản ngữ, không dịch). Lựa chọn lưu ở `user://settings.cfg`, đổi được ở menu chính.
 - Tiền tố key: `resource.` `upgrade.` `action.` `realm.` `group.` `area.` `ui.` `menu.` `reason.` (mã lý do dừng/từ chối từ simulation, UI luôn hiển thị qua `reason.<code>`).
+
+
+## Phase 2B — Story, Mastery, Automation (schema_version 3, content_version tăng)
+
+`tools/gen_phase2b_data.py` (idempotent) sinh dữ liệu Phase 2B và thay thế `gen_cultivation_data.py` cho các file nó chạm vào; sau Phase 2B có thể sửa tay JSON hoặc sửa núm trong script rồi chạy lại.
+
+**Mastery — `data/mastery/*.json`**: `{id, action, name_key, xp_base=20, xp_growth=1.35, xp_per_completion, max_level, milestones:[{level, name_key, bonuses:[{stat, value}], effects:[<effect>]}]}`. `stat` dạng `yield.<resource>` hoặc `speed.<action>`; mỗi action tối đa một định nghĩa. `effects` chỉ dùng effect đã đăng ký và **cấm `advance_realm`**.
+
+**Relation — `data/relations/*.json`**: `{id, name_key, min, max}`; effect `add_relation {relation, amount}` kẹp trong [min, max].
+
+**Technique — `data/techniques/*.json`**: `{id, name_key, desc_key, element, grade, bonuses:[{stat, value}], insight_modifier}`; effect `learn_technique {technique}` (không học hai lần).
+
+**Story — `data/story/*.json`**: mảng nút `{id, chapter, title_key, text_key, trigger:<condition> | chain_only:true, choices:[{id, text_key, result_key, costs, requirements, effects, next}]}`. Validate khi nạp: mọi nút có ≥1 lựa chọn **không** costs/requirements (chống softlock); `next` phải tồn tại và đồ thị không có chu trình; effect chỉ từ tập đăng ký (cấm `advance_realm`); mọi `*_key` có trong `vi.json`. Nút `chain_only` chỉ mở qua `next`.
+
+**Condition mới**: `story_done {node}`, `relation_at_least {relation, value}`, `mastery_level_at_least {action, level}`, `technique_known {technique}`. **Effect mới**: `add_relation`, `learn_technique`.
+
+**Realm**: `breakthrough.on_fail_refund {resource: ratio∈[0,1]}`. **Config**: `config/progression.json → automation {max_slots ≤ 3, requirements}`.
+
+**Action**: `automation_allowed` (mặc định true; `breakthrough` phải false), `offline_allowed`. Hàng đợi từ chối `breakthrough` và action có `automation_allowed: false`.
+
+**Save v3** thêm `mastery {action: {level, xp, claimed[]}}`, `relations`, `techniques[]`, `story {pending, done{node: choice}}`, `automation {slots, cursor, loop, status, reason, instant_streak}`. Migration v2→v3 điền giá trị rỗng; `ContentMigration` đưa id mastery/relation không còn tồn tại vào `orphans` thay vì xóa.

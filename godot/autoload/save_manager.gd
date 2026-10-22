@@ -117,6 +117,12 @@ func migrate(data: Dictionary) -> Dictionary:
 				d["life"] = {"status": "alive", "warned": false, "ended": {}}
 				d["orphans"] = {}
 				d["content_version"] = 1
+			2:  # v3 adds Phase 2B: mastery, story, relations, techniques, automation
+				d["mastery"] = {}
+				d["story"] = {"done": {}, "pending": ""}
+				d["relations"] = {}
+				d["techniques"] = []
+				d["automation"] = GameState.new().automation.duplicate(true)
 			_:
 				return {"error": "no migration from version %d" % v}
 		v += 1
@@ -134,9 +140,12 @@ func validate_state(d: Dictionary, registry: ContentRegistry) -> Array:
 			errs.append("bad %s" % key)
 	if not GameState.is_number(d.get("age_years")) or float(d["age_years"]) < 0.0:
 		errs.append("bad age_years")
-	for key in ["resources", "upgrades", "flags", "action_counts", "active_action", "save_metadata", "life", "orphans"]:
+	for key in ["resources", "upgrades", "flags", "action_counts", "active_action", "save_metadata", "life", "orphans",
+			"mastery", "story", "relations", "automation"]:
 		if typeof(d.get(key)) != TYPE_DICTIONARY:
 			errs.append("%s must be an object" % key)
+	if typeof(d.get("techniques")) != TYPE_ARRAY:
+		errs.append("techniques must be an array")
 	if not errs.is_empty():
 		return errs
 	for id in d["resources"]:
@@ -156,6 +165,7 @@ func validate_state(d: Dictionary, registry: ContentRegistry) -> Array:
 		if not registry.has_action(id) or not GameState.is_int(d["action_counts"][id]) or int(d["action_counts"][id]) < 0:
 			errs.append("bad action_counts %s" % id)
 	_validate_progression(d, registry, errs)
+	_validate_phase2b(d, registry, errs)
 	var a: Dictionary = d["active_action"]
 	if not a.is_empty():
 		if not registry.has_action(a.get("id", "")):
@@ -192,3 +202,45 @@ func _validate_progression(d: Dictionary, registry: ContentRegistry, errs: Array
 		var limit: float = float(registry.stage_of(rid)["lifespan_years"])
 		if float(d["age_years"]) > limit + 1e-6 or (life["status"] == "alive" and float(d["age_years"]) >= limit):
 			errs.append("age_years at or above the realm's lifespan but the character is alive")
+
+
+func _validate_phase2b(d: Dictionary, registry: ContentRegistry, errs: Array) -> void:
+	for aid in d["mastery"]:
+		var m: Variant = d["mastery"][aid]
+		var def: Dictionary = registry.mastery_for_action(aid)
+		if def.is_empty() or typeof(m) != TYPE_DICTIONARY:
+			errs.append("unknown mastery %s" % aid)
+		elif not (GameState.is_int(m.get("level")) and int(m["level"]) >= 1 and int(m["level"]) <= int(def["max_level"])
+				and GameState.is_number(m.get("xp")) and float(m["xp"]) >= 0.0 and typeof(m.get("claimed")) == TYPE_ARRAY):
+			errs.append("bad mastery %s" % aid)
+		else:
+			for lv in m["claimed"]:
+				if not GameState.is_int(lv) or int(lv) < 2 or int(lv) > int(m["level"]):
+					errs.append("bad claimed level for mastery %s" % aid)
+	var st: Dictionary = d["story"]
+	if typeof(st.get("done")) != TYPE_DICTIONARY or typeof(st.get("pending")) != TYPE_STRING:
+		errs.append("bad story")
+	else:
+		for nid in st["done"]:
+			if not registry.has_story_node(nid) or typeof(st["done"][nid]) != TYPE_STRING:
+				errs.append("unknown story node %s" % nid)
+		if st["pending"] != "" and (not registry.has_story_node(st["pending"]) or st["done"].has(st["pending"])):
+			errs.append("bad pending story node")
+	for rid in d["relations"]:
+		if not registry.has_relation(rid) or not GameState.is_int(d["relations"][rid]):
+			errs.append("bad relation %s" % rid)
+	for tid in d["techniques"]:
+		if typeof(tid) != TYPE_STRING or not registry.has_technique(tid):
+			errs.append("unknown technique %s" % tid)
+	var au: Dictionary = d["automation"]
+	if typeof(au.get("slots")) != TYPE_ARRAY or not ["idle", "running", "stopped", "finished", "deadlock"].has(au.get("status")) 			or typeof(au.get("loop")) != TYPE_BOOL or typeof(au.get("reason")) != TYPE_STRING 			or not GameState.is_int(au.get("cursor")) or not GameState.is_int(au.get("instant_streak")) 			or int(au["cursor"]) < 0 or int(au["instant_streak"]) < 0:
+		errs.append("bad automation")
+		return
+	if (au["slots"] as Array).size() > 3:
+		errs.append("automation has too many slots")
+	for s in au["slots"]:
+		if typeof(s) != TYPE_DICTIONARY or not registry.has_action(s.get("action", "")) or not GameState.is_int(s.get("repeat")) 				or int(s["repeat"]) < 0 or not GameState.is_int(s.get("done")) or int(s["done"]) < 0 				or not ["skip", "wait", "stop"].has(s.get("on_block")) or typeof(s.get("until")) != TYPE_DICTIONARY:
+			errs.append("bad automation slot")
+	var qs: Variant = d["active_action"].get("queue_slot")
+	if qs != null and (not GameState.is_int(qs) or int(qs) < 0 or int(qs) >= (au["slots"] as Array).size()):
+		errs.append("bad queue_slot")

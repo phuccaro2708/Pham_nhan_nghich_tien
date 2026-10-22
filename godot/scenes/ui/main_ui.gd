@@ -7,6 +7,7 @@ const REFRESH_SECONDS: float = 0.1
 const UiTheme = preload("res://scenes/ui/ui_theme.gd")
 const PINK: Color = Color(UiTheme.FILL_PROGRESS, 0.6)  # translucent so the button label stays readable
 const COL_ORDER: Array = ["instant", "loop", "upgrade"]
+const StoryPages = preload("res://scenes/ui/story_pages.gd")
 
 var _age_label: Label
 var _new_life: Button
@@ -18,6 +19,7 @@ var _bars: Dictionary = {}  # action_id -> progress overlay on its button
 var _res_rows: Dictionary = {}  # resource_id -> {"bar": ProgressBar, "value": Label}
 var _groups: Dictionary = {}  # "column|group" -> VBoxContainer body
 var _since: float = 0.0
+var _pages: StoryPages
 
 
 func _ready() -> void:
@@ -28,12 +30,20 @@ func _ready() -> void:
 		return
 	_build()
 	EventBus.game_loaded.connect(_on_loaded)
+	EventBus.mastery_level_up.connect(func(id: String, lv: int) -> void:
+		var r: ContentRegistry = GameController.registry
+		_say(r.text("ui.log_mastery") % [r.text(r.actions[id]["name_key"]), lv], UiTheme.ACCENT_JADE))
+	EventBus.story_pending.connect(func(n: String) -> void:
+		var r: ContentRegistry = GameController.registry
+		_say(r.text("ui.log_story_pending") % r.text(r.story[n]["title_key"]), UiTheme.ACCENT_CINNABAR)
+		_pages.current_tab = 1)  # bring the event to the player; the queue is already waiting for the choice
 	EventBus.action_stopped.connect(func(id: String, why: String) -> void: _say(GameController.registry.text("ui.stopped") % [GameController.registry.text(GameController.registry.actions[id]["name_key"]), _reason(why)]))
 	EventBus.lifespan_warning.connect(func(r: float) -> void: _say(GameController.registry.text("ui.log_warning") % r, UiTheme.ACCENT_CINNABAR))
 	EventBus.life_ended.connect(func(a: float) -> void: _say(GameController.registry.text("ui.log_death") % a, UiTheme.ACCENT_CINNABAR))
 	EventBus.breakthrough_resolved.connect(func(ok: bool, f: String, t: String) -> void:
 		var r: ContentRegistry = GameController.registry
 		_say(r.text("ui.breakthrough_ok") % [r.text(r.stage_of(f)["name_key"]), r.text(r.stage_of(t)["name_key"])] if ok else r.text("ui.breakthrough_fail")))
+	EventBus.game_loaded.connect(func(_r: Dictionary) -> void: _pages.reset())
 	_on_loaded(GameController.last_offline_report)
 	GameController.last_offline_report = {}  # shown once, not again on every return from the menu
 	_refresh()
@@ -70,7 +80,12 @@ func _build() -> void:
 	page.add_child(body)
 	_build_nav(body)
 
-	var area := _column(body, "", 100)
+	_pages = StoryPages.new()
+	_pages.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var main_page := HBoxContainer.new()
+	_pages.setup(main_page)
+	body.add_child(_pages)
+	var area := _column(main_page, "", 100)
 	var area_btn := Button.new()
 	area_btn.text = reg.text("area.village.name")
 	area_btn.disabled = true  # the MVP has a single area; this column is the slot for future ones
@@ -79,13 +94,13 @@ func _build() -> void:
 
 	var cols: Dictionary = {}
 	for c in COL_ORDER:
-		cols[c] = _column(body, reg.text("ui.col_" + c), 0)
+		cols[c] = _column(main_page, reg.text("ui.col_" + c), 0)
 	for id in reg.actions:
 		var def: Dictionary = reg.actions[id]
 		var col: String = "upgrade" if def.has("upgrade") else ("instant" if def["type"] == "INSTANT" else "loop")
 		_add_action(_group_body("c|" + col, cols[col], str(def.get("group", ""))), id)
 
-	var res := _column(body, "", 230)
+	var res := _column(main_page, "", 230)
 	for id in reg.resources:
 		_add_resource(_group_body("r", res, str(reg.resources[id].get("group", ""))), id)
 
@@ -103,11 +118,6 @@ func _build() -> void:
 func _build_nav(parent: Control) -> void:
 	var reg: ContentRegistry = GameController.registry
 	var nav := _column(parent, "", 130)
-	var main := Button.new()
-	main.text = reg.text("ui.nav_main")
-	main.disabled = true  # the only page for now
-	UiTheme.primary_button(main)  # shown as the selected tab, not as an unavailable button
-	nav.add_child(main)
 	var stop := Button.new()
 	stop.text = reg.text("ui.stop_action")
 	stop.pressed.connect(func() -> void: GameController.stop_action())
@@ -352,6 +362,7 @@ func _refresh() -> void:
 			pbar.value = float(s.active_action["progress_ticks"])
 		else:
 			pbar.value = 0.0
+	_pages.refresh()
 	_active_label.text = reg.text("ui.idle") if active == "" else reg.text("ui.doing") % reg.text(reg.actions[active]["name_key"])
 
 

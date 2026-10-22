@@ -1,0 +1,20 @@
+[
+ {
+  "id": "ba_ly",
+  "name_key": "relation.ba_ly",
+  "min": -5,
+  "max": 10
+ },
+ {
+  "id": "truong_thon",
+  "name_key": "relation.truong_thon",
+  "min": -5,
+  "max": 10
+ },
+ {
+  "id": "dao_si",
+  "name_key": "relation.dao_si",
+  "min": -5,
+  "max": 10
+ }
+]

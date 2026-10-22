@@ -10,7 +10,8 @@ func _play(seed_value: int, max_steps: int = 60000) -> Dictionary:
 	var steps: int = 0
 	while steps < max_steps and s.realm_id != "truc_co_so" and act.lifespan.is_alive(s):
 		steps += 1
-		var id: String = _choose(act, s)
+		BalanceSimulator.resolve_story(act, s)
+		var id: String = BalanceSimulator.policy(act, s)
 		var r: Dictionary = act.start_action(s, id)
 		if not r["ok"]:
 			continue
@@ -18,21 +19,6 @@ func _play(seed_value: int, max_steps: int = 60000) -> Dictionary:
 			act.advance(s, act.duration_ticks(act.registry.actions[id], s))
 			act.stop_action(s)
 	return {"state": s, "steps": steps}
-
-
-func _choose(act: ActionSystem, s: GameState) -> String:
-	if act.check_can_start(s, "breakthrough")["ok"]:
-		return "breakthrough"
-	if s.flags.get("meridian_damaged", false):
-		return "treat_meridian" if s.resources.get("silver", 0.0) >= 50.0 else "sell_wood" if s.resources.get("wood", 0.0) >= 10.0 else "gather_wood"
-	var cost: Dictionary = act.realms.breakthrough_costs(s)
-	for rid in cost:
-		if s.resources.get(rid, 0.0) < cost[rid]:
-			match rid:
-				"body": return "train_body"
-				"silver": return "sell_wood" if s.resources.get("wood", 0.0) >= 10.0 else "gather_wood"
-				"cultivation": return "refine_qi" if s.resources.get("spirit_qi", 0.0) >= 8.0 else "absorb_qi"
-	return "gather_wood"
 
 
 func test_bot_reaches_truc_co_alive() -> void:

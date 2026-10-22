@@ -180,6 +180,8 @@ XP_required(L) = 20 × 1.35^(L-1)
 
 Làm tròn chỉ khi hiển thị; giá trị tính toán lưu chính xác. Mốc **cấp 5, 10, 20** cấp khả năng mới; sau đó có thể chuyển sang automation.
 
+**Triển khai (Phase 2B).** Mỗi lần hoàn tất *đủ một chu kỳ* cho `xp_per_completion` (=1) XP; hành động bị hủy/dừng giữa chừng không có XP. Mốc là dữ liệu (`data/mastery/*.json`): `bonuses` (cộng vào nhóm `mastery` của công thức §5.3, **suy ra từ cấp, không lưu**) và `effects` (phần thưởng một lần, ghi `claimed[]` *trước* khi áp để không thể trả hai lần). Mastery không được `advance_realm`. Hàng đợi tự động (§9.1 cấp 2) mở khi Đốn củi đạt cấp 3.
+
 ### 5.6. Chống bế tắc
 
 Hành động không chạy được phải hiển thị **nguyên nhân** và áp chính sách:
@@ -253,6 +255,10 @@ P = clamp(0.45 + 0.15·D + 0.10·M + 0.10·E, 0.30, 0.95)     (D, M, E ∈ [0,1]
 - Sau **3 lần thất bại**, mở nghi thức ổn định đảm bảo thành công nếu đủ tài nguyên (pity).
 - Lưu ý: với hệ số trên, P tối đa lý thuyết = 0,80 trước clamp; mức sàn/trần cần xác nhận lại ở BALANCE.md.
 
+**Thay đổi thiết kế Phase 2B — hoàn một phần chi phí khi thất bại (`on_fail_refund`).** Trước đây thất bại đốt toàn bộ giá nghi thức (Q(9) = 11.020 tu vi ≈ 3 giờ chơi) — mâu thuẫn với §5.6 ("không tự tiêu hao nguyên liệu vô hạn khi thất bại") và là nguyên nhân chính khiến Trúc Cơ mất ~11 giờ thay vì 3–5 giờ (đo bằng Balance Simulator, `docs/BALANCE.md`). Nay `realms.json` có `on_fail_refund: {tài_nguyên: tỉ_lệ}`: thất bại trả lại tỉ lệ đó của *giá đã trả* (hiện 80% tu vi; bạc vẫn mất để thất bại còn có giá). Không đổi công thức P, pity hay trạng thái kinh mạch tổn thương.
+
+**Công pháp nhập môn.** *Dẫn Khí Nhập Môn* (học bằng 2 Thảo Dược, một lần) cộng tốc độ cho Hấp thu/Chuyển hóa và `insight_modifier` +5% vào P (§6.4). Chuỗi tu luyện: Rèn thể → Cảm ứng linh khí (cần pháp môn từ cốt truyện) → Hấp thu → Chuyển hóa tu vi → Đột phá.
+
 ---
 
 ## VII. Story & Worldbuilding
@@ -324,6 +330,8 @@ Mỗi địa điểm: hành động thường, sự kiện hiếm, một thử t
 | 5 | Nhiều lịch và phân thân | Nguyên Anh (hậu MVP) |
 
 MVP: cấp 0–3.
+
+**Triển khai hàng đợi (Phase 2B).** Tối đa 3 ô `{action, repeat (0 = vô hạn), on_block: skip|wait|stop, until}`, tùy chọn lặp cả hàng. Chạy qua đúng đường `ActionSystem.start_action` nên online ≡ offline. Quy tắc: không bao giờ chọn story choice (hàng đợi chờ khi có sự kiện đang treo) và không xếp `breakthrough`; người chơi tự bắt đầu hành động thì hàng đợi dừng (`manual_override`); offline chỉ chạy action có `offline_allowed`; `wait` được "nuôi" bằng ô khác của hàng đợi, không ô nào tạo được tài nguyên thiếu → trạng thái `deadlock` (UI cảnh báo trước khi chạy); chuỗi INSTANT liên tiếp > 64 thì dừng.
 
 ### 9.2. Scheduler
 
@@ -585,6 +593,8 @@ Casual · Optimizer · Idle (rời game nhiều giờ) · Explorer · Risk Playe
 | Thọ nguyên | Tài nguyên chiến lược, không phạt idle |
 | Combat | Auto-battle |
 | Offline | Tối đa 8 giờ |
+| Thất bại đột phá | Hoàn một phần tu vi (`on_fail_refund`, Phase 2B) — xem §6.5 |
+| Story | Đồ thị nút, một sự kiện treo tại một thời điểm, mỗi nút có lựa chọn miễn phí (không softlock) |
 | Prestige | Thiết kế trước, triển khai sau MVP |
 | Multiplayer / Monetization | Không |
 | Công nghệ nội dung | Data-driven |

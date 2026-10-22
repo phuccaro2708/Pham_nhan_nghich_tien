@@ -1,0 +1,392 @@
+[
+ {
+  "id": "ch1_morning_smoke",
+  "chapter": "ch1",
+  "title_key": "story.ch1_morning_smoke.title",
+  "text_key": "story.ch1_morning_smoke.text",
+  "choices": [
+   {
+    "id": "give_wood",
+    "text_key": "story.ch1_morning_smoke.give_wood",
+    "result_key": "story.ch1_morning_smoke.give_wood.result",
+    "costs": {
+     "wood": 5
+    },
+    "effects": [
+     {
+      "type": "add_relation",
+      "relation": "ba_ly",
+      "amount": 2
+     }
+    ]
+   },
+   {
+    "id": "sell_wood",
+    "text_key": "story.ch1_morning_smoke.sell_wood",
+    "result_key": "story.ch1_morning_smoke.sell_wood.result",
+    "costs": {
+     "wood": 5
+    },
+    "effects": [
+     {
+      "type": "add_resource",
+      "resource": "silver",
+      "amount": 4
+     }
+    ]
+   },
+   {
+    "id": "ignore",
+    "text_key": "story.ch1_morning_smoke.ignore",
+    "result_key": "story.ch1_morning_smoke.ignore.result"
+   }
+  ],
+  "trigger": {
+   "type": "action_count_at_least",
+   "action": "gather_wood",
+   "count": 3
+  }
+ },
+ {
+  "id": "ch1_village_elder",
+  "chapter": "ch1",
+  "title_key": "story.ch1_village_elder.title",
+  "text_key": "story.ch1_village_elder.text",
+  "choices": [
+   {
+    "id": "water_job",
+    "text_key": "story.ch1_village_elder.water_job",
+    "result_key": "story.ch1_village_elder.water_job.result",
+    "effects": [
+     {
+      "type": "set_flag",
+      "flag": "job_water",
+      "value": true
+     },
+     {
+      "type": "add_relation",
+      "relation": "truong_thon",
+      "amount": 1
+     }
+    ]
+   },
+   {
+    "id": "training",
+    "text_key": "story.ch1_village_elder.training",
+    "result_key": "story.ch1_village_elder.training.result",
+    "effects": [
+     {
+      "type": "add_resource",
+      "resource": "body",
+      "amount": 10
+     },
+     {
+      "type": "add_relation",
+      "relation": "truong_thon",
+      "amount": 1
+     }
+    ]
+   },
+   {
+    "id": "decline",
+    "text_key": "story.ch1_village_elder.decline",
+    "result_key": "story.ch1_village_elder.decline.result"
+   }
+  ],
+  "trigger": {
+   "all_of": [
+    {
+     "type": "story_done",
+     "node": "ch1_morning_smoke"
+    },
+    {
+     "type": "action_count_at_least",
+     "action": "gather_wood",
+     "count": 10
+    }
+   ]
+  }
+ },
+ {
+  "id": "ch1_forest_edge",
+  "chapter": "ch1",
+  "title_key": "story.ch1_forest_edge.title",
+  "text_key": "story.ch1_forest_edge.text",
+  "choices": [
+   {
+    "id": "go_deeper",
+    "text_key": "story.ch1_forest_edge.go_deeper",
+    "result_key": "story.ch1_forest_edge.go_deeper.result",
+    "effects": [
+     {
+      "type": "set_flag",
+      "flag": "herb_path",
+      "value": true
+     },
+     {
+      "type": "add_resource",
+      "resource": "herb",
+      "amount": 2
+     }
+    ]
+   },
+   {
+    "id": "edge_wood",
+    "text_key": "story.ch1_forest_edge.edge_wood",
+    "result_key": "story.ch1_forest_edge.edge_wood.result",
+    "effects": [
+     {
+      "type": "add_resource",
+      "resource": "wood",
+      "amount": 10
+     }
+    ]
+   },
+   {
+    "id": "turn_back",
+    "text_key": "story.ch1_forest_edge.turn_back",
+    "result_key": "story.ch1_forest_edge.turn_back.result"
+   }
+  ],
+  "trigger": {
+   "type": "action_count_at_least",
+   "action": "train_body",
+   "count": 5
+  }
+ },
+ {
+  "id": "ch1_wounded_taoist",
+  "chapter": "ch1",
+  "title_key": "story.ch1_wounded_taoist.title",
+  "text_key": "story.ch1_wounded_taoist.text",
+  "choices": [
+   {
+    "id": "heal",
+    "text_key": "story.ch1_wounded_taoist.heal",
+    "result_key": "story.ch1_wounded_taoist.heal.result",
+    "costs": {
+     "herb": 3
+    },
+    "effects": [
+     {
+      "type": "add_relation",
+      "relation": "dao_si",
+      "amount": 3
+     },
+     {
+      "type": "set_flag",
+      "flag": "taoist_grateful",
+      "value": true
+     }
+    ],
+    "next": "ch1_taoist_tale"
+   },
+   {
+    "id": "loot",
+    "text_key": "story.ch1_wounded_taoist.loot",
+    "result_key": "story.ch1_wounded_taoist.loot.result",
+    "effects": [
+     {
+      "type": "add_resource",
+      "resource": "silver",
+      "amount": 30
+     },
+     {
+      "type": "add_relation",
+      "relation": "dao_si",
+      "amount": -2
+     },
+     {
+      "type": "set_flag",
+      "flag": "taoist_robbed",
+      "value": true
+     }
+    ],
+    "next": "ch1_cave_rumor"
+   },
+   {
+    "id": "ask_first",
+    "text_key": "story.ch1_wounded_taoist.ask_first",
+    "result_key": "story.ch1_wounded_taoist.ask_first.result",
+    "effects": [
+     {
+      "type": "add_relation",
+      "relation": "dao_si",
+      "amount": 1
+     }
+    ],
+    "next": "ch1_taoist_tale"
+   }
+  ],
+  "trigger": {
+   "all_of": [
+    {
+     "type": "story_done",
+     "node": "ch1_forest_edge"
+    },
+    {
+     "type": "realm_at_least",
+     "realm": "cuong_than"
+    }
+   ]
+  }
+ },
+ {
+  "id": "ch1_taoist_tale",
+  "chapter": "ch1",
+  "title_key": "story.ch1_taoist_tale.title",
+  "text_key": "story.ch1_taoist_tale.text",
+  "choices": [
+   {
+    "id": "listen_closely",
+    "text_key": "story.ch1_taoist_tale.listen_closely",
+    "result_key": "story.ch1_taoist_tale.listen_closely.result",
+    "effects": [
+     {
+      "type": "set_flag",
+      "flag": "knows_qi_method",
+      "value": true
+     },
+     {
+      "type": "set_flag",
+      "flag": "ch1_complete",
+      "value": true
+     },
+     {
+      "type": "add_relation",
+      "relation": "dao_si",
+      "amount": 1
+     }
+    ]
+   },
+   {
+    "id": "hurry_off",
+    "text_key": "story.ch1_taoist_tale.hurry_off",
+    "result_key": "story.ch1_taoist_tale.hurry_off.result",
+    "effects": [
+     {
+      "type": "set_flag",
+      "flag": "knows_qi_method",
+      "value": true
+     },
+     {
+      "type": "set_flag",
+      "flag": "ch1_complete",
+      "value": true
+     }
+    ]
+   }
+  ],
+  "chain_only": true
+ },
+ {
+  "id": "ch1_cave_rumor",
+  "chapter": "ch1",
+  "title_key": "story.ch1_cave_rumor.title",
+  "text_key": "story.ch1_cave_rumor.text",
+  "choices": [
+   {
+    "id": "explore",
+    "text_key": "story.ch1_cave_rumor.explore",
+    "result_key": "story.ch1_cave_rumor.explore.result",
+    "effects": [
+     {
+      "type": "add_resource",
+      "resource": "body",
+      "amount": 15
+     }
+    ],
+    "next": "ch1_qi_clue"
+   },
+   {
+    "id": "skip",
+    "text_key": "story.ch1_cave_rumor.skip",
+    "result_key": "story.ch1_cave_rumor.skip.result",
+    "next": "ch1_qi_clue"
+   }
+  ],
+  "chain_only": true
+ },
+ {
+  "id": "ch1_qi_clue",
+  "chapter": "ch1",
+  "title_key": "story.ch1_qi_clue.title",
+  "text_key": "story.ch1_qi_clue.text",
+  "choices": [
+   {
+    "id": "realize",
+    "text_key": "story.ch1_qi_clue.realize",
+    "result_key": "story.ch1_qi_clue.realize.result",
+    "effects": [
+     {
+      "type": "set_flag",
+      "flag": "knows_qi_method",
+      "value": true
+     },
+     {
+      "type": "set_flag",
+      "flag": "ch1_complete",
+      "value": true
+     }
+    ]
+   }
+  ],
+  "trigger": {
+   "all_of": [
+    {
+     "type": "realm_at_least",
+     "realm": "cam_khi"
+    },
+    {
+     "not": {
+      "type": "flag_is",
+      "flag": "knows_qi_method",
+      "value": true
+     }
+    }
+   ]
+  }
+ },
+ {
+  "id": "ch1_neighbor_gift",
+  "chapter": "ch1",
+  "title_key": "story.ch1_neighbor_gift.title",
+  "text_key": "story.ch1_neighbor_gift.text",
+  "choices": [
+   {
+    "id": "accept",
+    "text_key": "story.ch1_neighbor_gift.accept",
+    "result_key": "story.ch1_neighbor_gift.accept.result",
+    "effects": [
+     {
+      "type": "add_resource",
+      "resource": "silver",
+      "amount": 10
+     },
+     {
+      "type": "add_resource",
+      "resource": "herb",
+      "amount": 2
+     }
+    ]
+   },
+   {
+    "id": "refuse",
+    "text_key": "story.ch1_neighbor_gift.refuse",
+    "result_key": "story.ch1_neighbor_gift.refuse.result",
+    "effects": [
+     {
+      "type": "add_relation",
+      "relation": "ba_ly",
+      "amount": 1
+     }
+    ]
+   }
+  ],
+  "trigger": {
+   "type": "relation_at_least",
+   "relation": "ba_ly",
+   "value": 2
+  }
+ }
+]

@@ -40,6 +40,8 @@ func success_chance(state: GameState) -> float:
 	var p: float = float(ch["base"])
 	for t in ch.get("terms", []):
 		p += float(t["weight"]) * clampf(float(state.resources.get(t["resource"], 0.0)) / float(t["max"]), 0.0, 1.0)
+	for tid in state.techniques:  # techniques that help comprehension raise the odds (GDD 6.4 insight_modifier)
+		p += float(registry.techniques.get(tid, {}).get("insight_modifier", 0.0))
 	return clampf(p, float(ch["min"]), float(ch["max"]))
 
 

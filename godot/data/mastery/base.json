@@ -1,0 +1,250 @@
+[
+ {
+  "id": "mastery_gather_wood",
+  "action": "gather_wood",
+  "name_key": "mastery.gather_wood",
+  "xp_base": 20,
+  "xp_growth": 1.35,
+  "xp_per_completion": 1,
+  "max_level": 20,
+  "milestones": [
+   {
+    "level": 5,
+    "name_key": "mastery.gather_wood.l5",
+    "effects": [],
+    "bonuses": [
+     {
+      "stat": "yield.wood",
+      "value": 0.1
+     }
+    ]
+   },
+   {
+    "level": 10,
+    "name_key": "mastery.gather_wood.l10",
+    "effects": [
+     {
+      "type": "add_resource",
+      "resource": "silver",
+      "amount": 20
+     }
+    ],
+    "bonuses": [
+     {
+      "stat": "speed.gather_wood",
+      "value": 0.1
+     }
+    ]
+   },
+   {
+    "level": 20,
+    "name_key": "mastery.gather_wood.l20",
+    "effects": [],
+    "bonuses": [
+     {
+      "stat": "yield.wood",
+      "value": 0.2
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "mastery_train_body",
+  "action": "train_body",
+  "name_key": "mastery.train_body",
+  "xp_base": 20,
+  "xp_growth": 1.35,
+  "xp_per_completion": 1,
+  "max_level": 20,
+  "milestones": [
+   {
+    "level": 5,
+    "name_key": "mastery.train_body.l5",
+    "effects": [],
+    "bonuses": [
+     {
+      "stat": "yield.body",
+      "value": 0.1
+     }
+    ]
+   },
+   {
+    "level": 10,
+    "name_key": "mastery.train_body.l10",
+    "effects": [],
+    "bonuses": [
+     {
+      "stat": "speed.train_body",
+      "value": 0.1
+     }
+    ]
+   },
+   {
+    "level": 20,
+    "name_key": "mastery.train_body.l20",
+    "effects": [],
+    "bonuses": [
+     {
+      "stat": "yield.body",
+      "value": 0.2
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "mastery_absorb_qi",
+  "action": "absorb_qi",
+  "name_key": "mastery.absorb_qi",
+  "xp_base": 20,
+  "xp_growth": 1.35,
+  "xp_per_completion": 1,
+  "max_level": 20,
+  "milestones": [
+   {
+    "level": 5,
+    "name_key": "mastery.absorb_qi.l5",
+    "effects": [],
+    "bonuses": [
+     {
+      "stat": "yield.spirit_qi",
+      "value": 0.2
+     }
+    ]
+   },
+   {
+    "level": 10,
+    "name_key": "mastery.absorb_qi.l10",
+    "effects": [],
+    "bonuses": [
+     {
+      "stat": "speed.absorb_qi",
+      "value": 0.2
+     }
+    ]
+   },
+   {
+    "level": 20,
+    "name_key": "mastery.absorb_qi.l20",
+    "effects": [],
+    "bonuses": [
+     {
+      "stat": "yield.spirit_qi",
+      "value": 0.4
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "mastery_refine_qi",
+  "action": "refine_qi",
+  "name_key": "mastery.refine_qi",
+  "xp_base": 20,
+  "xp_growth": 1.35,
+  "xp_per_completion": 1,
+  "max_level": 20,
+  "milestones": [
+   {
+    "level": 5,
+    "name_key": "mastery.refine_qi.l5",
+    "effects": [],
+    "bonuses": [
+     {
+      "stat": "yield.cultivation",
+      "value": 0.2
+     }
+    ]
+   },
+   {
+    "level": 10,
+    "name_key": "mastery.refine_qi.l10",
+    "effects": [],
+    "bonuses": [
+     {
+      "stat": "speed.refine_qi",
+      "value": 0.2
+     }
+    ]
+   },
+   {
+    "level": 20,
+    "name_key": "mastery.refine_qi.l20",
+    "effects": [],
+    "bonuses": [
+     {
+      "stat": "yield.cultivation",
+      "value": 0.4
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "mastery_gather_herbs",
+  "action": "gather_herbs",
+  "name_key": "mastery.gather_herbs",
+  "xp_base": 20,
+  "xp_growth": 1.35,
+  "xp_per_completion": 1,
+  "max_level": 20,
+  "milestones": [
+   {
+    "level": 5,
+    "name_key": "mastery.gather_herbs.l5",
+    "effects": [],
+    "bonuses": [
+     {
+      "stat": "yield.herb",
+      "value": 0.2
+     }
+    ]
+   },
+   {
+    "level": 10,
+    "name_key": "mastery.gather_herbs.l10",
+    "effects": [],
+    "bonuses": [
+     {
+      "stat": "speed.gather_herbs",
+      "value": 0.1
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "mastery_carry_water",
+  "action": "carry_water",
+  "name_key": "mastery.carry_water",
+  "xp_base": 20,
+  "xp_growth": 1.35,
+  "xp_per_completion": 1,
+  "max_level": 20,
+  "milestones": [
+   {
+    "level": 5,
+    "name_key": "mastery.carry_water.l5",
+    "effects": [],
+    "bonuses": [
+     {
+      "stat": "yield.silver",
+      "value": 0.2
+     }
+    ]
+   },
+   {
+    "level": 10,
+    "name_key": "mastery.carry_water.l10",
+    "effects": [],
+    "bonuses": [
+     {
+      "stat": "speed.carry_water",
+      "value": 0.1
+     }
+    ]
+   }
+  ]
+ }
+]
