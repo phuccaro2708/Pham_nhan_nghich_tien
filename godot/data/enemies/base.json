@@ -37,5 +37,85 @@
   "effects": [
    {"type": "add_resource", "resource": "herb", "amount": 3}
   ]
+ },
+ {
+  "id": "cave_bat",
+  "name_key": "enemy.cave_bat",
+  "hp": 24,
+  "atk": 6,
+  "def": 0,
+  "spd": 14,
+  "hit": 0.8,
+  "crit": 0.05,
+  "effects": [
+   {
+    "type": "add_resource",
+    "resource": "silver",
+    "amount": 4,
+    "chance": 0.7
+   }
+  ]
+ },
+ {
+  "id": "cave_spider",
+  "name_key": "enemy.cave_spider",
+  "hp": 34,
+  "atk": 7,
+  "def": 1,
+  "spd": 11,
+  "hit": 0.8,
+  "crit": 0.08,
+  "effects": [
+   {
+    "type": "add_resource",
+    "resource": "herb",
+    "amount": 2
+   }
+  ]
+ },
+ {
+  "id": "stone_ape",
+  "name_key": "enemy.stone_ape",
+  "hp": 52,
+  "atk": 8,
+  "def": 3,
+  "spd": 8,
+  "hit": 0.8,
+  "crit": 0.1,
+  "effects": [
+   {
+    "type": "add_resource",
+    "resource": "silver",
+    "amount": 6
+   },
+   {
+    "type": "add_resource",
+    "resource": "technique_fragment",
+    "amount": 2,
+    "chance": 0.3
+   }
+  ]
+ },
+ {
+  "id": "rock_guardian",
+  "name_key": "enemy.rock_guardian",
+  "hp": 90,
+  "atk": 9,
+  "def": 3,
+  "spd": 7,
+  "hit": 0.85,
+  "crit": 0.1,
+  "effects": [
+   {
+    "type": "add_resource",
+    "resource": "silver",
+    "amount": 12
+   },
+   {
+    "type": "add_resource",
+    "resource": "technique_fragment",
+    "amount": 2
+   }
+  ]
  }
 ]

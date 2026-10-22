@@ -701,3 +701,15 @@ Lý do: trước V2 mọi công pháp đã học đều cộng thưởng cùng l
 - Huyết Luyện: +3 công, +30% tốc độ rèn thể; **mỗi lần vào bí cảnh** (thắng, thua hay rút lui) thêm 1 thương tích.
 - Ngũ Hành: bonus nhỏ, `insight_modifier` +8% khi đột phá; cần manh mối `mem_cave_site` và 6 Thảo Dược để học.
 - Thương tích (`wounds`, tối đa 5): mỗi điểm giảm 8% sinh lực trong bí cảnh; thua thêm 1; hồi bằng hành động `rest_heal` (miễn phí tài nguyên, tốn 0,01 năm). Run bị hủy (offline) không gây thương. Thương tích không bao giờ chặn hành động nào.
+
+### 8.1. Thám hiểm có chuẩn bị (V3, GĐ1)
+
+Lý do: combat tự động chỉ có một quyết định (vào hay không). Muốn thám hiểm có chuyện để cân nhắc mà không thêm combat thủ công, V3 đặt quyết định ở **trước** và **giữa** chuyến đi, không phải trong từng đòn.
+
+- **Chuẩn bị**: trước khi vào, người chơi thấy mức nguy hiểm (`danger` 1–5), số tầng, chi phí tuổi mỗi tầng, rồi chọn công pháp chủ tu (V2) và số **Hồi Khí Đan** mang theo (tối đa 5; luyện từ 2 Thảo Dược, tốn 8 giây). Đan chưa dùng hết được trả lại kho khi chuyến kết thúc.
+- **Tầng**: một bí cảnh có nhiều tầng; đi sâu thì quái mạnh hơn (`enemy_scale`), chiến lợi phẩm nhiều hơn (`loot_mult`), mảnh công pháp rơi nhiều hơn, và mỗi tầng đã vượt tốn thêm `tier_age_years`.
+- **Tạm dừng, không tự rút lui**: vượt xong mỗi tầng (trừ tầng cuối) chuyến đi dừng hẳn, chờ người chơi chọn *Đi sâu hơn* hoặc *Thu tay, ra về* (giữ chiến lợi phẩm, trả tuổi theo số tầng đã vượt, không nhận thưởng thông). Không có ngưỡng rút lui tự động; nút Rút lui thủ công giữa trận vẫn có. Trong lúc chờ không tốn tuổi, và offline không bao giờ quyết thay: chuyến bị hủy như cũ (không phạt, giữ lại những gì đã nhận).
+- **Đan tự uống**: khi HP ≤ 40% tối đa, mỗi viên đã mang hồi 50% HP, không dùng RNG nên chuyến vẫn tái lập được từ save.
+- **Thua**: thêm 1 thương tích (V2), không mất vật phẩm bắt buộc. Game ghi `last_run` (bí cảnh, kết quả, số tầng, nguyên nhân: `wounded` khi đang mang ≥ 2 thương tích, `out_of_pills` khi không mang đan, `too_strong` còn lại) và gợi ý đổi cách chuẩn bị ở lần sau.
+- **Hắc Thạch Động**: 3 tầng (dơi và nhện đá → nhện và vượn đá, mạnh ×1,25, lợi ×1,5 → Thạch Thủ, mạnh ×1,5, lợi ×2,5), mở sau khi thông Rừng Trúc Ảnh, cần Luyện Khí 3. Mảnh công pháp là vật liệu cho V4 (Nghịch Mệnh Tàn Kinh).
+- Tương tác: công pháp chủ tu (build mạnh/yếu), thọ nguyên (tuổi mỗi tầng), tài nguyên (đan, thảo dược), tri thức (`mem_black_rock`), offline (hủy chuyến), cốt truyện (ký ức `mem_black_rock` để V5 nhận ra).

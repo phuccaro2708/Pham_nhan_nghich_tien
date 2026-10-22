@@ -49,5 +49,29 @@
   "blockers": [
    {"needs": {"type": "realm_at_least", "realm": "luyen_khi_9"}, "reason_key": "path.foundation.blocked_realm"}
   ]
+ },
+ {
+  "id": "black_rock",
+  "name_key": "path.black_rock.name",
+  "goal_key": "path.black_rock.goal",
+  "visible_when": {
+   "type": "flag_is",
+   "flag": "bamboo_forest_cleared",
+   "value": true
+  },
+  "done_when": {
+   "type": "flag_is",
+   "flag": "black_rock_cleared",
+   "value": true
+  },
+  "blockers": [
+   {
+    "needs": {
+     "type": "realm_at_least",
+     "realm": "luyen_khi_3"
+    },
+    "reason_key": "path.black_rock.blocked_realm"
+   }
+  ]
  }
 ]

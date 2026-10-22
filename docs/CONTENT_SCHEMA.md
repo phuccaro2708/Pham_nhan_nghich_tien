@@ -164,3 +164,12 @@ Sửa so với Phase 1: `MAX_AMOUNT` 1e7 → 1e15 (mục "Quy tắc bổ sung" �
 - Effect `heal_wounds {amount ≥ 1}`; condition `wounds_at_least {value}`.
 - `config/progression.json`: `combat.max_wounds`, `combat.wound_hp_penalty`, `technique.switch_age_years`.
 - Save v7: `main_technique` ("" hoặc công pháp `main` đã học), `wounds` ∈ [0, max_wounds]; mốc cũ được migration bổ sung 2 trường.
+
+## V3 — dungeon tiers, `prep`, resource mới (schema_version 8)
+
+- Dungeon: đúng một trong `enemies[]` (1 tầng) hoặc `tiers[]` = `{enemies[], enemy_scale ≥ 0 (mặc định 0), loot_mult ≥ 0 (mặc định 1), clear_effects?[]}`; thêm `danger ≥ 0` (hiển thị 1–5) và `tier_age_years ≥ 0` (tuổi tốn thêm cho mỗi tầng đã vượt). `clear_effects` của tầng chạy khi vượt tầng đó; `clear_effects` của bí cảnh chạy khi thông tầng cuối.
+- `enemy_scale` nhân hp/atk/def; `loot_mult` nhân `amount` của effect `add_resource` trong `effects` của quái (xác suất `chance` giữ nguyên).
+- `config/progression.json.combat`: `max_pills`, `pill_threshold`, `pill_heal`, `tier_heal`.
+- Resource `healing_pill` (id cố định, Combat dùng), `technique_fragment`.
+- `enter_dungeon(id, prep)` với `prep = {pills: n}`; lý do từ chối mới: `too_many_pills`, `no_pills`, `not_paused` (cho continue/leave).
+- Save v8: `combat.tier/paused/pills`; `last_run` = `{}` hoặc `{dungeon, result ∈ cleared|defeated|retreated|left, depth ∈ [0, số tầng], cause ∈ ""|wounded|out_of_pills|too_strong}`. Chuyến đang dừng phải có `index` = số quái của tầng, `enemy_hp` 0 và chưa phải tầng cuối.

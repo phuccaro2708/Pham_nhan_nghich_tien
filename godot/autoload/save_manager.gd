@@ -138,6 +138,10 @@ func migrate(data: Dictionary) -> Dictionary:
 				if not (d.get("checkpoint", {}) as Dictionary).is_empty():
 					d["checkpoint"]["main_technique"] = ""
 					d["checkpoint"]["wounds"] = 0
+			7:  # v8 adds prepared exploration: a run in progress gets tier 0 / not paused / no pills, nothing recorded yet
+				d["last_run"] = {}
+				if not (d.get("combat", {}) as Dictionary).is_empty():
+					d["combat"].merge({"tier": 0, "paused": false, "pills": 0})
 			_:
 				return {"error": "no migration from version %d" % v}
 		v += 1
@@ -156,7 +160,7 @@ func validate_state(d: Dictionary, registry: ContentRegistry) -> Array:
 	if not GameState.is_number(d.get("age_years")) or float(d["age_years"]) < 0.0:
 		errs.append("bad age_years")
 	for key in ["resources", "upgrades", "flags", "action_counts", "active_action", "save_metadata", "life", "orphans",
-			"mastery", "story", "relations", "automation", "combat", "dungeon_clears"]:
+			"mastery", "story", "relations", "automation", "combat", "dungeon_clears", "last_run"]:
 		if typeof(d.get(key)) != TYPE_DICTIONARY:
 			errs.append("%s must be an object" % key)
 	if typeof(d.get("techniques")) != TYPE_ARRAY:
@@ -207,30 +211,60 @@ func validate_state(d: Dictionary, registry: ContentRegistry) -> Array:
 	return errs
 
 
+const RUN_RESULTS: Array = ["cleared", "defeated", "retreated", "left"]
+const RUN_CAUSES: Array = ["", "wounded", "out_of_pills", "too_strong"]
+
+
 func _validate_combat(d: Dictionary, registry: ContentRegistry, errs: Array) -> void:
 	for id in d["dungeon_clears"]:
 		if not registry.has_dungeon(id) or not GameState.is_int(d["dungeon_clears"][id]) or int(d["dungeon_clears"][id]) < 0:
 			errs.append("bad dungeon_clears %s" % id)
+	_validate_last_run(d["last_run"], registry, errs)
 	var c: Dictionary = d["combat"]
 	if c.is_empty():
 		return
-	var dg: Dictionary = registry.dungeons.get(c.get("dungeon", ""), {})
-	if dg.is_empty():
+	if not registry.has_dungeon(c.get("dungeon", "")):
 		errs.append("unknown dungeon in combat")
 		return
-	for k in ["index", "player_hp", "enemy_hp", "player_cd", "enemy_cd"]:
+	for k in ["tier", "pills", "index", "player_hp", "enemy_hp", "player_cd", "enemy_cd"]:
 		if not GameState.is_int(c.get(k)):
 			errs.append("bad combat %s" % k)
 			return
-	var n: int = (dg["enemies"] as Array).size()
-	if int(c["index"]) < 0 or int(c["index"]) >= n or int(c["player_hp"]) < 1 or int(c["enemy_hp"]) < 1 			or int(c["player_cd"]) < 1 or int(c["enemy_cd"]) < 1:
+	if typeof(c.get("paused")) != TYPE_BOOL:
+		errs.append("bad combat paused")
+		return
+	var tiers: Array = registry.dungeon_tiers(c["dungeon"])
+	var tier: int = int(c["tier"])
+	var cfg: Dictionary = registry.config.get("combat", {})
+	if tier < 0 or tier >= tiers.size() or int(c["pills"]) < 0 or int(c["pills"]) > int(cfg.get("max_pills", 0)):
 		errs.append("impossible combat progress")
-	elif int(c["enemy_hp"]) > int(registry.enemies[dg["enemies"][int(c["index"])]]["hp"]):
+		return
+	var n: int = (tiers[tier]["enemies"] as Array).size()
+	var idx: int = int(c["index"])
+	var ok: bool = int(c["player_hp"]) >= 1 and int(c["player_cd"]) >= 1 and int(c["enemy_cd"]) >= 1
+	if c["paused"]:  # between tiers: the tier is done, nobody is fighting
+		ok = ok and tier < tiers.size() - 1 and idx == n and int(c["enemy_hp"]) == 0
+	else:
+		ok = ok and idx >= 0 and idx < n and int(c["enemy_hp"]) >= 1
+	if not ok:
+		errs.append("impossible combat progress")
+	elif not c["paused"] and int(c["enemy_hp"]) > int(registry.scaled_enemy(c["dungeon"], tier, idx)["hp"]):
 		errs.append("enemy_hp above the enemy's maximum")
 	elif not (d["active_action"] as Dictionary).is_empty():
 		errs.append("action running during a dungeon run")
 	elif (d["life"] as Dictionary).get("status") != "alive":
 		errs.append("deceased character in a dungeon")
+
+
+func _validate_last_run(lr: Dictionary, registry: ContentRegistry, errs: Array) -> void:
+	if lr.is_empty():
+		return
+	if not registry.has_dungeon(lr.get("dungeon", "")):
+		errs.append("unknown dungeon in last_run")
+	elif not (RUN_RESULTS.has(lr.get("result")) and RUN_CAUSES.has(lr.get("cause"))
+			and GameState.is_int(lr.get("depth")) and int(lr["depth"]) >= 0
+			and int(lr["depth"]) <= registry.dungeon_tiers(lr["dungeon"]).size()):
+		errs.append("bad last_run")
 
 
 ## A checkpoint is a world snapshot: validate it by swapping it into a copy of the state and running the same checks.

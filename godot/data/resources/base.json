@@ -48,5 +48,29 @@
   "cap": 100,
   "initial": 0,
   "group": "materials"
+ },
+ {
+  "id": "healing_pill",
+  "name_key": "resource.healing_pill",
+  "cap": 20,
+  "initial": 0,
+  "group": "materials",
+  "visible_when": {
+   "type": "flag_is",
+   "flag": "bamboo_forest_cleared",
+   "value": true
+  }
+ },
+ {
+  "id": "technique_fragment",
+  "name_key": "resource.technique_fragment",
+  "cap": 50,
+  "initial": 0,
+  "group": "materials",
+  "visible_when": {
+   "type": "flag_is",
+   "flag": "bamboo_forest_cleared",
+   "value": true
+  }
  }
 ]

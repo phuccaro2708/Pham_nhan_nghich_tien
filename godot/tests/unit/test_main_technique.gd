@@ -161,7 +161,7 @@ func test_v6_save_migrates_to_v7_including_checkpoint() -> void:
 	(old["checkpoint"] as Dictionary).erase("main_technique")
 	(old["checkpoint"] as Dictionary).erase("wounds")
 	var m: Dictionary = sm.migrate(old)
-	assert_eq(m["schema_version"], 7)
+	assert_eq(m["schema_version"], GameState.SCHEMA_VERSION)
 	assert_eq(m["main_technique"], "")
 	assert_eq(m["wounds"], 0)
 	assert_eq(sm.validate_state(m, reg), [])

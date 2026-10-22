@@ -44,3 +44,7 @@ Kết quả chạy đầy đủ (headless): **183/183 pass**, 11 script, 1852 as
 ## V2 — `tests/unit/test_main_technique.gd`
 
 Chỉ chủ tu có bonus; 3 build khác biệt; luật + chi phí đổi chủ tu; 3 hành động học; thương tích (thua, Huyết Luyện, abort, trần, hồi, Thanh Mộc); save round-trip + validate; migration v6→v7 (cả mốc); mốc mang build/thương; validate traits/role. Kết quả: 205/205 pass.
+
+## V3 — `tests/unit/test_prepared_dungeon.gd`
+
+Tầng là dữ liệu (kể cả `enemies` phẳng); điều kiện vào; tầng sâu mạnh hơn và lợi hơn; chuyến dừng chờ người chơi, đợi không tốn tuổi, offline không quyết thay; `leave_run` giữ lợi và trả tuổi theo tầng; `continue/leave` chỉ khi đang dừng; thông hết trả thưởng đúng một lần và ghi `last_run`; đan trừ khi vào, từ chối không tốn gì; đan tự uống khi máu thấp; thua ghi nguyên nhân + thương tích; tái lập từ cùng seed; chuẩn bị đổi kết quả (20 seed, không đan vs 5 đan); luyện đan; save round-trip lúc đang dừng + validate (tier/pills/index/last_run sai); migration 7→8; validate content tầng sai.

@@ -639,7 +639,7 @@ func _validate_combat() -> void:
 		errors.append("config.combat.player must be an object")
 		return
 	_validate_combatant(cfg["player"], "config.combat.player")
-	for k in ["stage_bonus", "crit_multiplier", "interval_base", "heal_after_kill"]:
+	for k in ["stage_bonus", "crit_multiplier", "interval_base", "heal_after_kill", "max_pills", "pill_threshold", "pill_heal", "tier_heal"]:
 		if not (GameState.is_number(cfg.get(k)) and float(cfg[k]) >= 0.0):
 			errors.append("config.combat.%s must be a number >= 0" % k)
 	if GameState.is_number(cfg.get("interval_base")) and float(cfg["interval_base"]) < 1.0:
@@ -663,13 +663,56 @@ func _validate_combat() -> void:
 		errors.append_array(_conditions.validate(d.get("requirements", {}), self, p + ".requirements"))
 		if not (GameState.is_number(d.get("age_cost_years", 0.0)) and float(d.get("age_cost_years", 0.0)) >= 0.0):
 			errors.append("%s: age_cost_years must be >= 0" % p)
-		if typeof(d.get("enemies")) != TYPE_ARRAY or (d["enemies"] as Array).is_empty():
-			errors.append("%s: enemies must be a non-empty array" % p)
+		if d.has("tiers") == d.has("enemies"):
+			errors.append("%s: needs exactly one of enemies / tiers" % p)
+		elif typeof(d.get("tiers", d.get("enemies"))) != TYPE_ARRAY or (d.get("tiers", d.get("enemies")) as Array).is_empty():
+			errors.append("%s: enemies / tiers must be a non-empty array" % p)
 		else:
-			for eid in d["enemies"]:
-				if not enemies.has(eid):
-					errors.append("%s: unknown enemy '%s'" % [p, eid])
+			for t in dungeon_tiers(id):
+				_validate_tier(t, p)
+		for k in ["tier_age_years", "danger"]:
+			if d.has(k) and not (GameState.is_number(d[k]) and float(d[k]) >= 0.0):
+				errors.append("%s: %s must be >= 0" % [p, k])
 		_validate_effect_list(d.get("clear_effects", []), p)
+
+
+## A dungeon's tiers (V3). A flat `enemies` list is one tier with no scaling, so older dungeons need no change.
+## enemy_scale raises hp/atk/def of the tier's enemies, loot_mult multiplies their add_resource amounts.
+func dungeon_tiers(id: String) -> Array:
+	var d: Dictionary = dungeons[id]
+	if not d.has("tiers"):
+		return [{"enemies": d["enemies"], "enemy_scale": 0.0, "loot_mult": 1.0, "clear_effects": []}]
+	var out: Array = []
+	for t in d["tiers"]:
+		out.append({"enemies": t.get("enemies", []), "enemy_scale": float(t.get("enemy_scale", 0.0)),
+			"loot_mult": float(t.get("loot_mult", 1.0)), "clear_effects": t.get("clear_effects", [])})
+	return out
+
+
+## The enemy as met in `tier`: hp/atk/def grow with the tier's enemy_scale, its loot with loot_mult.
+func scaled_enemy(dungeon_id: String, tier: int, index: int) -> Dictionary:
+	var t: Dictionary = dungeon_tiers(dungeon_id)[tier]
+	var e: Dictionary = (enemies[t["enemies"][index]] as Dictionary).duplicate(true)
+	var k: float = 1.0 + float(t["enemy_scale"])
+	e["hp"] = maxi(int(round(float(e["hp"]) * k)), 1)
+	e["atk"] = float(e["atk"]) * k
+	e["def"] = float(e["def"]) * k
+	for fx in e.get("effects", []):
+		if fx["type"] == "add_resource":
+			fx["amount"] = float(fx["amount"]) * float(t["loot_mult"])
+	return e
+
+
+func _validate_tier(t: Dictionary, p: String) -> void:
+	if (t["enemies"] as Array).is_empty():
+		errors.append("%s: a tier needs enemies" % p)
+	for eid in t["enemies"]:
+		if not enemies.has(eid):
+			errors.append("%s: unknown enemy '%s'" % [p, eid])
+	for k in ["enemy_scale", "loot_mult"]:
+		if float(t[k]) < 0.0:
+			errors.append("%s: %s must be >= 0" % [p, k])
+	_validate_effect_list(t["clear_effects"], p)
 
 
 func _validate_combatant(c: Dictionary, p: String) -> void:

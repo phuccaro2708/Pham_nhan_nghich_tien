@@ -37,6 +37,7 @@ func _ready() -> void:
 	actions.story.event_pending.connect(func(n: String) -> void: EventBus.story_pending.emit(n))
 	actions.story.choice_resolved.connect(func(n: String, c: String) -> void: EventBus.story_resolved.emit(n, c))
 	actions.combat.enemy_defeated.connect(func(d: String, e: String) -> void: EventBus.dungeon_enemy_defeated.emit(d, e))
+	actions.combat.tier_cleared.connect(func(d: String, t: int) -> void: EventBus.dungeon_tier_cleared.emit(d, t))
 	actions.combat.run_ended.connect(func(d: String, r: String) -> void: EventBus.dungeon_run_ended.emit(d, r))
 	actions.automation.status_changed.connect(func(s: String, r: String) -> void: EventBus.automation_changed.emit(s, r))
 	var cfg := ConfigFile.new()
@@ -129,8 +130,16 @@ func set_main_technique(id: String) -> Dictionary:
 	return actions.set_main_technique(state, id)
 
 
-func enter_dungeon(id: String) -> Dictionary:
-	return actions.enter_dungeon(state, id)
+func enter_dungeon(id: String, prep: Dictionary = {}) -> Dictionary:
+	return actions.enter_dungeon(state, id, prep)
+
+
+func continue_run() -> Dictionary:
+	return actions.continue_run(state)
+
+
+func leave_run() -> Dictionary:
+	return actions.leave_run(state)
 
 
 ## Stop leaves a dungeon run too (the time spent is still paid in age).

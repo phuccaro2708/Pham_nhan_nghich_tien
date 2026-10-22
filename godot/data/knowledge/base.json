@@ -142,5 +142,11 @@
   "name_key": "knowledge.mem_last_words",
   "desc_key": "knowledge.mem_last_words.desc",
   "group": "memory"
+ },
+ {
+  "id": "mem_black_rock",
+  "name_key": "knowledge.mem_black_rock",
+  "desc_key": "knowledge.mem_black_rock.desc",
+  "group": "memory"
  }
 ]

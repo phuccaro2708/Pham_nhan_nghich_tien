@@ -35,7 +35,11 @@
   "interval_base": 100,
   "heal_after_kill": 0.2,
   "max_wounds": 5,
-  "wound_hp_penalty": 0.08
+  "wound_hp_penalty": 0.08,
+  "max_pills": 5,
+  "pill_threshold": 0.4,
+  "pill_heal": 0.5,
+  "tier_heal": 0.3
  },
  "technique": {
   "switch_age_years": 0.1

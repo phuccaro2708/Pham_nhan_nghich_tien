@@ -2,7 +2,7 @@ class_name GameState
 extends RefCounted
 ## Pure runtime data. No Node references, no behaviour beyond (de)serialisation.
 
-const SCHEMA_VERSION: int = 7
+const SCHEMA_VERSION: int = 8
 const START_AGE_YEARS: float = 16.0
 ## Fixed precision so values survive a JSON round trip and never drift.
 const SNAP_SCALE: float = 1000000.0
@@ -49,8 +49,11 @@ var loop: int = 0
 var checkpoint: Dictionary = {}
 ## Automation queue (see AutomationQueue). Never holds a story choice or a breakthrough.
 var automation: Dictionary = {"slots": [], "cursor": 0, "loop": false, "status": "idle", "reason": "", "instant_streak": 0}
-## Dungeon run in progress ({} = none): {dungeon, index (enemy being fought), player_hp, enemy_hp, player_cd, enemy_cd} (see CombatSystem).
+## Dungeon run in progress ({} = none): {dungeon, tier, paused (waiting for the player after a tier), pills (prepared, left),
+## index (enemy being fought in the tier), player_hp, enemy_hp, player_cd, enemy_cd} (see CombatSystem).
 var combat: Dictionary = {}
+## How the last finished run ended ({} = none yet): {dungeon, result, depth (tiers cleared), cause}. Drives the "change your preparation" hint.
+var last_run: Dictionary = {}
 ## dungeon_id -> number of cleared runs.
 var dungeon_clears: Dictionary = {}
 ## Data the running content does not recognise. Preserved, never deleted: {resources, upgrades, action_counts, active_action}.
@@ -111,6 +114,7 @@ func to_dict() -> Dictionary:
 		"checkpoint": checkpoint.duplicate(true),
 		"automation": automation.duplicate(true),
 		"combat": combat.duplicate(true),
+		"last_run": last_run.duplicate(true),
 		"dungeon_clears": dungeon_clears.duplicate(true),
 	}
 
@@ -172,9 +176,12 @@ static func from_dict(d: Dictionary) -> GameState:
 		s.checkpoint = w.world_snapshot()
 	var cb: Dictionary = d.get("combat", {})
 	if not cb.is_empty():
-		s.combat = {"dungeon": str(cb["dungeon"])}
-		for k in ["index", "player_hp", "enemy_hp", "player_cd", "enemy_cd"]:
-			s.combat[k] = int(cb[k])
+		s.combat = {"dungeon": str(cb["dungeon"]), "paused": bool(cb.get("paused", false))}
+		for k in ["tier", "pills", "index", "player_hp", "enemy_hp", "player_cd", "enemy_cd"]:
+			s.combat[k] = int(cb.get(k, 0))
+	var lr: Dictionary = d.get("last_run", {})
+	if not lr.is_empty():
+		s.last_run = {"dungeon": str(lr["dungeon"]), "result": str(lr["result"]), "depth": int(lr["depth"]), "cause": str(lr.get("cause", ""))}
 	for k in d.get("dungeon_clears", {}):
 		s.dungeon_clears[str(k)] = int(d["dungeon_clears"][k])
 	var au: Dictionary = d.get("automation", {})

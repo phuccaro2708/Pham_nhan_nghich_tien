@@ -12,5 +12,63 @@
    {"type": "add_resource", "resource": "silver", "amount": 10},
    {"type": "set_flag", "flag": "bamboo_forest_cleared", "value": true}
   ]
+ },
+ {
+  "id": "black_rock_cave",
+  "name_key": "dungeon.black_rock_cave.name",
+  "desc_key": "dungeon.black_rock_cave.desc",
+  "visible_when": {
+   "type": "flag_is",
+   "flag": "bamboo_forest_cleared",
+   "value": true
+  },
+  "requirements": {
+   "type": "realm_at_least",
+   "realm": "luyen_khi_3"
+  },
+  "danger": 3,
+  "age_cost_years": 0.03,
+  "tier_age_years": 0.02,
+  "tiers": [
+   {
+    "enemies": [
+     "cave_bat",
+     "cave_spider"
+    ],
+    "enemy_scale": 0.0,
+    "loot_mult": 1.0
+   },
+   {
+    "enemies": [
+     "cave_spider",
+     "stone_ape"
+    ],
+    "enemy_scale": 0.25,
+    "loot_mult": 1.5
+   },
+   {
+    "enemies": [
+     "rock_guardian"
+    ],
+    "enemy_scale": 0.5,
+    "loot_mult": 2.5
+   }
+  ],
+  "clear_effects": [
+   {
+    "type": "add_resource",
+    "resource": "silver",
+    "amount": 30
+   },
+   {
+    "type": "learn_knowledge",
+    "knowledge": "mem_black_rock"
+   },
+   {
+    "type": "set_flag",
+    "flag": "black_rock_cleared",
+    "value": true
+   }
+  ]
  }
 ]

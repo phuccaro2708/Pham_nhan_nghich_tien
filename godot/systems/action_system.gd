@@ -158,14 +158,27 @@ func set_main_technique(state: GameState, technique_id: String) -> Dictionary:
 	return {"ok": true, "reason": ""}
 
 
-func enter_dungeon(state: GameState, dungeon_id: String) -> Dictionary:
-	var check: Dictionary = combat.check_enter(state, dungeon_id)
+## prep = {pills: n}: pills are taken from the stock at the door and come back if unused.
+func enter_dungeon(state: GameState, dungeon_id: String, prep: Dictionary = {}) -> Dictionary:
+	var check: Dictionary = combat.check_enter(state, dungeon_id, prep)
 	if not check["ok"]:
 		return check
 	stop_action(state, "entered_dungeon")
 	automation.stop(state, "entered_dungeon")
-	combat.begin(state, dungeon_id)
+	combat.begin(state, dungeon_id, prep)
 	return check
+
+
+## Answers to the pause after a tier. Only the player calls these; the clock and the automation queue never do.
+func continue_run(state: GameState) -> Dictionary:
+	return combat.continue_run(state)
+
+
+func leave_run(state: GameState) -> Dictionary:
+	var r: Dictionary = combat.leave_run(state)
+	if r["ok"]:
+		story.scan(state)
+	return r
 
 
 ## Cancels the active action. Costs paid at start are refunded; nothing is rewarded.
@@ -193,6 +206,9 @@ func advance(state: GameState, ticks: int) -> void:
 			if offline_mode:  # nobody is there to fight; the run is dropped, not decided for the player
 				combat.abort(state)
 				continue
+			if combat.is_paused(state):  # waiting for the player costs nothing and changes nothing
+				state.game_time_ticks += remaining
+				return
 			if combat.step(state):
 				story.scan(state)
 			state.game_time_ticks += 1

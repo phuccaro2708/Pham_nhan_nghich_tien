@@ -5,10 +5,16 @@ extends RefCounted
 ## reproducible from the save. All outcomes (loot, clear reward, age) are applied in kill_enemy / _end
 ## only, after the progress counters moved, so save/load cannot pay them twice.
 ## Skill multipliers do not exist yet (GDD formula with SkillMultiplier = 1).
+## V3: a dungeon has tiers (registry.dungeon_tiers). After each tier but the last the run PAUSES (combat.paused)
+## until the player calls continue_run / leave_run; nothing here ever decides that for them. Pills prepared at the
+## door are drunk automatically at low HP (no RNG), leftovers go back to the stock when the run ends.
 
 signal enemy_defeated(dungeon_id: String, enemy_id: String)
-## result: "cleared" | "defeated" | "retreated" | "aborted"
+signal tier_cleared(dungeon_id: String, tier: int)
+## result: "cleared" | "defeated" | "retreated" | "left" | "aborted"
 signal run_ended(dungeon_id: String, result: String)
+
+const PILL: String = "healing_pill"
 
 var registry: ContentRegistry
 var conditions: ConditionEvaluator
@@ -47,8 +53,16 @@ func interval_ticks(spd: float) -> int:
 	return maxi(1, int(round(float(_cfg()["interval_base"]) / spd)))
 
 
-## {ok, reason, detail}. Never mutates state.
-func check_enter(state: GameState, dungeon_id: String) -> Dictionary:
+func is_paused(state: GameState) -> bool:
+	return bool(state.combat.get("paused", false))
+
+
+func max_hp(state: GameState) -> int:
+	return int(player_stats(state)["hp"])
+
+
+## {ok, reason, detail}. Never mutates state. prep = {pills: n}.
+func check_enter(state: GameState, dungeon_id: String, prep: Dictionary = {}) -> Dictionary:
 	if not registry.has_dungeon(dungeon_id):
 		return {"ok": false, "reason": "unknown_dungeon", "detail": dungeon_id}
 	if not lifespan.is_alive(state):
@@ -63,28 +77,43 @@ func check_enter(state: GameState, dungeon_id: String) -> Dictionary:
 	var fail: Dictionary = conditions.first_failure(def.get("requirements", {}), state)
 	if not fail.is_empty():
 		return {"ok": false, "reason": "requirements_not_met", "detail": fail}
+	var pills: int = int(prep.get("pills", 0))
+	if pills < 0 or pills > int(_cfg()["max_pills"]):
+		return {"ok": false, "reason": "too_many_pills", "detail": _cfg()["max_pills"]}
+	if pills > 0 and effects.resource_system.get_amount(state, PILL) < pills:
+		return {"ok": false, "reason": "no_pills", "detail": pills}
 	return {"ok": true, "reason": "", "detail": null}
 
 
-func begin(state: GameState, dungeon_id: String) -> void:
-	var first: Dictionary = registry.enemies[registry.dungeons[dungeon_id]["enemies"][0]]
+func enemy_at(dungeon_id: String, tier: int, index: int) -> Dictionary:
+	return registry.scaled_enemy(dungeon_id, tier, index)
+
+
+func begin(state: GameState, dungeon_id: String, prep: Dictionary = {}) -> void:
+	var pills: int = int(prep.get("pills", 0))
+	if pills > 0:
+		effects.resource_system.spend(state, {PILL: float(pills)})
+	var first: Dictionary = enemy_at(dungeon_id, 0, 0)
 	var ps: Dictionary = player_stats(state)
-	state.combat = {"dungeon": dungeon_id, "index": 0, "player_hp": ps["hp"], "enemy_hp": int(first["hp"]),
+	state.combat = {"dungeon": dungeon_id, "tier": 0, "paused": false, "pills": pills, "index": 0,
+		"player_hp": ps["hp"], "enemy_hp": int(first["hp"]),
 		"player_cd": interval_ticks(ps["spd"]), "enemy_cd": interval_ticks(float(first["spd"]))}
 
 
 ## One fixed tick. Returns true when a kill or the end of the run happened (the caller rescans story triggers).
 func step(state: GameState) -> bool:
 	var c: Dictionary = state.combat
-	var def: Dictionary = registry.dungeons[c["dungeon"]]
-	var enemy: Dictionary = registry.enemies[def["enemies"][int(c["index"])]]
+	if is_paused(state):
+		return false
+	var enemy: Dictionary = enemy_at(c["dungeon"], int(c["tier"]), int(c["index"]))
 	var ps: Dictionary = player_stats(state)
+	_drink_pill(state, ps)
 	c["player_cd"] = int(c["player_cd"]) - 1
 	if int(c["player_cd"]) <= 0:
 		c["player_cd"] = interval_ticks(ps["spd"])
 		c["enemy_hp"] = maxi(int(c["enemy_hp"]) - _damage(state, ps, enemy), 0)
 		if int(c["enemy_hp"]) <= 0:
-			_kill_enemy(state, def, enemy, ps)
+			_kill_enemy(state, enemy, ps)
 			return true
 	c["enemy_cd"] = int(c["enemy_cd"]) - 1
 	if int(c["enemy_cd"]) <= 0:
@@ -106,16 +135,37 @@ func _damage(state: GameState, attacker: Dictionary, defender: Dictionary) -> in
 	return int(dmg)
 
 
-func _kill_enemy(state: GameState, def: Dictionary, enemy: Dictionary, ps: Dictionary) -> void:
+## Below `pill_threshold` of max HP a prepared pill is drunk: no choice, no roll, so a run stays reproducible.
+func _drink_pill(state: GameState, ps: Dictionary) -> void:
 	var c: Dictionary = state.combat
-	var done_idx: int = int(c["index"])
-	c["index"] = done_idx + 1  # progress first: the loot below is paid exactly once
-	effects.apply(state, enemy.get("effects", []))
-	enemy_defeated.emit(c["dungeon"], enemy["id"])
-	if int(c["index"]) >= (def["enemies"] as Array).size():
-		_end(state, "cleared")
+	var hp: int = int(c["player_hp"])
+	if int(c["pills"]) <= 0 or hp >= int(ps["hp"]) or float(hp) > float(_cfg()["pill_threshold"]) * float(ps["hp"]):
 		return
-	var nxt: Dictionary = registry.enemies[def["enemies"][int(c["index"])]]
+	c["pills"] = int(c["pills"]) - 1
+	c["player_hp"] = mini(hp + int(ceil(float(ps["hp"]) * float(_cfg()["pill_heal"]))), int(ps["hp"]))
+
+
+func _kill_enemy(state: GameState, enemy: Dictionary, ps: Dictionary) -> void:
+	var c: Dictionary = state.combat
+	var id: String = c["dungeon"]
+	var tiers: Array = registry.dungeon_tiers(id)
+	var tier: Dictionary = tiers[int(c["tier"])]
+	c["index"] = int(c["index"]) + 1  # progress first: the loot below is paid exactly once
+	effects.apply(state, enemy.get("effects", []))
+	enemy_defeated.emit(id, enemy["id"])
+	if int(c["index"]) >= (tier["enemies"] as Array).size():
+		var last: bool = int(c["tier"]) >= tiers.size() - 1
+		if not last:
+			c["paused"] = true
+			c["enemy_hp"] = 0
+			c["enemy_cd"] = 1
+		effects.apply(state, tier["clear_effects"])
+		if last:
+			_end(state, "cleared")
+		else:
+			tier_cleared.emit(id, int(c["tier"]))
+		return
+	var nxt: Dictionary = enemy_at(id, int(c["tier"]), int(c["index"]))
 	c["enemy_hp"] = int(nxt["hp"])
 	c["enemy_cd"] = interval_ticks(float(nxt["spd"]))
 	var heal: int = int(ceil(float(ps["hp"]) * float(_cfg()["heal_after_kill"])))
@@ -126,6 +176,29 @@ func _kill_enemy(state: GameState, def: Dictionary, enemy: Dictionary, ps: Dicti
 func retreat(state: GameState) -> void:
 	if is_active(state):
 		_end(state, "retreated")
+
+
+## The two ways to answer a pause. The player chooses; neither runs offline or by automation.
+func continue_run(state: GameState) -> Dictionary:
+	if not is_paused(state):
+		return {"ok": false, "reason": "not_paused"}
+	var c: Dictionary = state.combat
+	c["tier"] = int(c["tier"]) + 1
+	c["index"] = 0
+	c["paused"] = false
+	var e: Dictionary = enemy_at(c["dungeon"], int(c["tier"]), 0)
+	c["enemy_hp"] = int(e["hp"])
+	c["enemy_cd"] = interval_ticks(float(e["spd"]))
+	var top: int = max_hp(state)
+	c["player_hp"] = mini(int(c["player_hp"]) + int(ceil(float(top) * float(_cfg()["tier_heal"]))), top)
+	return {"ok": true, "reason": ""}
+
+
+func leave_run(state: GameState) -> Dictionary:
+	if not is_paused(state):
+		return {"ok": false, "reason": "not_paused"}
+	_end(state, "left")
+	return {"ok": true, "reason": ""}
 
 
 ## Drops the run without cost or reward (offline, death, rewind).
@@ -140,13 +213,22 @@ func add_wounds(state: GameState, n: int) -> void:
 
 
 func _end(state: GameState, result: String) -> void:
-	var id: String = state.combat["dungeon"]
+	var c: Dictionary = state.combat
+	var id: String = c["dungeon"]
 	var def: Dictionary = registry.dungeons[id]
+	var depth: int = int(c["tier"]) + (1 if is_paused(state) or result == "cleared" else 0)  # tiers cleared
+	var pills_left: int = int(c["pills"])
+	var cause: String = ""
+	if result == "defeated":
+		cause = "wounded" if state.wounds >= 2 else ("out_of_pills" if pills_left == 0 else "too_strong")
 	state.combat = {}  # cleared before rewards so a re-entrant call cannot see a finished run
+	if pills_left > 0:
+		effects.resource_system.add(state, PILL, float(pills_left))
 	if result == "cleared":
 		state.dungeon_clears[id] = int(state.dungeon_clears.get(id, 0)) + 1
 		effects.apply(state, def.get("clear_effects", []))
 	if result != "aborted":
+		state.last_run = {"dungeon": id, "result": result, "depth": depth, "cause": cause}
 		add_wounds(state, (1 if result == "defeated" else 0) + effects.trait_total(state, "injury_per_run"))
-		lifespan.commit_age(state, float(def.get("age_cost_years", 0.0)))
+		lifespan.commit_age(state, float(def.get("age_cost_years", 0.0)) + float(def.get("tier_age_years", 0.0)) * depth)
 	run_ended.emit(id, result)
