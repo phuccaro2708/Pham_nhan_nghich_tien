@@ -123,29 +123,14 @@ func migrate(data: Dictionary) -> Dictionary:
 				d["relations"] = {}
 				d["techniques"] = []
 				d["automation"] = GameState.new().automation.duplicate(true)
-			3:  # v4 adds knowledge; infer it from progress so an existing save keeps every action it could already use
-				d["knowledge"] = _infer_knowledge(d)
+			3:  # v4 adds knowledge; ContentMigration infers it (knowledge `legacy_when`) so an old save keeps every action it could use
+				d["knowledge"] = []
+				d["infer_knowledge"] = true
 			_:
 				return {"error": "no migration from version %d" % v}
 		v += 1
 		d["schema_version"] = v
 	return d
-
-
-## Knowledge a v3 save must already have, judged from realm and flags (old saves had no knowledge system).
-func _infer_knowledge(d: Dictionary) -> Array:
-	var realm: String = str(d.get("realm_id", ""))
-	var flags: Dictionary = d.get("flags", {}) if typeof(d.get("flags")) == TYPE_DICTIONARY else {}
-	var k: Array = ["village_life", "literacy", "herb_basics"]
-	if realm != "" and realm != "vo":
-		k.append_array(["body_lore", "martial_basics", "meridian_lore"])
-	var cultivator: bool = realm != "" and not ["vo", "cuong_than"].has(realm)
-	if cultivator or flags.get("knows_qi_method", false):
-		k.append_array(["heard_of_cultivators", "qi_awareness", "dao_entry"])
-	if flags.get("meridian_damaged", false) and not k.has("meridian_lore"):
-		k.append("meridian_lore")
-	k.sort()
-	return k
 
 
 ## Rejects NaN/inf, negatives, unknown ids and impossible progress. Returns error strings.

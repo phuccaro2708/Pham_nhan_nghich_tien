@@ -406,6 +406,8 @@ func _validate_knowledge() -> void:
 		var p: String = "knowledge '%s'" % id
 		_need_text(d, p, "name_key")
 		_need_text(d, p, "desc_key")
+		if d.has("legacy_when"):  # v3 -> v4 save migration: who already knew this
+			errors.append_array(_conditions.validate(d["legacy_when"], self, p + " legacy_when"))
 
 
 func _validate_techniques() -> void:
@@ -432,12 +434,12 @@ func _validate_bonus_list(list: Variant, p: String) -> void:
 			errors.append("%s: unknown bonus stat '%s'" % [p, b["stat"]])
 
 
-func _validate_effect_list(list: Variant, p: String) -> void:
+func _validate_effect_list(list: Variant, p: String, allow_promote: bool = false) -> void:
 	if typeof(list) != TYPE_ARRAY:
 		errors.append("%s: effects must be an array" % p)
 		return
 	for e in list:
-		errors.append_array(EffectResolver.validate_effect(e, self, p, false))
+		errors.append_array(EffectResolver.validate_effect(e, self, p, false, allow_promote))
 
 
 func _validate_mastery() -> void:
@@ -496,7 +498,7 @@ func _validate_story() -> void:
 			if c.has("result_key"):
 				_need_text(c, cp, "result_key")
 			errors.append_array(_conditions.validate(c.get("requirements", {}), self, cp + ".requirements"))
-			_validate_effect_list(c.get("effects", []), cp)
+			_validate_effect_list(c.get("effects", []), cp, true)
 			var costs: Variant = c.get("costs", {})
 			if typeof(costs) != TYPE_DICTIONARY:
 				errors.append("%s: costs must be an object" % cp)

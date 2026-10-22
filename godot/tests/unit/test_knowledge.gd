@@ -78,7 +78,7 @@ func test_v3_save_gets_knowledge_inferred_from_progress() -> void:
 	d.erase("knowledge")
 	d["schema_version"] = 3
 	d["realm_id"] = "luyen_khi_2"
-	var m: Dictionary = sm.migrate(d)
+	var m: Dictionary = ContentMigration.apply(sm.migrate(d), act.registry)
 	assert_eq(m["schema_version"], GameState.SCHEMA_VERSION)
 	for k in ["village_life", "herb_basics", "body_lore", "martial_basics", "meridian_lore", "dao_entry", "qi_awareness"]:
 		assert_true(m["knowledge"].has(k), k)
@@ -90,9 +90,19 @@ func test_v3_commoner_keeps_only_everyday_knowledge() -> void:
 	d.erase("knowledge")
 	d["schema_version"] = 3
 	d["realm_id"] = "vo"
-	var m: Dictionary = sm.migrate(d)
+	var m: Dictionary = ContentMigration.apply(sm.migrate(d), act.registry)
 	assert_false(m["knowledge"].has("dao_entry"))
 	assert_true(m["knowledge"].has("herb_basics"))
+
+
+func test_v3_cuong_than_keeps_breakthrough() -> void:
+	var d: Dictionary = s.to_dict()
+	d.erase("knowledge")
+	d["schema_version"] = 3
+	d["realm_id"] = "cuong_than"
+	var m: Dictionary = ContentMigration.apply(sm.migrate(d), act.registry)
+	assert_true(m["knowledge"].has("dao_entry"))
+	assert_false(m.has("infer_knowledge"))
 
 
 func test_unknown_knowledge_id_in_a_save_is_rejected_then_parked() -> void:

@@ -19,6 +19,7 @@ var _bars: Dictionary = {}  # action_id -> progress overlay on its button
 var _res_rows: Dictionary = {}  # resource_id -> {"bar": ProgressBar, "value": Label}
 var _groups: Dictionary = {}  # "column|group" -> VBoxContainer body
 var _group_heads: Dictionary = {}  # same key -> header button, hidden while the group has nothing visible
+var _vis_sig: String = ""  # action button visibility last applied to the group headers
 var _since: float = 0.0
 var _pages: StoryPages
 
@@ -372,8 +373,15 @@ func _refresh() -> void:
 			pbar.value = float(s.active_action["progress_ticks"])
 		else:
 			pbar.value = 0.0
-	for k in _groups:
-		_group_heads[k].visible = _groups[k].get_children().any(func(c: Control) -> bool: return c.visible)
+	var vis: String = ""  # group headers only need work when some button/row visibility flipped
+	for id in _buttons:
+		vis += "1" if _buttons[id].visible else "0"
+	for id in _res_rows:
+		vis += "1" if _res_rows[id]["bar"].visible else "0"
+	if vis != _vis_sig:
+		_vis_sig = vis
+		for k in _groups:
+			_group_heads[k].visible = _groups[k].get_children().any(func(c: Control) -> bool: return c.visible)
 	_pages.refresh()
 	_active_label.text = reg.text("ui.idle") if active == "" else reg.text("ui.doing") % reg.text(reg.actions[active]["name_key"])
 

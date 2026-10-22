@@ -139,4 +139,4 @@ Sửa so với Phase 1: `MAX_AMOUNT` 1e7 → 1e15 (mục "Quy tắc bổ sung" �
 - **Realm** thêm `mortal` (header hiện "Thân phận") và `story_promotion`.
 - **Action** `visible_when` nay là *cổng khám phá thật*: `check_can_start` trả `not_discovered`; `AutomationQueue.set_slots` từ chối ô đó.
 - **Config** `ui.lifespan_visible_when`: điều kiện hiện giới hạn thọ nguyên trong header; `ui.tab_visible_when` không còn trang `story`.
-- **Save v4** thêm `knowledge`; migration v3→v4 suy ra từ cảnh giới và cờ; id lạ vào `orphans["knowledge"]`.
+- **Save v4** thêm `knowledge`; migration v3→v4 suy ra qua điều kiện `legacy_when` khai báo trong từng kiến thức (`ContentMigration`); id lạ vào `orphans["knowledge"]`.

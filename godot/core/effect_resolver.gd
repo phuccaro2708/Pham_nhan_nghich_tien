@@ -2,7 +2,7 @@ class_name EffectResolver
 extends RefCounted
 ## Applies a fixed, registered set of effects (GDD §13.3). Never runs script from data.
 ## Effect types: add_resource | set_flag | add_upgrade_level | advance_realm | add_relation | learn_technique
-## Story choices and mastery milestones may not advance the realm (the ritual is always a deliberate player action).
+## Story choices and mastery milestones may not advance_realm (the ritual is always a deliberate player action); only story choices may promote_realm.
 
 const EFFECT_TYPES: Array = ["add_resource", "set_flag", "add_upgrade_level", "advance_realm", "add_relation", "learn_technique", "learn_knowledge", "promote_realm"]
 
@@ -101,7 +101,7 @@ func group_bonus(state: GameState, stat: String, group: String) -> float:
 	return total
 
 
-static func validate_effect(e: Variant, registry: ContentRegistry, path: String, allow_realm: bool = true) -> Array:
+static func validate_effect(e: Variant, registry: ContentRegistry, path: String, allow_realm: bool = true, allow_promote: bool = false) -> Array:
 	if typeof(e) != TYPE_DICTIONARY or not EFFECT_TYPES.has(e.get("type", "")):
 		return ["%s: unknown or malformed effect %s" % [path, e]]
 	var errs: Array = []
@@ -129,6 +129,8 @@ static func validate_effect(e: Variant, registry: ContentRegistry, path: String,
 			if not registry.has_knowledge(e.get("knowledge", "")):
 				errs.append("%s: learn_knowledge unknown knowledge" % path)
 		"promote_realm":
+			if not allow_promote:
+				errs.append("%s: promote_realm is only allowed in story choices" % path)
 			var ri: int = registry.realm_index(str(e.get("realm", ""))) if registry.has_realm(e.get("realm", "")) else -1
 			if ri < 1 or not registry.realms[registry.realm_order[ri - 1]].get("story_promotion", false):
 				errs.append("%s: promote_realm needs a realm whose previous stage has story_promotion" % path)

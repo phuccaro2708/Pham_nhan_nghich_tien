@@ -17,6 +17,7 @@ static func apply(data: Dictionary, registry: ContentRegistry) -> Dictionary:
 		if int(m["to_version"]) > from_v:
 			_rename(d, m.get("renames", {}))
 	d["content_version"] = maxi(from_v, registry.content_version)
+	_infer_knowledge(d, registry)
 	if typeof(d.get("orphans")) != TYPE_DICTIONARY:
 		d["orphans"] = {}
 	for pair in KINDS:
@@ -26,6 +27,20 @@ static func apply(data: Dictionary, registry: ContentRegistry) -> Dictionary:
 	_orphan_realm(d, registry)
 	_enforce_lifespan(d, registry)
 	return d
+
+
+## v3 -> v4: grant the knowledge the old save already relied on, as declared by each knowledge's `legacy_when`.
+static func _infer_knowledge(d: Dictionary, registry: ContentRegistry) -> void:
+	if not d.erase("infer_knowledge"):
+		return
+	var ev := ConditionEvaluator.new()
+	ev.content = registry
+	var s: GameState = GameState.from_dict(d)
+	for id in registry.knowledge:
+		if registry.knowledge[id].has("legacy_when") and ev.is_met(registry.knowledge[id]["legacy_when"], s) and not s.knowledge.has(id):
+			s.knowledge.append(id)
+	s.knowledge.sort()
+	d["knowledge"] = s.knowledge
 
 
 static func _known(registry: ContentRegistry, kind: String) -> Dictionary:

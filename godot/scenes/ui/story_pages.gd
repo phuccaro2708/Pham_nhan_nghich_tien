@@ -12,6 +12,7 @@ var _auto_loop: CheckBox
 var _auto_start: Button
 var _auto_built: bool = false
 var _auto_ids: Array = []  # automatable actions the draft was built for
+var _auto_sig: String = ""  # state that can change which actions are visible; the list is only recomputed when it changes
 var _tab_shown: Dictionary = {}  # page -> last applied visibility
 var _event_panel: PanelContainer  # pending story event, above the main columns; hidden when nothing is pending
 const REPEATS: Array = [1, 2, 3, 5, 10, 20, 50, 0]  # 0 = until blocked / forever
@@ -243,6 +244,31 @@ func _mastery(s: GameState) -> void:
 
 # ---------- automation ----------
 
+func _visibility_sig(s: GameState) -> String:
+	return "%s|%s|%s" % [s.knowledge, s.realm_id, s.flags]
+
+
+## Newly discovered actions are appended to the open draft's dropdowns, so unsaved slot edits survive.
+func _sync_automatable(s: GameState) -> void:
+	var sig: String = _visibility_sig(s)
+	if sig == _auto_sig:
+		return
+	_auto_sig = sig
+	var ids: Array = _automatable(s)
+	if ids == _auto_ids:
+		return
+	if _auto_ids.any(func(i: String) -> bool: return not ids.has(i)):
+		_auto_built = false  # something became undiscoverable (not expected): rebuild
+		return
+	var reg: ContentRegistry = GameController.registry
+	for id in ids:
+		if not _auto_ids.has(id):
+			for ui in _slot_ui:
+				ui["act"].add_item(_t(reg.actions[id]["name_key"]))
+				ui["act"].set_item_metadata(ui["act"].item_count - 1, id)
+	_auto_ids = ids
+
+
 func _automatable(s: GameState) -> Array:
 	var out: Array = []
 	var reg: ContentRegistry = GameController.registry
@@ -263,7 +289,9 @@ func _automation(s: GameState) -> void:
 			_auto_built = false
 			_label(b, _t("ui.auto.locked"), UiTheme.SIZE_BODY, UiTheme.INK_SECONDARY)
 		return
-	if not _auto_built or _auto_ids != _automatable(s):
+	if _auto_built:
+		_sync_automatable(s)
+	if not _auto_built:
 		_build_automation(s, box)
 	var running: bool = q.status(s) == "running"
 	_auto_status.text = _t("ui.auto.status") % _t("ui.auto.status." + q.status(s))
@@ -303,6 +331,7 @@ func _build_automation(s: GameState, box: VBoxContainer) -> void:
 	_auto_built = true
 	var ids: Array = _automatable(s)
 	_auto_ids = ids
+	_auto_sig = _visibility_sig(s)
 	var saved: Array = s.automation["slots"]
 	for i in q.max_slots():
 		var row := HBoxContainer.new()

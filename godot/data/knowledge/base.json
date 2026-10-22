@@ -3,19 +3,22 @@
   "id": "village_life",
   "name_key": "knowledge.village_life",
   "desc_key": "knowledge.village_life.desc",
-  "group": "life"
+  "group": "life",
+  "legacy_when": {}
  },
  {
   "id": "literacy",
   "name_key": "knowledge.literacy",
   "desc_key": "knowledge.literacy.desc",
-  "group": "life"
+  "group": "life",
+  "legacy_when": {}
  },
  {
   "id": "herb_basics",
   "name_key": "knowledge.herb_basics",
   "desc_key": "knowledge.herb_basics.desc",
-  "group": "life"
+  "group": "life",
+  "legacy_when": {}
  },
  {
   "id": "breathing",
@@ -27,31 +30,78 @@
   "id": "body_lore",
   "name_key": "knowledge.body_lore",
   "desc_key": "knowledge.body_lore.desc",
-  "group": "body"
+  "group": "body",
+  "legacy_when": {
+   "type": "realm_at_least",
+   "realm": "cuong_than"
+  }
  },
  {
   "id": "martial_basics",
   "name_key": "knowledge.martial_basics",
   "desc_key": "knowledge.martial_basics.desc",
-  "group": "body"
+  "group": "body",
+  "legacy_when": {
+   "type": "realm_at_least",
+   "realm": "cuong_than"
+  }
  },
  {
   "id": "meridian_lore",
   "name_key": "knowledge.meridian_lore",
   "desc_key": "knowledge.meridian_lore.desc",
-  "group": "cultivation"
+  "group": "cultivation",
+  "legacy_when": {
+   "any_of": [
+    {
+     "type": "realm_at_least",
+     "realm": "cuong_than"
+    },
+    {
+     "type": "flag_is",
+     "flag": "meridian_damaged",
+     "value": true
+    }
+   ]
+  }
  },
  {
   "id": "heard_of_cultivators",
   "name_key": "knowledge.heard_of_cultivators",
   "desc_key": "knowledge.heard_of_cultivators.desc",
-  "group": "cultivation"
+  "group": "cultivation",
+  "legacy_when": {
+   "any_of": [
+    {
+     "type": "realm_at_least",
+     "realm": "cam_khi"
+    },
+    {
+     "type": "flag_is",
+     "flag": "knows_qi_method",
+     "value": true
+    }
+   ]
+  }
  },
  {
   "id": "qi_awareness",
   "name_key": "knowledge.qi_awareness",
   "desc_key": "knowledge.qi_awareness.desc",
-  "group": "cultivation"
+  "group": "cultivation",
+  "legacy_when": {
+   "any_of": [
+    {
+     "type": "realm_at_least",
+     "realm": "cam_khi"
+    },
+    {
+     "type": "flag_is",
+     "flag": "knows_qi_method",
+     "value": true
+    }
+   ]
+  }
  },
  {
   "id": "spirit_root_lore",
@@ -63,6 +113,10 @@
   "id": "dao_entry",
   "name_key": "knowledge.dao_entry",
   "desc_key": "knowledge.dao_entry.desc",
-  "group": "cultivation"
+  "group": "cultivation",
+  "legacy_when": {
+   "type": "realm_at_least",
+   "realm": "cuong_than"
+  }
  }
 ]
