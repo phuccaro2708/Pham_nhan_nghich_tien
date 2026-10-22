@@ -2,13 +2,13 @@
 
 Quy tắc chung cho mọi AI tham gia dự án. Nguồn thiết kế: [docs/GDD.md](docs/GDD.md). Hướng dẫn riêng cho Claude Code: [CLAUDE.md](CLAUDE.md).
 
-**Dự án:** Text-based Hybrid Story + Deep Incremental RPG · Godot 4.x · Windows · single-player · MVP = Phàm Nhân → Trúc Cơ.
+**Dự án:** Text-based Hybrid Story + Deep Incremental RPG · Godot 4.x · Windows · single-player · 3 giai đoạn: GĐ1 (MVP) Phàm Nhân → Trúc Cơ, GĐ2 → Hóa Thần, GĐ3 → Phi Thăng (GDD §XIV.1).
 
 ## Phân vai
 
 | Agent | Vai trò | Được làm | Không làm |
 |---|---|---|---|
-| **Claude Code** | Lead design + engineering | Tài liệu kỹ thuật, code, test, sửa bug đã xác nhận, merge kết quả review | Mở rộng scope ngoài MVP |
+| **Claude Code** | Lead design + engineering | Tài liệu kỹ thuật, code, test, sửa bug đã xác nhận, merge kết quả review | Mở rộng scope ngoài giai đoạn hiện tại |
 | **Codex** | QA độc lập + nghiên cứu tính năng thêm | Review code/data, tìm bug, softlock, exploit nhân đôi tài nguyên, kiểm cân bằng, viết thêm test, đề xuất tính năng | Sửa code logic lớn khi chưa được giao; tự thêm tính năng vào MVP |
 | **Figma** | UI/UX | Wireframe, layout cột 1280×720 (GDD §XII), design tokens, component UI | Quyết định logic game; hardcode số liệu |
 | **Pixelab** | Pixel art (dự bị, chỉ khi chủ dự án yêu cầu) | Icon, nền, sprite vào `godot/assets/pixellab/` | Tự ý thay phong cách text-based của MVP |
@@ -18,7 +18,7 @@ Chủ dự án là người quyết định cuối cùng. Xung đột thiết k�
 ## Quy tắc chung
 
 1. GDD là nguồn sự thật. Không đổi thiết kế âm thầm trong code.
-2. Không mở rộng scope: ngoài MVP gồm tông môn toàn diện, đa nhân vật, PvP, cloud sync, đấu giá, luân hồi hoàn chỉnh, cảnh giới từ Kim Đan.
+2. Không mở rộng scope ngoài giai đoạn hiện tại (xem GDD §XIV.1); ngoài GĐ1 gồm tông môn toàn diện, đa nhân vật, PvP, cloud sync, đấu giá, luân hồi hoàn chỉnh, cảnh giới từ Kim Đan.
 3. Data-driven, ID cố định duy nhất; không hardcode nội dung/chuỗi hiển thị trong logic hoặc UI.
 4. Simulation deterministic, tách khỏi UI; UI chỉ gửi command.
 5. Không đánh dấu "xong" nếu thiếu bằng chứng (output test thật). Báo trung thực test fail/bỏ qua.

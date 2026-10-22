@@ -1,7 +1,7 @@
 # GDD v1.0 — Phàm Nhân Nghịch Tiên
 
 > Hybrid Story-driven + Deep Incremental RPG · Godot 4.x · Windows PC · Single-player · Text-based · Data-driven · Offline-first
-> Phạm vi: định nghĩa toàn bộ định hướng; **chỉ triển khai MVP từ Phàm Nhân đến Trúc Cơ**.
+> Phạm vi: định nghĩa toàn bộ định hướng; **triển khai theo 3 giai đoạn: GĐ1 Phàm Nhân → Trúc Cơ (MVP), GĐ2 → Hóa Thần, GĐ3 → Phi Thăng** (xem §XIV.1).
 > Mọi con số trong tài liệu này là **giả định cân bằng ban đầu**, chưa phải số liệu playtest.
 
 ---
@@ -568,7 +568,24 @@ GameState
 | Automation | Cấp 0–3 |
 | Ngôn ngữ đầu tiên | Tiếng Việt |
 
-### Ngoài MVP
+### XIV.1. Ba giai đoạn phát triển (đổi scope — v1.2)
+
+> **Lý do đổi (v1.2):** chủ dự án quyết định mở rộng đích từ Trúc Cơ ra Phi Thăng nhưng làm tuần tự, từng version nhỏ, mỗi version qua test và duyệt riêng. Giữ nguyên nguyên tắc: không code giai đoạn sau khi giai đoạn trước chưa qua cổng cân bằng (3 hướng công pháp đều tới đích, kể cả khi thiếu một tài nguyên hiếm).
+
+| Giai đoạn | Đích | Bài toán riêng của đại cảnh giới | Trạng thái |
+|---|---|---|---|
+| GĐ1 (MVP) | Trúc Cơ | Nền tảng + Đạo Tâm; công pháp chủ tu, thám hiểm chuẩn bị, Tàn Kinh, hậu quả story | Đang làm |
+| GĐ2 | Hóa Thần | Kim Đan: ổn định công pháp; Nguyên Anh/Hóa Thần: tri thức, quan hệ, vượt giới; truyền thừa hậu duệ | Backlog |
+| GĐ3 | Phi Thăng | Độ Kiếp: tổng hợp quyết định cả đời; Phi Thăng | Backlog |
+
+Quy tắc chung mọi giai đoạn:
+- **Bước không thể đảo ngược** (đột phá lớn, chọn đạo, vượt kiếp) do người chơi ra lệnh; automation chỉ chuẩn bị, không tự thực hiện.
+- **Chống softlock chiến dịch dài:** thất bại luôn để lại hành động phục hồi; tài nguyên bắt buộc cho tuyến chính phải có nguồn tái tạo; lựa chọn lớn có đường thay thế.
+- **Hết thọ nguyên:** giữ tiến trình truyện và tri thức (`story`, `knowledge`); truyền thừa hậu duệ và Đạo Quả (§X) bắt đầu ở GĐ2.
+- **Thám hiểm:** có chuẩn bị (công pháp + vật tư), người chơi quyết định đi sâu hay quay về sau mỗi tầng; **không có ngưỡng rút lui tự động** (nút rút lui thủ công giữ nguyên).
+- Chi tiết backlog theo tính năng: `docs/MVP_BACKLOG.md`.
+
+### Ngoài MVP (GĐ1)
 
 Tông môn toàn diện, đa nhân vật, PvP, cloud sync, đấu giá, hàng trăm công pháp, tự sáng tạo công pháp phức tạp, luân hồi hoàn chỉnh, cảnh giới từ Kim Đan trở lên.
 
