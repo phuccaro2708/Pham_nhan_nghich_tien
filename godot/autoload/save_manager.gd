@@ -126,6 +126,9 @@ func migrate(data: Dictionary) -> Dictionary:
 			3:  # v4 adds knowledge; ContentMigration infers it (knowledge `legacy_when`) so an old save keeps every action it could use
 				d["knowledge"] = []
 				d["infer_knowledge"] = true
+			4:  # v5 adds luân hồi: no rewind has happened and no mốc is stored yet
+				d["loop"] = 0
+				d["checkpoint"] = {}
 			_:
 				return {"error": "no migration from version %d" % v}
 		v += 1
@@ -151,6 +154,10 @@ func validate_state(d: Dictionary, registry: ContentRegistry) -> Array:
 		errs.append("techniques must be an array")
 	if typeof(d.get("knowledge")) != TYPE_ARRAY:
 		errs.append("knowledge must be an array")
+	if typeof(d.get("checkpoint")) != TYPE_DICTIONARY:
+		errs.append("checkpoint must be an object")
+	if not GameState.is_int(d.get("loop")) or int(d.get("loop", 0)) < 0:
+		errs.append("bad loop")
 	if not errs.is_empty():
 		return errs
 	for id in d["resources"]:
@@ -171,6 +178,8 @@ func validate_state(d: Dictionary, registry: ContentRegistry) -> Array:
 			errs.append("bad action_counts %s" % id)
 	_validate_progression(d, registry, errs)
 	_validate_phase2b(d, registry, errs)
+	if not (d["checkpoint"] as Dictionary).is_empty():
+		errs.append_array(_validate_checkpoint(d, registry))
 	var a: Dictionary = d["active_action"]
 	if not a.is_empty():
 		if not registry.has_action(a.get("id", "")):
@@ -186,6 +195,26 @@ func validate_state(d: Dictionary, registry: ContentRegistry) -> Array:
 				if not registry.has_resource(id) or not GameState.is_number(a["costs_paid"][id]) or float(a["costs_paid"][id]) < 0.0:
 					errs.append("bad costs_paid entry %s" % id)
 	return errs
+
+
+## A checkpoint is a world snapshot: validate it by swapping it into a copy of the state and running the same checks.
+func _validate_checkpoint(d: Dictionary, registry: ContentRegistry) -> Array:
+	var cp: Dictionary = d["checkpoint"]
+	if cp.size() != GameState.WORLD_KEYS.size():
+		return ["bad checkpoint keys"]
+	var probe: Dictionary = d.duplicate(true)
+	for k in GameState.WORLD_KEYS:
+		if not cp.has(k):
+			return ["bad checkpoint keys"]
+		if k != "life_warned":
+			probe[k] = cp[k]
+	probe["life"] = {"status": "alive", "warned": cp["life_warned"], "ended": {}}
+	probe["active_action"] = {}
+	probe["checkpoint"] = {}
+	var out: Array = []
+	for e in validate_state(probe, registry):
+		out.append("checkpoint: %s" % e)
+	return out
 
 
 func _validate_progression(d: Dictionary, registry: ContentRegistry, errs: Array) -> void:

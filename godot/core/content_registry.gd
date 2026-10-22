@@ -499,6 +499,7 @@ func _validate_story() -> void:
 				_need_text(c, cp, "result_key")
 			errors.append_array(_conditions.validate(c.get("requirements", {}), self, cp + ".requirements"))
 			_validate_effect_list(c.get("effects", []), cp, true)
+			_validate_rewind_last(c.get("effects", []), cp)
 			var costs: Variant = c.get("costs", {})
 			if typeof(costs) != TYPE_DICTIONARY:
 				errors.append("%s: costs must be an object" % cp)
@@ -514,6 +515,16 @@ func _validate_story() -> void:
 		if not has_fallback:
 			errors.append("%s: needs a choice with no requirements and no costs (softlock guard, GDD 11.4)" % p)
 	_validate_story_cycles()
+
+
+## rewind ends a choice's effects: nothing after it could rely on the old world, and nothing may run twice across it.
+func _validate_rewind_last(effects: Variant, p: String) -> void:
+	if typeof(effects) != TYPE_ARRAY:
+		return
+	for i in (effects as Array).size():
+		var e: Variant = effects[i]
+		if typeof(e) == TYPE_DICTIONARY and e.get("type") == "rewind" and i != (effects as Array).size() - 1:
+			errors.append("%s: rewind must be the last effect" % p)
 
 
 ## `next` links must form a DAG: a cycle could chain events without the player ever leaving the story.

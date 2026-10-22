@@ -118,5 +118,29 @@
    "type": "realm_at_least",
    "realm": "cuong_than"
   }
+ },
+ {
+  "id": "mem_taoist_wound",
+  "name_key": "knowledge.mem_taoist_wound",
+  "desc_key": "knowledge.mem_taoist_wound.desc",
+  "group": "memory"
+ },
+ {
+  "id": "mem_cave_site",
+  "name_key": "knowledge.mem_cave_site",
+  "desc_key": "knowledge.mem_cave_site.desc",
+  "group": "memory"
+ },
+ {
+  "id": "mem_pursuer_sign",
+  "name_key": "knowledge.mem_pursuer_sign",
+  "desc_key": "knowledge.mem_pursuer_sign.desc",
+  "group": "memory"
+ },
+ {
+  "id": "mem_last_words",
+  "name_key": "knowledge.mem_last_words",
+  "desc_key": "knowledge.mem_last_words.desc",
+  "group": "memory"
  }
 ]

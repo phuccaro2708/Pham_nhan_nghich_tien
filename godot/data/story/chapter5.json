@@ -1,0 +1,134 @@
+[
+ {
+  "id": "ch5_path_guided",
+  "chapter": "ch5",
+  "title_key": "story.ch5_path_guided.title",
+  "text_key": "story.ch5_path_guided.text",
+  "choices": [
+   {
+    "id": "prepare",
+    "text_key": "story.ch5_path_guided.prepare",
+    "result_key": "story.ch5_path_guided.prepare.result",
+    "effects": [
+     {
+      "type": "set_flag",
+      "flag": "truc_co_path",
+      "value": "thanh_huyen"
+     }
+    ]
+   }
+  ],
+  "trigger": {
+   "all_of": [
+    {
+     "type": "realm_at_least",
+     "realm": "luyen_khi_9"
+    },
+    {
+     "type": "flag_is",
+     "flag": "qi_source",
+     "value": "guided"
+    }
+   ]
+  }
+ },
+ {
+  "id": "ch5_path_evidence",
+  "chapter": "ch5",
+  "title_key": "story.ch5_path_evidence.title",
+  "text_key": "story.ch5_path_evidence.text",
+  "choices": [
+   {
+    "id": "prepare",
+    "text_key": "story.ch5_path_evidence.prepare",
+    "result_key": "story.ch5_path_evidence.prepare.result",
+    "effects": [
+     {
+      "type": "set_flag",
+      "flag": "truc_co_path",
+      "value": "thanh_huyen"
+     }
+    ]
+   }
+  ],
+  "trigger": {
+   "all_of": [
+    {
+     "type": "realm_at_least",
+     "realm": "luyen_khi_9"
+    },
+    {
+     "type": "flag_is",
+     "flag": "qi_source",
+     "value": "evidence"
+    }
+   ]
+  }
+ },
+ {
+  "id": "ch5_path_relic",
+  "chapter": "ch5",
+  "title_key": "story.ch5_path_relic.title",
+  "text_key": "story.ch5_path_relic.text",
+  "choices": [
+   {
+    "id": "prepare",
+    "text_key": "story.ch5_path_relic.prepare",
+    "result_key": "story.ch5_path_relic.prepare.result",
+    "effects": [
+     {
+      "type": "set_flag",
+      "flag": "truc_co_path",
+      "value": "tan_kinh"
+     }
+    ]
+   }
+  ],
+  "trigger": {
+   "all_of": [
+    {
+     "type": "realm_at_least",
+     "realm": "luyen_khi_9"
+    },
+    {
+     "type": "flag_is",
+     "flag": "qi_source",
+     "value": "relic"
+    }
+   ]
+  }
+ },
+ {
+  "id": "ch5_path_rogue",
+  "chapter": "ch5",
+  "title_key": "story.ch5_path_rogue.title",
+  "text_key": "story.ch5_path_rogue.text",
+  "choices": [
+   {
+    "id": "prepare",
+    "text_key": "story.ch5_path_rogue.prepare",
+    "result_key": "story.ch5_path_rogue.prepare.result",
+    "effects": [
+     {
+      "type": "set_flag",
+      "flag": "truc_co_path",
+      "value": "tan_tu"
+     }
+    ]
+   }
+  ],
+  "trigger": {
+   "all_of": [
+    {
+     "type": "realm_at_least",
+     "realm": "luyen_khi_9"
+    },
+    {
+     "type": "flag_is",
+     "flag": "qi_source",
+     "value": "rogue"
+    }
+   ]
+  }
+ }
+]

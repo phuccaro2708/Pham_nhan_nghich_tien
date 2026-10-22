@@ -2,9 +2,10 @@ class_name EffectResolver
 extends RefCounted
 ## Applies a fixed, registered set of effects (GDD §13.3). Never runs script from data.
 ## Effect types: add_resource | set_flag | add_upgrade_level | advance_realm | add_relation | learn_technique
-## Story choices and mastery milestones may not advance_realm (the ritual is always a deliberate player action); only story choices may promote_realm.
+## Story choices and mastery milestones may not advance_realm (the ritual is always a deliberate player action); only story choices may promote_realm, set_checkpoint or rewind.
+## rewind (luân hồi, GDD X) restores the world saved by set_checkpoint, keeps knowledge/story, and consumes the checkpoint: a second rewind is a no-op.
 
-const EFFECT_TYPES: Array = ["add_resource", "set_flag", "add_upgrade_level", "advance_realm", "add_relation", "learn_technique", "learn_knowledge", "promote_realm"]
+const EFFECT_TYPES: Array = ["add_resource", "set_flag", "add_upgrade_level", "advance_realm", "add_relation", "learn_technique", "learn_knowledge", "promote_realm", "set_checkpoint", "rewind"]
 
 var registry: ContentRegistry
 var resource_system: ResourceSystem
@@ -43,6 +44,13 @@ func apply(state: GameState, effects: Array) -> void:
 					state.knowledge.sort()
 			"promote_realm":
 				realm_system.promote(state, str(e["realm"]))
+			"set_checkpoint":
+				state.checkpoint = state.world_snapshot()
+			"rewind":
+				if not state.checkpoint.is_empty():
+					state.restore_world(state.checkpoint)
+					state.checkpoint = {}
+					state.loop += 1
 			"add_upgrade_level":
 				var up: Dictionary = registry.upgrades[e["upgrade"]]
 				var lvl: int = int(state.upgrades.get(e["upgrade"], 0)) + int(e.get("levels", 1))
@@ -134,6 +142,9 @@ static func validate_effect(e: Variant, registry: ContentRegistry, path: String,
 			var ri: int = registry.realm_index(str(e.get("realm", ""))) if registry.has_realm(e.get("realm", "")) else -1
 			if ri < 1 or not registry.realms[registry.realm_order[ri - 1]].get("story_promotion", false):
 				errs.append("%s: promote_realm needs a realm whose previous stage has story_promotion" % path)
+		"set_checkpoint", "rewind":
+			if not allow_promote:
+				errs.append("%s: %s is only allowed in story choices" % [path, e["type"]])
 		"set_flag":
 			if typeof(e.get("flag")) != TYPE_STRING or not e.has("value"):
 				errs.append("%s: set_flag needs 'flag' and 'value'" % path)

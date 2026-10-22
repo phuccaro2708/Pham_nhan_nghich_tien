@@ -2,7 +2,7 @@ class_name GameState
 extends RefCounted
 ## Pure runtime data. No Node references, no behaviour beyond (de)serialisation.
 
-const SCHEMA_VERSION: int = 4
+const SCHEMA_VERSION: int = 5
 const START_AGE_YEARS: float = 16.0
 ## Fixed precision so values survive a JSON round trip and never drift.
 const SNAP_SCALE: float = 1000000.0
@@ -39,6 +39,10 @@ var relations: Dictionary = {}
 var techniques: Array = []
 ## Learned knowledge ids (Phase 3): what the character knows decides which actions, stats and concepts the UI may show.
 var knowledge: Array = []
+## Luân hồi (GDD X): `checkpoint` is the world as it stood at a mốc the character lived through ({} = none);
+## `loop` counts completed rewinds. What the character remembers is `knowledge` (group "memory") and `story.done`; both survive a rewind.
+var loop: int = 0
+var checkpoint: Dictionary = {}
 ## Automation queue (see AutomationQueue). Never holds a story choice or a breakthrough.
 var automation: Dictionary = {"slots": [], "cursor": 0, "loop": false, "status": "idle", "reason": "", "instant_streak": 0}
 ## Data the running content does not recognise. Preserved, never deleted: {resources, upgrades, action_counts, active_action}.
@@ -93,6 +97,8 @@ func to_dict() -> Dictionary:
 		"relations": relations.duplicate(true),
 		"techniques": techniques.duplicate(),
 		"knowledge": knowledge.duplicate(),
+		"loop": loop,
+		"checkpoint": checkpoint.duplicate(true),
 		"automation": automation.duplicate(true),
 	}
 
@@ -144,6 +150,8 @@ static func from_dict(d: Dictionary) -> GameState:
 		s.techniques.append(str(tid))
 	for kid in d.get("knowledge", []):
 		s.knowledge.append(str(kid))
+	s.loop = int(d.get("loop", 0))
+	s.checkpoint = (d.get("checkpoint", {}) as Dictionary).duplicate(true)
 	var au: Dictionary = d.get("automation", {})
 	if not au.is_empty():
 		s.automation = {"slots": [], "cursor": int(au.get("cursor", 0)), "loop": bool(au.get("loop", false)),
@@ -153,6 +161,39 @@ static func from_dict(d: Dictionary) -> GameState:
 				"on_block": str(sl.get("on_block", "skip")), "until": (sl.get("until", {}) as Dictionary).duplicate(true),
 				"done": int(sl.get("done", 0))})
 	return s
+
+
+## World fields a checkpoint stores and a rewind restores. Everything else (story, knowledge, clock, rng, orphans, save
+## metadata) is the character's own continuity and is never rewound.
+const WORLD_KEYS: Array = ["resources", "upgrades", "flags", "action_counts", "mastery", "relations", "techniques",
+		"realm_id", "age_years", "breakthrough_failures", "life_warned"]
+
+
+func world_snapshot() -> Dictionary:
+	var snap: Dictionary = {}
+	for k in WORLD_KEYS:
+		snap[k] = life["warned"] if k == "life_warned" else get(k)
+		if typeof(snap[k]) == TYPE_DICTIONARY or typeof(snap[k]) == TYPE_ARRAY:
+			snap[k] = snap[k].duplicate(true)
+	# A running action has already paid its costs; the snapshot is the world before it started, because restore drops it.
+	for rid in active_action.get("costs_paid", {}):
+		snap["resources"][rid] = float(snap["resources"].get(rid, 0.0)) + float(active_action["costs_paid"][rid])
+	return snap
+
+
+## Puts the world back to `snap`. The running action is dropped WITHOUT refunding its paid costs (the snapshot already
+## holds the pre-payment world; refunding would add the old life's resources to it) and the automation queue is reset.
+func restore_world(snap: Dictionary) -> void:
+	for k in WORLD_KEYS:
+		var v: Variant = snap[k]
+		if typeof(v) == TYPE_DICTIONARY or typeof(v) == TYPE_ARRAY:
+			v = v.duplicate(true)
+		if k == "life_warned":
+			life["warned"] = v
+		else:
+			set(k, v)
+	active_action = {}
+	automation = GameState.new().automation.duplicate(true)
 
 
 static func _int_array(a: Array) -> Array:

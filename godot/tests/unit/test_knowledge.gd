@@ -172,14 +172,21 @@ func test_story_never_auto_chooses() -> void:
 	assert_ne(s.realm_id, "cuong_than")
 
 
-func test_cultivation_knowledge_comes_from_the_taoist_chain() -> void:
+func test_cultivation_knowledge_comes_after_the_rewind_not_in_life_one() -> void:
 	s.realm_id = "cuong_than"
-	s.story["done"]["ch1_forest_edge"] = "go_deeper"
+	s.story["done"]["ch3_crossroads"] = "explore"
 	act.story.scan(s)
+	assert_eq(act.story.pending(s), "ch1_before_mountain")
+	assert_true(act.story.choose(s, "go_empty_handed")["ok"])
 	assert_eq(act.story.pending(s), "ch1_wounded_taoist")
 	assert_true(act.story.choose(s, "ask_first")["ok"])
-	assert_eq(act.story.pending(s), "ch1_taoist_tale")
-	assert_true(act.story.choose(s, "hurry_off")["ok"])
-	for k in ["dao_entry", "qi_awareness", "meridian_lore", "heard_of_cultivators"]:
+	assert_eq(act.story.pending(s), "ch1_mountain_incident")
+	assert_false(s.knowledge.has("dao_entry"))  # life one teaches nothing of the Way
+	assert_true(act.story.choose(s, "watch_hunter")["ok"])
+	assert_eq(act.story.pending(s), "ch1_return")
+	for c in ["rescue", "ask_first", "hurry_off"]:
+		assert_true(act.story.choose(s, c)["ok"])
+	for k in ["dao_entry", "heard_of_cultivators"]:
 		assert_true(s.knowledge.has(k), k)
+	assert_false(s.knowledge.has("qi_awareness"))  # the method's knowledge waits for Cảm Khí
 	assert_ne(act.check_can_start(s, "breakthrough")["reason"], "not_discovered")

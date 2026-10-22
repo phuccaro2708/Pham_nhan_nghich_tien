@@ -132,74 +132,25 @@ func test_choice_applies_effects_once_and_closes_event() -> void:
 func test_chain_only_nodes_open_through_next_only() -> void:
 	s.action_counts["gather_wood"] = 99
 	s.action_counts["train_body"] = 99
+	s.story["done"]["ch3_crossroads"] = "explore"
+	s.knowledge = []  # the fixture knows everything; the mốc is only for a character who has not entered the Way
 	s.realm_id = "cuong_than"
+	var seen: Array = []
 	for _i in 12:
 		if act.story.pending(s) == "":
 			act.story.scan(s)
-		if act.story.pending(s) == "":
+		var p: String = act.story.pending(s)
+		if p == "":
 			break
-		assert_ne(act.story.pending(s), "ch1_taoist_tale")
-		assert_ne(act.story.pending(s), "ch1_cave_rumor")
-		var node: Dictionary = act.registry.story[act.story.pending(s)]
-		if node["id"] == "ch1_wounded_taoist":
+		seen.append(p)
+		assert_false(act.registry.story[p].get("chain_only", false) and seen.size() == 1, "a chain_only node opened through scan")
+		if p == "ch1_wounded_taoist":
 			s.resources["herb"] = 5.0
 			assert_true(act.story.choose(s, "heal")["ok"])
-			assert_eq(act.story.pending(s), "ch1_taoist_tale")
+			assert_eq(act.story.pending(s), "ch1_mountain_incident")
 			return
-		act.story.choose(s, node["choices"][-1]["id"])
-	fail_test("wounded taoist never opened")
-
-
-func _walk_all(state: GameState, depth: int, out: Array) -> void:
-	var pending: String = act.story.pending(state)
-	if pending == "" or depth > 8:
-		out.append(state)
-		return
-	for c in act.registry.story[pending]["choices"]:
-		var copy := GameState.from_dict(state.to_dict())
-		if act.story.choose(copy, c["id"])["ok"]:
-			_walk_all(copy, depth + 1, out)
-
-
-func test_every_path_from_the_taoist_reaches_qi_method() -> void:
-	s.resources["herb"] = 9.0
-	s.story["pending"] = "ch1_wounded_taoist"
-	var ends: Array = []
-	_walk_all(s, 0, ends)
-	assert_gt(ends.size(), 3)
-	for e in ends:
-		# the loot path ends at ch1_qi_clue whose trigger is reaching Cảm Khí; opening it must still grant the method
-		var st: GameState = e
-		if st.story["pending"] == "":
-			act.story.scan(st)
-		if st.story["pending"] == "":
-			st.realm_id = "cam_khi"
-			act.story.scan(st)
-		while st.story["pending"] != "":
-			act.story.choose(st, act.registry.story[st.story["pending"]]["choices"][-1]["id"])
-		assert_true(st.flags.get("knows_qi_method", false), "path lacked the qi method: %s" % [st.story["done"]])
-
-
-func test_free_choices_alone_finish_chapter_one() -> void:
-	# a character with no resources and no relations must still be able to complete the chapter (no softlock)
-	s.action_counts["gather_wood"] = 99
-	s.action_counts["train_body"] = 99
-	for realm in ["vo", "cuong_than", "cam_khi"]:
-		s.realm_id = realm
-		for _i in 10:
-			act.story.scan(s)
-			var p: String = act.story.pending(s)
-			if p == "":
-				break
-			var picked: bool = false
-			for c in act.registry.story[p]["choices"]:
-				if (c.get("requirements", {}) as Dictionary).is_empty() and (c.get("costs", {}) as Dictionary).is_empty():
-					assert_true(act.story.choose(s, c["id"])["ok"])
-					picked = true
-					break
-			assert_true(picked, "no free choice in %s" % p)
-	assert_true(s.flags.get("knows_qi_method", false))
-	assert_true(s.flags.get("ch1_complete", false))
+		act.story.choose(s, act.registry.story[p]["choices"][-1]["id"])
+	fail_test("wounded taoist never opened: %s" % [seen])
 
 
 func test_pending_event_survives_save_load() -> void:

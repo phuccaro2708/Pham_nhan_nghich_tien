@@ -23,3 +23,10 @@ Quy tắc: sửa lỗi logic phải kèm test hồi quy; số cân bằng trong 
 - `promote_realm` chỉ từ stage `story_promotion`.
 - 3 route Ch3 và 3 lựa chọn dự phòng đều tới `martial_basics` + Đoán Thể; người thiếu bạc vẫn qua được; sự kiện không tự chọn.
 - Chuỗi đạo sĩ cấp `dao_entry` nên nút Đột phá hiện.
+
+
+## Luân hồi lần đầu (GDD §7.4)
+
+`tests/unit/test_luan_hoi.gd` (19): hợp đồng tua (giữ story/knowledge/đồng hồ/RNG; khôi phục tài nguyên, cờ, quan hệ, cảnh giới, tuổi; bỏ action đang chạy không hoàn phí; checkpoint dùng một lần); lựa chọn `mem_*` bị chặn khi thiếu ký ức; cả 4 nhánh chỉ bằng lựa chọn miễn phí tới `sense_qi` + Luyện Khí 1 bằng action thật; `sense_qi` bị từ chối trước node pháp môn; kết cục 4 nhánh khác nhau từng cặp; nhánh cướp có nguồn hang riêng; `ch1_qi_clue` không với tới ở game mới; round-trip save sau tua; migration v4→v5; checkpoint hỏng bị từ chối; `rewind` không phải effect cuối bị validator chặn.
+
+Kết quả chạy đầy đủ (headless): **169/169 pass**, 10 script, 1581 assert.
