@@ -30,3 +30,9 @@ Quy tắc: sửa lỗi logic phải kèm test hồi quy; số cân bằng trong 
 `tests/unit/test_luan_hoi.gd` (19): hợp đồng tua (giữ story/knowledge/đồng hồ/RNG; khôi phục tài nguyên, cờ, quan hệ, cảnh giới, tuổi; bỏ action đang chạy không hoàn phí; checkpoint dùng một lần); lựa chọn `mem_*` bị chặn khi thiếu ký ức; cả 4 nhánh chỉ bằng lựa chọn miễn phí tới `sense_qi` + Luyện Khí 1 bằng action thật; `sense_qi` bị từ chối trước node pháp môn; kết cục 4 nhánh khác nhau từng cặp; nhánh cướp có nguồn hang riêng; `ch1_qi_clue` không với tới ở game mới; round-trip save sau tua; migration v4→v5; checkpoint hỏng bị từ chối; `rewind` không phải effect cuối bị validator chặn.
 
 Kết quả chạy đầy đủ (headless): **169/169 pass**, 10 script, 1581 assert.
+
+
+## Bí cảnh / combat (schema 6)
+`tests/unit/test_combat.gd` (10): điều kiện vào (chưa khám phá, đang trong bí cảnh, ID lạ); vào dừng action và chặn start; cùng seed → trạng thái giống hệt, HP không âm, run luôn kết thúc; thanh tẩy trả thưởng đúng một lần; thua/rút lui chỉ tốn tuổi; tỉ lệ thắng của nhân vật gốc; round-trip JSON giữa trận tiếp tục giống hệt; save combat hỏng bị từ chối; migration v5→v6; offline hủy lượt không phí.
+
+Kết quả chạy đầy đủ (headless): **183/183 pass**, 11 script, 1852 assert.

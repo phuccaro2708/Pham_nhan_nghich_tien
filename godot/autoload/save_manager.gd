@@ -129,6 +129,9 @@ func migrate(data: Dictionary) -> Dictionary:
 			4:  # v5 adds luân hồi: no rewind has happened and no mốc is stored yet
 				d["loop"] = 0
 				d["checkpoint"] = {}
+			5:  # v6 adds dungeons: no run in progress, nothing cleared
+				d["combat"] = {}
+				d["dungeon_clears"] = {}
 			_:
 				return {"error": "no migration from version %d" % v}
 		v += 1
@@ -147,7 +150,7 @@ func validate_state(d: Dictionary, registry: ContentRegistry) -> Array:
 	if not GameState.is_number(d.get("age_years")) or float(d["age_years"]) < 0.0:
 		errs.append("bad age_years")
 	for key in ["resources", "upgrades", "flags", "action_counts", "active_action", "save_metadata", "life", "orphans",
-			"mastery", "story", "relations", "automation"]:
+			"mastery", "story", "relations", "automation", "combat", "dungeon_clears"]:
 		if typeof(d.get(key)) != TYPE_DICTIONARY:
 			errs.append("%s must be an object" % key)
 	if typeof(d.get("techniques")) != TYPE_ARRAY:
@@ -178,6 +181,7 @@ func validate_state(d: Dictionary, registry: ContentRegistry) -> Array:
 			errs.append("bad action_counts %s" % id)
 	_validate_progression(d, registry, errs)
 	_validate_phase2b(d, registry, errs)
+	_validate_combat(d, registry, errs)
 	if not (d["checkpoint"] as Dictionary).is_empty():
 		errs.append_array(_validate_checkpoint(d, registry))
 	var a: Dictionary = d["active_action"]
@@ -195,6 +199,32 @@ func validate_state(d: Dictionary, registry: ContentRegistry) -> Array:
 				if not registry.has_resource(id) or not GameState.is_number(a["costs_paid"][id]) or float(a["costs_paid"][id]) < 0.0:
 					errs.append("bad costs_paid entry %s" % id)
 	return errs
+
+
+func _validate_combat(d: Dictionary, registry: ContentRegistry, errs: Array) -> void:
+	for id in d["dungeon_clears"]:
+		if not registry.has_dungeon(id) or not GameState.is_int(d["dungeon_clears"][id]) or int(d["dungeon_clears"][id]) < 0:
+			errs.append("bad dungeon_clears %s" % id)
+	var c: Dictionary = d["combat"]
+	if c.is_empty():
+		return
+	var dg: Dictionary = registry.dungeons.get(c.get("dungeon", ""), {})
+	if dg.is_empty():
+		errs.append("unknown dungeon in combat")
+		return
+	for k in ["index", "player_hp", "enemy_hp", "player_cd", "enemy_cd"]:
+		if not GameState.is_int(c.get(k)):
+			errs.append("bad combat %s" % k)
+			return
+	var n: int = (dg["enemies"] as Array).size()
+	if int(c["index"]) < 0 or int(c["index"]) >= n or int(c["player_hp"]) < 1 or int(c["enemy_hp"]) < 1 			or int(c["player_cd"]) < 1 or int(c["enemy_cd"]) < 1:
+		errs.append("impossible combat progress")
+	elif int(c["enemy_hp"]) > int(registry.enemies[dg["enemies"][int(c["index"])]]["hp"]):
+		errs.append("enemy_hp above the enemy's maximum")
+	elif not (d["active_action"] as Dictionary).is_empty():
+		errs.append("action running during a dungeon run")
+	elif (d["life"] as Dictionary).get("status") != "alive":
+		errs.append("deceased character in a dungeon")
 
 
 ## A checkpoint is a world snapshot: validate it by swapping it into a copy of the state and running the same checks.

@@ -75,3 +75,7 @@ Simulator 20 seed (`balance_sim --seeds=20`), 20/20 tới Trúc Cơ:
 | idle | 4,01 h | 4,01 h |
 
 Casual vượt mục tiêu 3–5 h ~0,3 h (đã lệch từ trước, không phải do thay đổi này). Chưa chỉnh số: để Phase 3 của kế hoạch.
+
+
+## Bí cảnh Rừng Trúc Ảnh (Phase B)
+`DMG = max(1, round(ATK − DEF×0.5))`, trượt = 0, chí mạng ×1,5; nhịp = `round(100 / SPD)` tick (0,1 s). Người chơi gốc: HP 60, ATK 7, DEF 1, SPD 10, HIT 0,9; +5%/tầng cảnh giới; hồi 20% HP sau mỗi kẻ địch. Kẻ địch: sói (18/5/0/12), heo rừng (30/6/1/8), rắn (40/8/1/10). Thua chỉ mất 0,02 tuổi (không mất tài nguyên) → không softlock. Mục tiêu: nhân vật gốc thắng khoảng 40–95% (test `test_base_character_can_clear_the_first_dungeon`, 20 seed). Chưa mô phỏng tinh chỉnh sâu hơn.

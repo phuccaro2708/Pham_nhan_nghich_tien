@@ -20,5 +20,19 @@
    "level": 3
   },
   "wait_requirements": {}
+ },
+ "combat": {
+  "player": {
+   "hp": 60,
+   "atk": 7,
+   "def": 1,
+   "spd": 10,
+   "hit": 0.9,
+   "crit": 0.05
+  },
+  "stage_bonus": 0.05,
+  "crit_multiplier": 1.5,
+  "interval_base": 100,
+  "heal_after_kill": 0.2
  }
 }

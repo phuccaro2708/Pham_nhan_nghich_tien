@@ -1,0 +1,16 @@
+[
+ {
+  "id": "bamboo_forest",
+  "name_key": "dungeon.bamboo_forest.name",
+  "desc_key": "dungeon.bamboo_forest.desc",
+  "visible_when": {"type": "knows", "knowledge": "martial_basics"},
+  "requirements": {},
+  "age_cost_years": 0.02,
+  "enemies": ["bamboo_wolf", "wild_boar", "bamboo_snake"],
+  "clear_effects": [
+   {"type": "add_resource", "resource": "herb", "amount": 5},
+   {"type": "add_resource", "resource": "silver", "amount": 10},
+   {"type": "set_flag", "flag": "bamboo_forest_cleared", "value": true}
+  ]
+ }
+]

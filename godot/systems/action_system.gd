@@ -18,6 +18,7 @@ var lifespan: LifespanSystem
 var mastery: MasterySystem
 var story: StorySystem
 var automation: AutomationQueue
+var combat: CombatSystem
 ## Set by OfflineSystem while it simulates: the queue then refuses actions that are not offline_allowed.
 var offline_mode: bool = false
 
@@ -33,6 +34,7 @@ func _init(p_registry: ContentRegistry) -> void:
 	mastery = MasterySystem.new(registry, effects)
 	story = StorySystem.new(registry, conditions, effects, resources)
 	automation = AutomationQueue.new(self)
+	combat = CombatSystem.new(registry, conditions, effects, lifespan)
 
 
 # ---------- queries ----------
@@ -54,6 +56,8 @@ func check_can_start(state: GameState, action_id: String) -> Dictionary:
 		return {"ok": false, "reason": "unknown_action", "detail": action_id}
 	if not lifespan.is_alive(state):
 		return {"ok": false, "reason": "deceased", "detail": null}
+	if combat.is_active(state):
+		return {"ok": false, "reason": "in_dungeon", "detail": null}
 	var def: Dictionary = registry.actions[action_id]
 	if def.has("upgrade"):
 		var up: Dictionary = registry.upgrades[def["upgrade"]]
@@ -131,6 +135,17 @@ func start_action(state: GameState, action_id: String, from_queue: bool = false)
 	return check
 
 
+## Enters a dungeon: whatever is running stops (costs refunded) and fighting takes over the clock.
+func enter_dungeon(state: GameState, dungeon_id: String) -> Dictionary:
+	var check: Dictionary = combat.check_enter(state, dungeon_id)
+	if not check["ok"]:
+		return check
+	stop_action(state, "entered_dungeon")
+	automation.stop(state, "entered_dungeon")
+	combat.begin(state, dungeon_id)
+	return check
+
+
 ## Cancels the active action. Costs paid at start are refunded; nothing is rewarded.
 func stop_action(state: GameState, reason: String = "stopped_by_player") -> void:
 	if state.active_action.is_empty():
@@ -147,10 +162,20 @@ func stop_action(state: GameState, reason: String = "stopped_by_player") -> void
 func advance(state: GameState, ticks: int) -> void:
 	if not lifespan.is_alive(state):
 		stop_action(state, "deceased")  # a deceased character never completes anything, whatever the save said
+		combat.abort(state)
 		state.game_time_ticks += maxi(ticks, 0)
 		return
 	var remaining: int = ticks
 	while remaining > 0:
+		if combat.is_active(state):
+			if offline_mode:  # nobody is there to fight; the run is dropped, not decided for the player
+				combat.abort(state)
+				continue
+			if combat.step(state):
+				story.scan(state)
+			state.game_time_ticks += 1
+			remaining -= 1
+			continue
 		if state.active_action.is_empty():
 			automation.pump(state)
 		if state.active_action.is_empty():

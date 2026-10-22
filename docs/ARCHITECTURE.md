@@ -32,3 +32,6 @@ OfflineSystem: ActionSystem.advance(ticks) với offline_mode = true (≤ 8 gi�
 ## Tool
 
 `godot/tools/balance_simulator.gd` + `balance_sim.gd` (CLI headless), `tools/ui_shot.gd` (chụp UI, cần cửa sổ thật), `tools/gen_phase2b_data.py` (sinh dữ liệu).
+
+## Combat / Bí cảnh (schema 6)
+`CombatSystem` (domain thuần) giữ `state.combat` (dungeon, index, HP hai bên, cooldown). Tiến theo tick cố định qua `ActionSystem.advance`; mọi đòn dùng `SimRng` đã lưu nên tái lập được từ save. Thưởng (loot, clear_effects, tuổi) chỉ áp trong `_kill_enemy`/`_end` sau khi bộ đếm tiến, nên save/load không trả hai lần. Vào bí cảnh dừng action đang chạy và chặn `start_action` (`in_dungeon`). Offline/chết/luân hồi → `abort` (không phí). Tương tác: Lifespan (tuổi mỗi lượt), Resource (loot/thưởng qua EffectResolver), Realm (chỉ số theo tầng) + stat `combat.*` từ nâng cấp.

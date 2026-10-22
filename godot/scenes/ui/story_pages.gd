@@ -26,24 +26,8 @@ func setup(main_page: Control) -> void:
 	add_theme_stylebox_override("tab_hovered", UiTheme.box(UiTheme.FILL_PROGRESS, UiTheme.BORDER_INK))
 	for c in ["font_selected_color", "font_unselected_color", "font_hovered_color"]:
 		add_theme_color_override(c, UiTheme.INK_PRIMARY)
-	var wrap := VBoxContainer.new()
-	_event_panel = PanelContainer.new()
-	_event_panel.add_theme_stylebox_override("panel", UiTheme.box(UiTheme.SURFACE_PANEL, UiTheme.ACCENT_CINNABAR))
-	_event_panel.visible = false
-	var event_scroll := ScrollContainer.new()
-	event_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	event_scroll.follow_focus = true
-	event_scroll.custom_minimum_size.y = 215
-	var event_box := VBoxContainer.new()
-	event_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	event_box.add_theme_constant_override("separation", 6)
-	event_scroll.add_child(event_box)
-	_event_panel.add_child(event_scroll)
-	_pages["event"] = {"box": event_box, "sig": ""}
-	wrap.add_child(_event_panel)
 	main_page.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	wrap.add_child(main_page)
-	add_child(wrap)
+	add_child(main_page)
 	set_tab_title(0, reg.text("ui.nav_main"))
 	for p in ["mastery", "automation", "cultivation"]:
 		var sc := ScrollContainer.new()
@@ -56,6 +40,23 @@ func setup(main_page: Control) -> void:
 		add_child(sc)
 		set_tab_title(get_tab_count() - 1, reg.text("ui.tab." + p))
 		_pages[p] = {"box": box, "sig": ""}
+
+
+## Next Action column: the pending story event (hidden when none) plus the next goal.
+func attach_next(parent: VBoxContainer) -> void:
+	_event_panel = PanelContainer.new()
+	_event_panel.add_theme_stylebox_override("panel", UiTheme.box(UiTheme.SURFACE_PANEL, UiTheme.ACCENT_CINNABAR))
+	_event_panel.visible = false
+	var event_box := VBoxContainer.new()
+	event_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	event_box.add_theme_constant_override("separation", 6)
+	_event_panel.add_child(event_box)
+	_pages["event"] = {"box": event_box, "sig": ""}
+	parent.add_child(_event_panel)
+	var goal := VBoxContainer.new()
+	goal.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	parent.add_child(goal)
+	_pages["goal"] = {"box": goal, "sig": ""}
 
 
 ## Relations and story history live at the bottom of the right-hand column of the main page.
@@ -87,6 +88,7 @@ func reset() -> void:
 func refresh() -> void:
 	var s: GameState = GameController.state
 	_event(s)
+	_goal(s)
 	_history(s)
 	_mastery(s)
 	_automation(s)
@@ -186,6 +188,28 @@ func _event(s: GameState) -> void:
 			b.grab_focus.call_deferred()
 		if not chk["ok"]:
 			_label(box, "   " + _t("ui.story.locked_choice") + ": " + _reason(str(chk["reason"]), chk["detail"]), UiTheme.SIZE_SMALL, UiTheme.INK_SECONDARY)
+
+
+## First story node not yet reached. Only an action-count trigger shows progress; no title, so nothing is spoiled.
+func _goal(s: GameState) -> void:
+	if not _pages.has("goal"):
+		return
+	var reg: ContentRegistry = GameController.registry
+	var next_id: String = ""
+	for nid in reg.story_order:
+		if not (s.story["done"] as Dictionary).has(nid) and nid != s.story["pending"]:
+			next_id = nid
+			break
+	var trig: Dictionary = reg.story[next_id].get("trigger", {}) if next_id != "" else {}
+	var have: int = int(s.action_counts.get(trig.get("action", ""), 0))
+	var box := _sync("goal", "%s|%d|%s" % [next_id, have, reg.language])
+	if box == null:
+		return
+	_label(box, _t("ui.next.goal"), UiTheme.SIZE_HEADER)
+	if trig.get("type", "") == "action_count_at_least" and reg.actions.has(trig["action"]):
+		_label(box, "%s: %d/%d" % [_t(reg.actions[trig["action"]]["name_key"]), mini(have, int(trig["count"])), int(trig["count"])])
+	else:
+		_label(box, _t("ui.next.unknown"), UiTheme.SIZE_BODY, UiTheme.INK_SECONDARY)
 
 
 func _history(s: GameState) -> void:

@@ -2,7 +2,7 @@ class_name GameState
 extends RefCounted
 ## Pure runtime data. No Node references, no behaviour beyond (de)serialisation.
 
-const SCHEMA_VERSION: int = 5
+const SCHEMA_VERSION: int = 6
 const START_AGE_YEARS: float = 16.0
 ## Fixed precision so values survive a JSON round trip and never drift.
 const SNAP_SCALE: float = 1000000.0
@@ -45,6 +45,10 @@ var loop: int = 0
 var checkpoint: Dictionary = {}
 ## Automation queue (see AutomationQueue). Never holds a story choice or a breakthrough.
 var automation: Dictionary = {"slots": [], "cursor": 0, "loop": false, "status": "idle", "reason": "", "instant_streak": 0}
+## Dungeon run in progress ({} = none): {dungeon, index (enemy being fought), player_hp, enemy_hp, player_cd, enemy_cd} (see CombatSystem).
+var combat: Dictionary = {}
+## dungeon_id -> number of cleared runs.
+var dungeon_clears: Dictionary = {}
 ## Data the running content does not recognise. Preserved, never deleted: {resources, upgrades, action_counts, active_action}.
 var orphans: Dictionary = {}
 
@@ -100,6 +104,8 @@ func to_dict() -> Dictionary:
 		"loop": loop,
 		"checkpoint": checkpoint.duplicate(true),
 		"automation": automation.duplicate(true),
+		"combat": combat.duplicate(true),
+		"dungeon_clears": dungeon_clears.duplicate(true),
 	}
 
 
@@ -156,6 +162,13 @@ static func from_dict(d: Dictionary) -> GameState:
 		# JSON gives back floats for ints; run the snapshot through the same normalisation as the live fields.
 		var w := from_dict(cp.merged({"life": {"warned": cp.get("life_warned", false)}}))
 		s.checkpoint = w.world_snapshot()
+	var cb: Dictionary = d.get("combat", {})
+	if not cb.is_empty():
+		s.combat = {"dungeon": str(cb["dungeon"])}
+		for k in ["index", "player_hp", "enemy_hp", "player_cd", "enemy_cd"]:
+			s.combat[k] = int(cb[k])
+	for k in d.get("dungeon_clears", {}):
+		s.dungeon_clears[str(k)] = int(d["dungeon_clears"][k])
 	var au: Dictionary = d.get("automation", {})
 	if not au.is_empty():
 		s.automation = {"slots": [], "cursor": int(au.get("cursor", 0)), "loop": bool(au.get("loop", false)),
@@ -197,6 +210,7 @@ func restore_world(snap: Dictionary) -> void:
 		else:
 			set(k, v)
 	active_action = {}
+	combat = {}
 	automation = GameState.new().automation.duplicate(true)
 
 

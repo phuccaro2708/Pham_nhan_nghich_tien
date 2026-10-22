@@ -1,0 +1,41 @@
+[
+ {
+  "id": "bamboo_wolf",
+  "name_key": "enemy.bamboo_wolf",
+  "hp": 18,
+  "atk": 5,
+  "def": 0,
+  "spd": 12,
+  "hit": 0.8,
+  "crit": 0.05,
+  "effects": [
+   {"type": "add_resource", "resource": "silver", "amount": 3, "chance": 0.6}
+  ]
+ },
+ {
+  "id": "wild_boar",
+  "name_key": "enemy.wild_boar",
+  "hp": 30,
+  "atk": 6,
+  "def": 1,
+  "spd": 8,
+  "hit": 0.75,
+  "crit": 0.05,
+  "effects": [
+   {"type": "add_resource", "resource": "silver", "amount": 5}
+  ]
+ },
+ {
+  "id": "bamboo_snake",
+  "name_key": "enemy.bamboo_snake",
+  "hp": 40,
+  "atk": 8,
+  "def": 1,
+  "spd": 10,
+  "hit": 0.8,
+  "crit": 0.1,
+  "effects": [
+   {"type": "add_resource", "resource": "herb", "amount": 3}
+  ]
+ }
+]

@@ -144,3 +144,10 @@ Sửa so với Phase 1: `MAX_AMOUNT` 1e7 → 1e15 (mục "Quy tắc bổ sung" �
 - **Action** `visible_when` nay là *cổng khám phá thật*: `check_can_start` trả `not_discovered`; `AutomationQueue.set_slots` từ chối ô đó.
 - **Config** `ui.lifespan_visible_when`: điều kiện hiện giới hạn thọ nguyên trong header; `ui.tab_visible_when` không còn trang `story`.
 - **Save v4** thêm `knowledge`; migration v3→v4 suy ra qua điều kiện `legacy_when` khai báo trong từng kiến thức (`ContentMigration`); id lạ vào `orphans["knowledge"]`.
+
+## Phase B — Bí cảnh (schema_version 6)
+- `data/enemies/*.json`: `{id, name_key, hp, atk, def, spd, hit, crit, effects[]}` (effects = loot, qua EffectResolver, hỗ trợ `chance`).
+- `data/dungeons/*.json`: `{id, name_key, desc_key, visible_when, requirements, age_cost_years, enemies[], clear_effects[]}`.
+- `config/progression.json.combat`: `player{hp,atk,def,spd,hit,crit}`, `stage_bonus`, `crit_multiplier`, `interval_base`, `heal_after_kill`.
+- Stat mới cho effect `modify_stat`: `combat.hp|atk|def|spd`.
+- Save: `combat` (object, rỗng khi không ở bí cảnh), `dungeon_clears` (id → số lần). Migration 5→6 thêm hai trường rỗng.

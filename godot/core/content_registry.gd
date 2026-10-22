@@ -18,6 +18,9 @@ var story_order: Array = []
 var techniques: Dictionary = {}
 var knowledge: Dictionary = {}
 var relations: Dictionary = {}
+## Combat content (GDD §VIII): enemies and dungeons (bí cảnh) by id.
+var enemies: Dictionary = {}
+var dungeons: Dictionary = {}
 ## `texts` is the primary language (vi) and the validation base; `texts_en` etc. live in `translations`.
 var texts: Dictionary = {}
 var translations: Dictionary = {}  # lang -> {key: text}
@@ -42,6 +45,7 @@ func has_story_node(id: Variant) -> bool: return story.has(id)
 func has_technique(id: Variant) -> bool: return techniques.has(id)
 func has_relation(id: Variant) -> bool: return relations.has(id)
 func has_knowledge(id: Variant) -> bool: return knowledge.has(id)
+func has_dungeon(id: Variant) -> bool: return dungeons.has(id)
 
 
 ## Mastery definition of an action, {} when it has none.
@@ -83,6 +87,8 @@ func load_all(base: String = "res://data") -> bool:
 	_load_dir(base + "/knowledge", knowledge, "knowledge")
 	_load_dir(base + "/mastery", mastery, "mastery")
 	_load_dir(base + "/story", story, "story")
+	_load_dir(base + "/enemies", enemies, "enemy")
+	_load_dir(base + "/dungeons", dungeons, "dungeon")
 	_load_texts(base + "/localization/vi.json")
 	translations = {"vi": texts}
 	_load_translation(base + "/localization/en.json", "en")
@@ -137,6 +143,8 @@ func _register(kind: String, d: Variant, source: String) -> void:
 		"knowledge": target = knowledge
 		"mastery": target = mastery
 		"story": target = story
+		"enemy": target = enemies
+		"dungeon": target = dungeons
 		_: target = actions
 	if target.has(d["id"]):
 		errors.append("%s: duplicate %s id '%s'" % [source, kind, d["id"]])
@@ -193,6 +201,7 @@ func validate() -> void:
 	_validate_knowledge()
 	_validate_mastery()
 	_validate_story()
+	_validate_combat()
 	_validate_migrations()
 	_validate_automation_config()
 	_validate_ui_config()
@@ -248,6 +257,8 @@ func _valid_stat(stat: String) -> bool:
 		return true
 	if stat.begins_with("speed."):
 		return actions.has(stat.substr(6))
+	if stat.begins_with("combat."):
+		return ["hp", "atk", "def", "spd"].has(stat.substr(7))
 	return stat.begins_with("yield.") and resources.has(stat.substr(6))
 
 
@@ -547,6 +558,65 @@ func _story_cycle(id: String, state: Dictionary) -> bool:
 			return true
 	state[id] = 2
 	return false
+
+
+const COMBAT_STATS: Array = ["hp", "atk", "def", "spd", "hit", "crit"]
+
+
+func _validate_combat() -> void:
+	var cfg: Variant = config.get("combat")
+	if cfg == null:
+		if not dungeons.is_empty():
+			errors.append("config.combat is required when dungeons exist")
+		return
+	if typeof(cfg) != TYPE_DICTIONARY or typeof(cfg.get("player")) != TYPE_DICTIONARY:
+		errors.append("config.combat.player must be an object")
+		return
+	_validate_combatant(cfg["player"], "config.combat.player")
+	for k in ["stage_bonus", "crit_multiplier", "interval_base", "heal_after_kill"]:
+		if not (GameState.is_number(cfg.get(k)) and float(cfg[k]) >= 0.0):
+			errors.append("config.combat.%s must be a number >= 0" % k)
+	if GameState.is_number(cfg.get("interval_base")) and float(cfg["interval_base"]) < 1.0:
+		errors.append("config.combat.interval_base must be >= 1")
+	if GameState.is_number(cfg.get("heal_after_kill")) and float(cfg["heal_after_kill"]) > 1.0:
+		errors.append("config.combat.heal_after_kill must be <= 1")
+	for id in enemies:
+		var e: Dictionary = enemies[id]
+		var p: String = "enemy '%s'" % id
+		if not texts.is_empty() and not texts.has(e.get("name_key", "")):
+			errors.append("%s: name_key missing in localization" % p)
+		_validate_combatant(e, p)
+		_validate_effect_list(e.get("effects", []), p)
+	for id in dungeons:
+		var d: Dictionary = dungeons[id]
+		var p: String = "dungeon '%s'" % id
+		for k in ["name_key", "desc_key"]:
+			if not texts.is_empty() and not texts.has(d.get(k, "")):
+				errors.append("%s: %s missing in localization" % [p, k])
+		errors.append_array(_conditions.validate(d.get("visible_when", {}), self, p + " visible_when"))
+		errors.append_array(_conditions.validate(d.get("requirements", {}), self, p + ".requirements"))
+		if not (GameState.is_number(d.get("age_cost_years", 0.0)) and float(d.get("age_cost_years", 0.0)) >= 0.0):
+			errors.append("%s: age_cost_years must be >= 0" % p)
+		if typeof(d.get("enemies")) != TYPE_ARRAY or (d["enemies"] as Array).is_empty():
+			errors.append("%s: enemies must be a non-empty array" % p)
+		else:
+			for eid in d["enemies"]:
+				if not enemies.has(eid):
+					errors.append("%s: unknown enemy '%s'" % [p, eid])
+		_validate_effect_list(d.get("clear_effects", []), p)
+
+
+func _validate_combatant(c: Dictionary, p: String) -> void:
+	for k in COMBAT_STATS:
+		if not (GameState.is_number(c.get(k)) and float(c[k]) >= 0.0):
+			errors.append("%s: %s must be a number >= 0" % [p, k])
+	if GameState.is_number(c.get("hp")) and not (GameState.is_int(c["hp"]) and int(c["hp"]) >= 1):
+		errors.append("%s: hp must be an integer >= 1" % p)
+	if GameState.is_number(c.get("spd")) and float(c["spd"]) <= 0.0:
+		errors.append("%s: spd must be > 0" % p)
+	for k in ["hit", "crit"]:
+		if GameState.is_number(c.get(k)) and float(c[k]) > 1.0:
+			errors.append("%s: %s must be <= 1" % [p, k])
 
 
 const UI_TABS: Array = ["mastery", "automation", "cultivation"]  # pages of StoryPages

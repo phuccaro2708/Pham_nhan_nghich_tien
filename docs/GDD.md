@@ -371,6 +371,7 @@ Một chu kỳ: (1) kiểm tra trạng thái action hiện tại → (2) kiểm 
 - Story choice chưa chọn **tạm dừng chuỗi liên quan**, AI không tự quyết.
 - Có báo cáo: tài nguyên nhận, tu vi tích lũy, nguyên nhân action bị dừng.
 - Không tự Trúc Cơ hay quyết định không đảo ngược.
+- **Không chạy combat offline**: lượt bí cảnh đang diễn ra bị hủy (không thưởng, không tốn tuổi) trước khi tính offline, để không tự quyết trong lúc vắng mặt.
 - Tối ưu được bằng bước nhảy theo lần hoàn thành action, miễn kết quả tương đương mô phỏng online.
 
 ---
@@ -442,7 +443,10 @@ Wireframe 1280×720, **dạng cột theo loại hành động** (đổi từ 3 c
 - Cột hành động: action vào cột theo dữ liệu — có `upgrade` → *Nâng cấp*, `INSTANT` → *Tức thì*, còn lại (`TIMED`/`LOOP`) → *Lặp*. Trong cột gom thành nhóm thu gọn được theo `group`. Hành động đang chạy hiện thanh tiến độ hồng ngay trên nút; hành động bị khóa hiện xám, tooltip nêu lý do.
 - Cột tài nguyên: gom nhóm theo `group`, mỗi dòng `giá trị/trần` + thanh hồng theo tỉ lệ.
 - Giao diện Godot: `godot/scenes/ui/ui_theme.gd` dựng Theme từ tokens trùng tên biến Figma (file `pham_nhan_nghich_tien`: surface/page, surface/panel, ink/*, accent/jade, accent/cinnabar, fill/progress, state/disabled). Phông duy nhất Noto Serif (bản variable, giấy phép OFL, `godot/assets/fonts/`). Đổi màu/phông phải sửa Figma và `ui_theme.gd` cùng lúc. Lý do: một nguồn token cho mọi màn hình, hỗ trợ đầy đủ dấu tiếng Việt.
-- Chưa làm (ngoài MVP): cột *Next Action*, *Dungeon*, các tab Party/Ritual/Shop/Achievements; **Auto Queue** chờ phase automation.
+- Khung cột mới (yêu cầu chủ dự án 2026-10-22, theo ảnh mẫu): mỗi cột có tiêu đề riêng ở đầu: Menu chính (kèm nút `?` mở trợ giúp) · Khu vực · Tức thì · Lặp · Nâng cấp · **Hành động kế tiếp** · **Bí cảnh** · Tài nguyên.
+- Cột *Hành động kế tiếp*: thẻ sự kiện cốt truyện đang chờ chọn (dời từ trên cột chính xuống đây) + "Mục tiêu kế tiếp" (node story chưa tới; chỉ hiện tiến độ trigger `action_count_at_least`, không lộ tiêu đề để tránh spoil).
+- Cột *Bí cảnh*: danh sách bí cảnh (khóa/mở theo `visible_when`), nút vào/rút lui, thanh Sinh Lực hai bên, số lần thanh tẩy. Bí cảnh đầu tiên: Rừng Trúc Ảnh (hiện sau khi biết `martial_basics`).
+- Chưa làm (ngoài MVP): các tab Party/Ritual/Shop/Achievements.
 - Menu chính: scene riêng `scenes/main_menu.tscn` (Tiếp tục / Game mới / Ngôn ngữ / Thoát); ở menu, simulation và autosave dừng. Ngôn ngữ chính thức: Tiếng Việt + English (`data/localization/vi.json`, `en.json`), lưu ở `user://settings.cfg`.
 
 Quy tắc:
