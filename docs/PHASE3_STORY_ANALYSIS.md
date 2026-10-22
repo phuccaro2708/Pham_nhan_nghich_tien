@@ -33,7 +33,7 @@ Phase 2 (kế hoạch): Chương 4–5 (tiên duyên, Dẫn Khí Quyết, nhập
 | `breathing` | `ch1_village_elder`/training; route Ch3 |
 | `herb_basics` | `ch1_forest_edge`/go_deeper; route help |
 | `literacy` | Ch3 route học hỏi |
-| `heard_of_cultivators` | Ch2 `ch2_mountain_rumor` (cả 3 lựa chọn, kể cả bỏ qua); chuỗi đạo sĩ |
+| `heard_of_cultivators` | Ch2 `ch2_mountain_rumor` (cả 3 lựa chọn, kể cả bỏ qua); chuỗi đạo sĩ. Chỉ là tin đồn: **không** mở giới hạn thọ nguyên (do `dao_entry`) |
 | `body_lore`, `martial_basics` | Ch3: 3 route × 2 lựa chọn; `martial_basics` luôn có |
 | `qi_awareness`, `meridian_lore`, `dao_entry` (+`spirit_root_lore`) | Chuỗi đạo sĩ (`ch1_taoist_tale`) hoặc `ch1_qi_clue` |
 

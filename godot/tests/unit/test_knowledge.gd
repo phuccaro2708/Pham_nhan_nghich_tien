@@ -190,3 +190,28 @@ func test_cultivation_knowledge_comes_after_the_rewind_not_in_life_one() -> void
 		assert_true(s.knowledge.has(k), k)
 	assert_false(s.knowledge.has("qi_awareness"))  # the method's knowledge waits for Cảm Khí
 	assert_ne(act.check_can_start(s, "breakthrough")["reason"], "not_discovered")
+
+
+func test_ch2_rumour_never_reveals_the_lifespan_limit() -> void:
+	var cond: Dictionary = act.registry.config["ui"]["lifespan_visible_when"]
+	for c in act.registry.story["ch2_mountain_rumor"]["choices"]:
+		before_each()
+		act.effects.apply(s, c["effects"])
+		assert_true(s.knowledge.has("heard_of_cultivators"), c["id"])
+		assert_false(act.conditions.is_met(cond, s), c["id"])
+	_fx({"type": "learn_knowledge", "knowledge": "dao_entry"})
+	assert_true(act.conditions.is_met(cond, s))
+
+
+func test_every_queue_error_code_has_a_message_in_both_languages() -> void:
+	var src := FileAccess.get_file_as_string("res://systems/automation_queue.gd")
+	var re := RegEx.create_from_string("(?:\"error\": |return )\"([a-z_]+)\"")
+	var n := 0
+	for m in re.search_all(src):
+		var key := "ui.auto.error." + m.get_string(1)
+		for lang in ["vi", "en"]:
+			act.registry.language = lang
+			assert_ne(act.registry.text(key), key, "%s/%s" % [lang, key])
+		n += 1
+	assert_gt(n, 5)
+	act.registry.language = "vi"

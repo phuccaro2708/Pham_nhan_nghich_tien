@@ -68,7 +68,7 @@ Hệ quả có chủ ý: vì `story.done` giữ, mọi effect một-lần của 
 
 # Chương 2–3 (Phase 3, Phase 1)
 
-`ch2_mountain_rumor` (sau `ch1_village_elder` + 25 lần đốn củi) — cả 3 lựa chọn đều cho `heard_of_cultivators`, khác nhau ở hậu quả (quan hệ trưởng thôn / thảo dược / cờ `rumor_dismissed`).
+`ch2_mountain_rumor` (sau `ch1_village_elder` + 25 lần đốn củi) — cả 3 lựa chọn đều cho `heard_of_cultivators`, khác nhau ở hậu quả (quan hệ trưởng thôn / thảo dược / cờ `rumor_dismissed`); chỉ là tin đồn, giới hạn thọ nguyên chỉ hiện sau `dao_entry`.
 
 `ch3_crossroads` (sau Ch2 + Sức Bền ≥ 30) — 3 đường:
 

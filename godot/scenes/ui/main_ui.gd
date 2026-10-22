@@ -339,7 +339,7 @@ func _refresh() -> void:
 	var stage: Dictionary = GameController.actions.realms.stage(s)
 	var life: LifespanSystem = GameController.actions.lifespan
 	var lifespan_known: bool = GameController.actions.conditions.is_met(reg.config.get("ui", {}).get("lifespan_visible_when", {}), s)
-	if stage.get("mortal", false) and not lifespan_known:  # a commoner knows neither realms nor a lifespan limit
+	if not lifespan_known:  # until the Way is taught, nobody knows a lifespan limit (whatever their stage)
 		_age_label.text = reg.text("ui.status_line") % [reg.text(stage["name_key"]), int(s.age_years)]
 	else:
 		_age_label.text = reg.text("ui.realm_line") % [

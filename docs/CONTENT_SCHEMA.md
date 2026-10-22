@@ -106,7 +106,7 @@ Sửa so với Phase 1: `MAX_AMOUNT` 1e7 → 1e15 (mục "Quy tắc bổ sung" �
 
 ## Localization (menu + đa ngôn ngữ)
 
-- `data/localization/vi.json` là bản gốc và là cơ sở kiểm tra `name_key`/`group`; `en.json` phải có **đủ mọi key** của `vi.json` (thiếu → lỗi nạp content). Key thiếu lúc chạy rơi về tiếng Việt, rồi về chính key.
+- `data/localization/vi.json` là bản gốc và là cơ sở kiểm tra `name_key`/`group`; `en.json` phải có **đủ mọi key** của `vi.json` (thiếu → lỗi nạp content). Key thiếu lúc chạy rơi về tiếng Việt, rồi về chính key. Ngoại lệ duy nhất cho chuỗi hardcode: thông báo lỗi nạp dữ liệu ở `main_ui.gd` (song ngữ cố định, vì registry/bảng dịch có thể chính là thứ hỏng). Mã lỗi hàng đợi cần key `ui.auto.error.<code>` (test kiểm đủ).
 - Danh sách ngôn ngữ: `GameController.LANGUAGES` (tên bản ngữ, không dịch). Lựa chọn lưu ở `user://settings.cfg`, đổi được ở menu chính.
 - Tiền tố key: `resource.` `upgrade.` `action.` `realm.` `group.` `area.` `ui.` `menu.` `reason.` (mã lý do dừng/từ chối từ simulation, UI luôn hiển thị qua `reason.<code>`).
 
