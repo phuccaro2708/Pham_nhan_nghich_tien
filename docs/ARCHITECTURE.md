@@ -35,3 +35,7 @@ OfflineSystem: ActionSystem.advance(ticks) với offline_mode = true (≤ 8 gi�
 
 ## Combat / Bí cảnh (schema 6)
 `CombatSystem` (domain thuần) giữ `state.combat` (dungeon, index, HP hai bên, cooldown). Tiến theo tick cố định qua `ActionSystem.advance`; mọi đòn dùng `SimRng` đã lưu nên tái lập được từ save. Thưởng (loot, clear_effects, tuổi) chỉ áp trong `_kill_enemy`/`_end` sau khi bộ đếm tiến, nên save/load không trả hai lần. Vào bí cảnh dừng action đang chạy và chặn `start_action` (`in_dungeon`). Offline/chết/luân hồi → `abort` (không phí). Tương tác: Lifespan (tuổi mỗi lượt), Resource (loot/thưởng qua EffectResolver), Realm (chỉ số theo tầng) + stat `combat.*` từ nâng cấp.
+
+## V1 — Tiên Lộ (PathSystem)
+
+`systems/path_system.gd` (`act.path`) là lớp đọc thuần từ `GameState`, không lưu gì nên không nâng schema. `entries` chỉ trả mục có `visible_when` đúng, manh mối nhân vật đã biết và blocker có `visible_when` đúng mà `needs` chưa thỏa; `current` là mục mở đầu tiên; `choice_preview` chỉ liệt kê chi phí, tài nguyên chắc chắn và quan hệ (không lộ knowledge/flag); `ledger` liệt kê lựa chọn đã chọn kèm `later_hint_key`. `StorySystem.node_text_key` chọn `text_variants` theo lựa chọn trước đó. UI: tab Tiên Lộ, cột Next Action dùng `path.current`, dòng xem trước dưới mỗi nút lựa chọn.

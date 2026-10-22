@@ -151,3 +151,9 @@ Sửa so với Phase 1: `MAX_AMOUNT` 1e7 → 1e15 (mục "Quy tắc bổ sung" �
 - `config/progression.json.combat`: `player{hp,atk,def,spd,hit,crit}`, `stage_bonus`, `crit_multiplier`, `interval_base`, `heal_after_kill`.
 - Stat mới cho effect `modify_stat`: `combat.hp|atk|def|spd`.
 - Save: `combat` (object, rỗng khi không ở bí cảnh), `dungeon_clears` (id → số lần). Migration 5→6 thêm hai trường rỗng.
+
+## V1 — `data/path/*.json`, `later_hint_key`, `text_variants`
+
+- Path entry: `{id, name_key, goal_key, visible_when?, done_when?, clues?: [knowledge id], blockers?: [{needs, reason_key, visible_when?}]}`. Thứ tự file = thứ tự hiển thị. Validator kiểm key vi, condition, clue là knowledge có thật.
+- Story choice: `later_hint_key?` (gợi ý hệ quả về sau, hiện ở sổ Nhân Quả).
+- Story node: `text_variants?: [{when: condition, text_key}]`, lấy mục đầu tiên đúng, không có thì dùng `text_key`.

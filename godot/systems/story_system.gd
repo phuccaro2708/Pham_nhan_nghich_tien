@@ -20,6 +20,15 @@ func _init(p_registry: ContentRegistry, p_conditions: ConditionEvaluator, p_effe
 	resources = p_resources
 
 
+## Text of a node: the first text_variant whose condition holds (a later event recognises an earlier choice), else the base text.
+func node_text_key(state: GameState, node_id: String) -> String:
+	var def: Dictionary = registry.story[node_id]
+	for v in def.get("text_variants", []):
+		if conditions.is_met(v["when"], state):
+			return v["text_key"]
+	return def["text_key"]
+
+
 func pending(state: GameState) -> String:
 	return str(state.story["pending"])
 

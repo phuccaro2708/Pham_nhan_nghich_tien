@@ -19,6 +19,7 @@ var mastery: MasterySystem
 var story: StorySystem
 var automation: AutomationQueue
 var combat: CombatSystem
+var path: PathSystem
 ## Set by OfflineSystem while it simulates: the queue then refuses actions that are not offline_allowed.
 var offline_mode: bool = false
 
@@ -35,6 +36,7 @@ func _init(p_registry: ContentRegistry) -> void:
 	story = StorySystem.new(registry, conditions, effects, resources)
 	automation = AutomationQueue.new(self)
 	combat = CombatSystem.new(registry, conditions, effects, lifespan)
+	path = PathSystem.new(registry, conditions)
 
 
 # ---------- queries ----------

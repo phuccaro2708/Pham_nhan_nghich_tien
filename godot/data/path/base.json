@@ -1,0 +1,53 @@
+[
+ {
+  "id": "qi_method",
+  "name_key": "path.qi_method.name",
+  "goal_key": "path.qi_method.goal",
+  "visible_when": {"type": "knows", "knowledge": "heard_of_cultivators"},
+  "done_when": {"type": "flag_is", "flag": "knows_qi_method", "value": true},
+  "clues": ["heard_of_cultivators", "mem_taoist_wound", "mem_cave_site", "mem_pursuer_sign", "mem_last_words"],
+  "blockers": [
+   {"needs": {"type": "flag_is", "flag": "knows_qi_method", "value": true}, "reason_key": "path.qi_method.blocked"}
+  ]
+ },
+ {
+  "id": "sense_qi",
+  "name_key": "path.sense_qi.name",
+  "goal_key": "path.sense_qi.goal",
+  "visible_when": {"type": "flag_is", "flag": "knows_qi_method", "value": true},
+  "done_when": {"type": "flag_is", "flag": "qi_sensed", "value": true},
+  "clues": ["qi_awareness"],
+  "blockers": [
+   {"needs": {"type": "realm_at_least", "realm": "cam_khi"}, "reason_key": "path.sense_qi.blocked_realm"},
+   {"visible_when": {"type": "realm_at_least", "realm": "cam_khi"}, "needs": {"type": "resource_at_least", "resource": "herb", "amount": 3}, "reason_key": "path.sense_qi.blocked_herb"}
+  ]
+ },
+ {
+  "id": "first_technique",
+  "name_key": "path.first_technique.name",
+  "goal_key": "path.first_technique.goal",
+  "visible_when": {"type": "flag_is", "flag": "qi_sensed", "value": true},
+  "done_when": {"type": "technique_known", "technique": "dan_khi_nhap_mon"},
+  "blockers": [
+   {"needs": {"type": "realm_at_least", "realm": "luyen_khi_1"}, "reason_key": "path.first_technique.blocked_realm"},
+   {"visible_when": {"type": "realm_at_least", "realm": "luyen_khi_1"}, "needs": {"type": "resource_at_least", "resource": "herb", "amount": 2}, "reason_key": "path.first_technique.blocked_herb"}
+  ]
+ },
+ {
+  "id": "bamboo_forest",
+  "name_key": "path.bamboo_forest.name",
+  "goal_key": "path.bamboo_forest.goal",
+  "visible_when": {"type": "knows", "knowledge": "martial_basics"},
+  "done_when": {"type": "flag_is", "flag": "bamboo_forest_cleared", "value": true}
+ },
+ {
+  "id": "foundation",
+  "name_key": "path.foundation.name",
+  "goal_key": "path.foundation.goal",
+  "visible_when": {"type": "technique_known", "technique": "dan_khi_nhap_mon"},
+  "done_when": {"type": "realm_at_least", "realm": "truc_co_so"},
+  "blockers": [
+   {"needs": {"type": "realm_at_least", "realm": "luyen_khi_9"}, "reason_key": "path.foundation.blocked_realm"}
+  ]
+ }
+]

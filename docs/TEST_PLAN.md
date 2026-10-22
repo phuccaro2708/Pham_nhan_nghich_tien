@@ -36,3 +36,7 @@ Kết quả chạy đầy đủ (headless): **169/169 pass**, 10 script, 1581 as
 `tests/unit/test_combat.gd` (10): điều kiện vào (chưa khám phá, đang trong bí cảnh, ID lạ); vào dừng action và chặn start; cùng seed → trạng thái giống hệt, HP không âm, run luôn kết thúc; thanh tẩy trả thưởng đúng một lần; thua/rút lui chỉ tốn tuổi; tỉ lệ thắng của nhân vật gốc; round-trip JSON giữa trận tiếp tục giống hệt; save combat hỏng bị từ chối; migration v5→v6; offline hủy lượt không phí.
 
 Kết quả chạy đầy đủ (headless): **183/183 pass**, 11 script, 1852 assert.
+
+## V1 — `tests/unit/test_path.gd`
+
+Ẩn mục chưa khám phá, lý do chặn + việc kế, chỉ manh mối đã biết, PathSystem thuần (không đổi `to_dict`), key vi/en đủ, validate tham chiếu sai, xem trước lựa chọn không spoil, biến thể văn bản, sổ nhân quả. Kết quả: 194/194 pass.

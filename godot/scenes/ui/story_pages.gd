@@ -29,7 +29,7 @@ func setup(main_page: Control) -> void:
 	main_page.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	add_child(main_page)
 	set_tab_title(0, reg.text("ui.nav_main"))
-	for p in ["mastery", "automation", "cultivation"]:
+	for p in ["path", "mastery", "automation", "cultivation"]:
 		var sc := ScrollContainer.new()
 		sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 		sc.follow_focus = true
@@ -90,6 +90,7 @@ func refresh() -> void:
 	_event(s)
 	_goal(s)
 	_history(s)
+	_path(s)
 	_mastery(s)
 	_automation(s)
 	_cultivation(s)
@@ -173,7 +174,7 @@ func _event(s: GameState) -> void:
 	var node_def: Dictionary = reg.story[pending]
 	_label(box, _t("ui.story.pending"), UiTheme.SIZE_SMALL, UiTheme.ACCENT_CINNABAR)
 	_label(box, _t(node_def["title_key"]), UiTheme.SIZE_HEADER)
-	_label(box, _t(node_def["text_key"]))
+	_label(box, _t(GameController.actions.story.node_text_key(s, pending)))
 	for c in node_def["choices"]:
 		var chk: Dictionary = GameController.actions.story.check_choice(s, c["id"])
 		var b := Button.new()
@@ -186,15 +187,43 @@ func _event(s: GameState) -> void:
 		box.add_child(b)
 		if c == node_def["choices"][0] and get_viewport().gui_get_focus_owner() == null:
 			b.grab_focus.call_deferred()
+		_label(box, "   " + _preview_line(GameController.actions.path.choice_preview(c)), UiTheme.SIZE_SMALL, UiTheme.INK_SECONDARY)
 		if not chk["ok"]:
 			_label(box, "   " + _t("ui.story.locked_choice") + ": " + _reason(str(chk["reason"]), chk["detail"]), UiTheme.SIZE_SMALL, UiTheme.INK_SECONDARY)
 
 
-## First story node not yet reached. Only an action-count trigger shows progress; no title, so nothing is spoiled.
+## "Costs 3 Herb · Gain 30 Silver · Bond Taoist -2" or the "nothing" line.
+func _preview_line(preview: Array) -> String:
+	var reg: ContentRegistry = GameController.registry
+	var parts: PackedStringArray = []
+	for l in preview:
+		var id: String = l["id"]
+		var amount: float = l["amount"]
+		match l["kind"]:
+			"cost":
+				parts.append(_t("ui.path.preview_cost") % ("%s %s" % [snappedf(amount, 0.01), _t(reg.resources[id]["name_key"]) if reg.resources.has(id) else id]))
+			"resource":
+				parts.append(_t("ui.path.preview_gain") % ("%s %s" % [snappedf(amount, 0.01), _t(reg.resources[id]["name_key"]) if reg.resources.has(id) else id]))
+			"relation":
+				parts.append(_t("ui.path.preview_relation") % ("%s %+d" % [_t(reg.relations[id]["name_key"]) if reg.relations.has(id) else id, int(amount)]))
+	return " · ".join(parts) if not parts.is_empty() else _t("ui.path.preview_none")
+
+
+## Next Action: the first open Tiên Lộ milestone; otherwise the old story-trigger hint. Only discovered content is shown.
 func _goal(s: GameState) -> void:
 	if not _pages.has("goal"):
 		return
 	var reg: ContentRegistry = GameController.registry
+	var cur: Dictionary = GameController.actions.path.current(s)
+	if not cur.is_empty():
+		var psig: String = "path|%s|%s|%s" % [cur["id"], cur["blockers"], reg.language]
+		var pbox := _sync("goal", psig)
+		if pbox != null:
+			_label(pbox, _t("ui.next.goal"), UiTheme.SIZE_HEADER)
+			_label(pbox, _t(cur["goal_key"]))
+			for r in cur["blockers"]:
+				_label(pbox, _t(r), UiTheme.SIZE_SMALL, UiTheme.INK_SECONDARY)
+		return
 	var next_id: String = ""
 	for nid in reg.story_order:
 		if not (s.story["done"] as Dictionary).has(nid) and nid != s.story["pending"]:
@@ -234,6 +263,37 @@ func _history(s: GameState) -> void:
 				line += " — " + _t(c["text_key"])
 				_label(box, line, UiTheme.SIZE_SMALL, UiTheme.INK_PRIMARY)
 				_label(box, "   " + _t(c["result_key"]), UiTheme.SIZE_SMALL, UiTheme.INK_SECONDARY)
+
+
+# ---------- Tiên Lộ ----------
+
+func _path(s: GameState) -> void:
+	var reg: ContentRegistry = GameController.registry
+	var list: Array = GameController.actions.path.entries(s)
+	var ledger: Array = GameController.actions.path.ledger(s)
+	var box := _sync("path", "%s|%s|%s" % [list, ledger, reg.language])
+	if box == null:
+		return
+	_label(box, _t("ui.path.title"), UiTheme.SIZE_HEADER)
+	if list.is_empty():
+		_label(box, _t("ui.path.empty"), UiTheme.SIZE_BODY, UiTheme.INK_SECONDARY)
+	for e in list:
+		_label(box, "%s%s" % [_t(e["name_key"]), " (%s)" % _t("ui.path.done") if e["done"] else ""])
+		if not e["done"]:
+			_label(box, "   " + _t(e["goal_key"]), UiTheme.SIZE_SMALL, UiTheme.INK_SECONDARY)
+		if not e["clues"].is_empty():
+			var names: PackedStringArray = []
+			for k in e["clues"]:
+				names.append(_t(reg.knowledge[k]["name_key"]))
+			_label(box, "   %s: %s" % [_t("ui.path.clues"), ", ".join(names)], UiTheme.SIZE_SMALL, UiTheme.INK_SECONDARY)
+		for r in e["blockers"]:
+			_label(box, "   %s: %s" % [_t("ui.path.blocked"), _t(r)], UiTheme.SIZE_SMALL, UiTheme.ACCENT_CINNABAR)
+	if not ledger.is_empty():
+		_label(box, _t("ui.path.ledger"), UiTheme.SIZE_HEADER)
+		for l in ledger:
+			_label(box, "%s — %s" % [_t(l["title_key"]), _t(l["text_key"])], UiTheme.SIZE_SMALL)
+			if l["later_hint_key"] != "":
+				_label(box, "   %s: %s" % [_t("ui.path.ledger_later"), _t(l["later_hint_key"])], UiTheme.SIZE_SMALL, UiTheme.INK_SECONDARY)
 
 
 # ---------- mastery ----------

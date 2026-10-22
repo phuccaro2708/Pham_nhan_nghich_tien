@@ -21,6 +21,9 @@ var relations: Dictionary = {}
 ## Combat content (GDD §VIII): enemies and dungeons (bí cảnh) by id.
 var enemies: Dictionary = {}
 var dungeons: Dictionary = {}
+## Tiên Lộ (GDD §XIV.1, V1): path milestones by id, `path_order` is display order.
+var path_entries: Dictionary = {}
+var path_order: Array = []
 ## `texts` is the primary language (vi) and the validation base; `texts_en` etc. live in `translations`.
 var texts: Dictionary = {}
 var translations: Dictionary = {}  # lang -> {key: text}
@@ -89,6 +92,7 @@ func load_all(base: String = "res://data") -> bool:
 	_load_dir(base + "/story", story, "story")
 	_load_dir(base + "/enemies", enemies, "enemy")
 	_load_dir(base + "/dungeons", dungeons, "dungeon")
+	_load_dir(base + "/path", path_entries, "path")
 	_load_texts(base + "/localization/vi.json")
 	translations = {"vi": texts}
 	_load_translation(base + "/localization/en.json", "en")
@@ -145,6 +149,7 @@ func _register(kind: String, d: Variant, source: String) -> void:
 		"story": target = story
 		"enemy": target = enemies
 		"dungeon": target = dungeons
+		"path": target = path_entries
 		_: target = actions
 	if target.has(d["id"]):
 		errors.append("%s: duplicate %s id '%s'" % [source, kind, d["id"]])
@@ -154,6 +159,8 @@ func _register(kind: String, d: Variant, source: String) -> void:
 		realm_order.append(d["id"])
 	elif kind == "story":
 		story_order.append(d["id"])
+	elif kind == "path":
+		path_order.append(d["id"])
 
 
 func _load_texts(path: String) -> void:
@@ -201,6 +208,7 @@ func validate() -> void:
 	_validate_knowledge()
 	_validate_mastery()
 	_validate_story()
+	_validate_path()
 	_validate_combat()
 	_validate_migrations()
 	_validate_automation_config()
@@ -483,6 +491,28 @@ func _validate_mastery() -> void:
 			_validate_effect_list(m.get("effects", []), "%s milestone %d" % [p, last])
 
 
+func _validate_path() -> void:
+	for id in path_order:
+		var d: Dictionary = path_entries[id]
+		var p: String = "path '%s'" % id
+		_need_text(d, p, "name_key")
+		_need_text(d, p, "goal_key")
+		for k in ["visible_when", "done_when"]:
+			if d.has(k):
+				errors.append_array(_conditions.validate(d[k], self, "%s.%s" % [p, k]))
+		for kid in d.get("clues", []):
+			if not knowledge.has(kid):
+				errors.append("%s: unknown clue knowledge '%s'" % [p, kid])
+		for b in d.get("blockers", []):
+			if typeof(b) != TYPE_DICTIONARY or not b.has("needs"):
+				errors.append("%s: blocker needs 'needs' and 'reason_key'" % p)
+				continue
+			errors.append_array(_conditions.validate(b["needs"], self, p + ".blockers.needs"))
+			if b.has("visible_when"):
+				errors.append_array(_conditions.validate(b["visible_when"], self, p + ".blockers.visible_when"))
+			_need_text(b, p + " blocker", "reason_key")
+
+
 func _validate_story() -> void:
 	for id in story_order:
 		var d: Dictionary = story[id]
@@ -493,6 +523,12 @@ func _validate_story() -> void:
 			errors.append("%s: chapter required" % p)
 		if d.has("trigger"):
 			errors.append_array(_conditions.validate(d["trigger"], self, p + ".trigger"))
+		for v in d.get("text_variants", []):  # later nodes recognise earlier choices
+			if typeof(v) != TYPE_DICTIONARY or not v.has("when"):
+				errors.append("%s: text_variants entries need 'when' and 'text_key'" % p)
+				continue
+			errors.append_array(_conditions.validate(v["when"], self, p + ".text_variants.when"))
+			_need_text(v, p + " text_variant", "text_key")
 		var choices: Variant = d.get("choices")
 		if typeof(choices) != TYPE_ARRAY or (choices as Array).is_empty():
 			errors.append("%s: needs at least one choice" % p)
@@ -508,6 +544,8 @@ func _validate_story() -> void:
 			_need_text(c, cp, "text_key")
 			if c.has("result_key"):
 				_need_text(c, cp, "result_key")
+			if c.has("later_hint_key"):
+				_need_text(c, cp, "later_hint_key")
 			errors.append_array(_conditions.validate(c.get("requirements", {}), self, cp + ".requirements"))
 			_validate_effect_list(c.get("effects", []), cp, true)
 			_validate_rewind_last(c.get("effects", []), cp)

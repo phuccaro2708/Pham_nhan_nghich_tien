@@ -81,3 +81,7 @@ ch3_crossroads ─ study (5 bạc, +literacy) ─▶ ch3_study   ─ careful | s
 Mọi lựa chọn cuối cùng: `learn martial_basics` + `promote_realm cuong_than` (Đoán Thể). Lựa chọn "đầy đủ" thêm `body_lore`/`breathing`/…; lựa chọn "nhanh" cho bạc/gỗ thay thế. Chuỗi đạo sĩ (Ch1) giờ chạy sau Đoán Thể và cấp `dao_entry`, `qi_awareness`, `meridian_lore`, `heard_of_cultivators`.
 
 Test: `tests/unit/test_knowledge.gd` — `test_three_routes_reach_martial_basics_and_dan_the`, `test_every_route_has_a_free_fallback_that_still_promotes`, `test_poor_player_can_still_take_a_route`.
+
+## V1 — Nhận ra lựa chọn trước
+
+`ch1_mountain_incident` có 2 biến thể văn bản theo `ch1_wounded_taoist`: `heal` và `loot` (`ask_first` dùng văn bản gốc). Ba lựa chọn của `ch1_wounded_taoist` có `later_hint_key`.
