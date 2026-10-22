@@ -30,7 +30,7 @@ ch1_return (chain, ◆ keep) ──┼ trace_hunter [M cave_site] ─▶ r_hunte
 |---|---|---|---|---|
 | (a) cứu | r_rescue: chữa 3 thảo dược (+3) · nẹp 2 gỗ (+2) · `[M last_words]` nhắc lời trăn trối (+3) · ◆ hỏi (+1) → taoist_tale: nghe kỹ `[Đạo sĩ ≥ 3]` thêm `meridian_lore`, `spirit_root_lore` · ◆ vội đi | đạo sĩ **sống** (`npc_taoist_alive`) | `dao_entry`, `heard_of_cultivators`, (+2) | lời đạo sĩ → `ch4_method_guided` |
 | (b) thợ săn → hang | r_hunter: phụ 5 gỗ (Thợ săn +2) · ◆ bám theo (−1) → cave_relic: ◆ chép tay (không lấy) · ◆ lấy cả cuộn (Thợ săn −2, +Thể Phách) | thợ săn **sống**, đạo sĩ chết | `dao_entry`, `meridian_lore` nếu chép | Tàn Kinh → `ch4_method_relic` |
-| (c) cảnh báo | r_warn: ◆ nói thẳng (Trưởng thôn −2) · biếu Bà Lý 3 gỗ (Bà Lý +2, Trưởng thôn −1) → r_proof: vẽ ấn 2 gỗ (Trưởng thôn +3, `village_believes`) · ◆ tự tìm (+1) | làng nghi rồi tin | `dao_entry`, `heard_of_cultivators` | sách của trưởng thôn → `ch4_method_evidence` |
+| (c) cảnh báo | r_warn: ◆ nói thẳng (Trưởng thôn −2) · biếu Bà Lý 3 gỗ (Bà Lý +2, Trưởng thôn −1) → r_proof: vẽ ấn 2 gỗ (Trưởng thôn +3, `village_believes`) · ◆ tự tìm (+1) | làng nghi rồi tin; đạo sĩ **chết** (`npc_taoist_dead`) | `dao_entry`, `heard_of_cultivators` | sách của trưởng thôn → `ch4_method_evidence` |
 | (d) im lặng | r_rogue: ◆ rời đi (Bà Lý +1) · ◆ lấy túi (+30 bạc, Đạo sĩ −2) → cave_rumor (**nguồn hang riêng**): ◆ khám phá (+Thể Phách, Bà Lý −1) · ◆ bỏ qua (Bà Lý +1). **Không `next`** — nút sau không còn mở mà không kiểm trigger (F2) | đạo sĩ chết | `dao_entry` | tán tu ở chợ → `ch4_method_rogue` |
 
 ## 3. Pháp môn tại Cảm Khí, và kết chương

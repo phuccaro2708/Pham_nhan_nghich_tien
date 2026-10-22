@@ -657,6 +657,11 @@
       "type": "set_flag",
       "flag": "npc_taoist_dead",
       "value": true
+     },
+     {
+      "type": "set_flag",
+      "flag": "npc_hunter_alive",
+      "value": true
      }
     ],
     "next": "ch4_cave_relic"
@@ -757,6 +762,11 @@
       "type": "set_flag",
       "flag": "village_suspicious",
       "value": true
+     },
+     {
+      "type": "set_flag",
+      "flag": "npc_taoist_dead",
+      "value": true
      }
     ],
     "next": "ch4_r_proof"
@@ -782,6 +792,11 @@
      {
       "type": "set_flag",
       "flag": "village_suspicious",
+      "value": true
+     },
+     {
+      "type": "set_flag",
+      "flag": "npc_taoist_dead",
       "value": true
      }
     ],
@@ -851,6 +866,11 @@
      {
       "type": "learn_knowledge",
       "knowledge": "dao_entry"
+     },
+     {
+      "type": "set_flag",
+      "flag": "village_believes",
+      "value": true
      }
     ]
    }

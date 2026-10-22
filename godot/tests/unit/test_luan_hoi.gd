@@ -278,6 +278,17 @@ func test_save_round_trip_after_rewind_and_with_checkpoint() -> void:
 	assert_eq(copy.loop, 1)
 
 
+func test_every_choice_of_a_branch_fixes_its_npc_fate() -> void:
+	var need := {"ch4_r_rescue": "npc_taoist_alive", "ch4_r_hunter": "npc_hunter_alive", "ch4_r_warn": "npc_taoist_dead"}
+	for node in need:
+		for c in reg.story[node]["choices"]:
+			var flags: Array = []
+			for e in c.get("effects", []):
+				if e["type"] == "set_flag":
+					flags.append(e["flag"])
+			assert_true(flags.has(need[node]), "%s/%s" % [node, c["id"]])
+
+
 func test_rewind_after_json_round_trip_keeps_int_types() -> void:
 	_to_incident()
 	var loaded := GameState.from_dict(JSON.parse_string(JSON.stringify(s.to_dict())))
