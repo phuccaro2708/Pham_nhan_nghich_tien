@@ -278,6 +278,16 @@ func test_save_round_trip_after_rewind_and_with_checkpoint() -> void:
 	assert_eq(copy.loop, 1)
 
 
+func test_rewind_after_json_round_trip_keeps_int_types() -> void:
+	_to_incident()
+	var loaded := GameState.from_dict(JSON.parse_string(JSON.stringify(s.to_dict())))
+	assert_eq(loaded.checkpoint, s.checkpoint)
+	for k in loaded.checkpoint["action_counts"]:
+		assert_eq(typeof(loaded.checkpoint["action_counts"][k]), TYPE_INT, k)
+	for k in loaded.checkpoint["relations"]:
+		assert_eq(typeof(loaded.checkpoint["relations"][k]), TYPE_INT, k)
+
+
 func test_rewind_rewards_are_paid_once_across_save_load() -> void:
 	_to_incident()
 	_pick(["watch_hunter"])

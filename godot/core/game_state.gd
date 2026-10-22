@@ -151,7 +151,11 @@ static func from_dict(d: Dictionary) -> GameState:
 	for kid in d.get("knowledge", []):
 		s.knowledge.append(str(kid))
 	s.loop = int(d.get("loop", 0))
-	s.checkpoint = (d.get("checkpoint", {}) as Dictionary).duplicate(true)
+	var cp: Dictionary = d.get("checkpoint", {})
+	if not cp.is_empty():
+		# JSON gives back floats for ints; run the snapshot through the same normalisation as the live fields.
+		var w := from_dict(cp.merged({"life": {"warned": cp.get("life_warned", false)}}))
+		s.checkpoint = w.world_snapshot()
 	var au: Dictionary = d.get("automation", {})
 	if not au.is_empty():
 		s.automation = {"slots": [], "cursor": int(au.get("cursor", 0)), "loop": bool(au.get("loop", false)),
