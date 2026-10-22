@@ -1,6 +1,6 @@
 # STORY_GRAPH — Chương I "Khói Bếp Phàm Trần" + Luân hồi lần đầu
 
-Nguồn: `godot/data/story/chapter1.json` (ch1, **sửa tay từ v1.1**), `chapter4.json` (nhánh quay lại + pháp môn), `chapter5.json` (stub Luyện Khí 9 → Trúc Cơ). `tools/gen_phase2b_data.py` đã **không còn sinh** `chapter1.json` — chạy lại sẽ ghi đè bản này, đừng chạy nó. Quy ước: **◆ = lựa chọn miễn phí** (không `costs`, không `requirements`; bắt buộc có ≥1 ở mỗi nút), `→` = `next`, `[M]` = cần ký ức (`knows mem_*`). Lý do thiết kế: GDD §7.2, §7.4.
+Nguồn: `godot/data/story/chapter1.json` (ch1, **sửa tay từ v1.1**), `chapter4.json` (nhánh quay lại + pháp môn), `chapter5.json` (stub Luyện Khí 9 → Trúc Cơ). `tools/gen_phase2b_data.py` vẫn còn ghi `chapter1.json` và localization ch1 — chạy lại sẽ **ghi đè** bản sửa tay này, đừng chạy nó. Quy ước: **◆ = lựa chọn miễn phí** (không `costs`, không `requirements`; bắt buộc có ≥1 ở mỗi nút), `→` = `next`, `[M]` = cần ký ức (`knows mem_*`). Lý do thiết kế: GDD §7.2, §7.4.
 
 ## 1. Kiếp thứ nhất (đến mốc, chết, tua)
 
@@ -59,6 +59,8 @@ Hệ quả có chủ ý: vì `story.done` giữ, mọi effect một-lần của 
 - Trước node pháp môn, `sense_qi` bị từ chối ở cả 4 nhánh; không node nào ngoài `ch4_method_*` và `ch1_qi_clue` đặt `knows_qi_method`.
 - Bốn kết cục khác nhau từng cặp ở quan hệ + cờ; bốn `qi_source` khác nhau.
 - Save/load ngay sau tua bằng nhau; checkpoint hỏng (NaN, ID lạ, thiếu khóa) bị `validate_state` từ chối; save v4 migrate sang v5.
+
+**Save cũ (v4):** ID node ch1 cũ vẫn tồn tại và `story.done` chỉ cần là chuỗi, nên save giữa Chương I vẫn tải được (pending `ch1_taoist_tale`/`ch1_cave_rumor`/`ch1_qi_clue` dùng đúng ID lựa chọn cũ).
 
 **Giới hạn đã biết:** chỉ một vòng luân hồi theo truyện; save cũ đang treo `ch1_wounded_taoist` sẽ đi tiếp vào sự cố mà không có mốc (tua là no-op, người chơi vẫn đi tiếp được ở `ch1_return`).
 
