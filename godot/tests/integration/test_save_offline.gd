@@ -43,6 +43,7 @@ func _overwrite(path: String, text: String) -> void:
 
 func test_save_load_round_trip_is_exact() -> void:
 	var s := _busy_state()
+	s.content_version = reg.content_version  # load migrates to the newest content version
 	assert_eq(sm.save_game(s, reg, 1000), OK)
 	var r: Dictionary = sm.load_game(reg)
 	assert_eq(r["source"], "main")

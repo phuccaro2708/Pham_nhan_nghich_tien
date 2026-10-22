@@ -61,7 +61,7 @@ Tham khảo nguyên lý (không sao chép công thức/nội dung): *Your Chroni
 
 | Đại cảnh giới | Tiểu cảnh giới | Hệ thống mở |
 |---|---|---|
-| Phàm Nhân | Phàm thể → Cường thân → Cảm khí | Sinh tồn, lao động, luyện thể |
+| Phàm Nhân | Vô → Cường thân → Cảm khí | Sinh tồn, lao động, luyện thể |
 | Luyện Khí | Tầng 1–9 | Linh khí, pháp thuật, công pháp |
 | Trúc Cơ | Sơ → Trung → Hậu → Viên Mãn | Đạo cơ, động phủ, trận pháp |
 | Kim Đan | Sơ → Trung → Hậu → Viên Mãn | Bản mệnh Kim Đan |
@@ -593,6 +593,7 @@ Casual · Optimizer · Idle (rời game nhiều giờ) · Explorer · Risk Playe
 | Thọ nguyên | Tài nguyên chiến lược, không phạt idle |
 | Combat | Auto-battle |
 | Offline | Tối đa 8 giờ |
+| Cảnh giới đầu | "Vô" (id `vo`, trước là Phàm Thể): nông dân chưa có cảnh giới; Tu Vi/Linh Khí ẩn trên UI tới Cảm Khí (`visible_when` trong resource), xưng hô lời kể là "ngươi" |
 | Thất bại đột phá | Hoàn một phần tu vi (`on_fail_refund`, Phase 2B) — xem §6.5 |
 | Story | Đồ thị nút, một sự kiện treo tại một thời điểm, mỗi nút có lựa chọn miễn phí (không softlock) |
 | Prestige | Thiết kế trước, triển khai sau MVP |

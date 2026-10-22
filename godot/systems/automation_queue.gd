@@ -75,6 +75,7 @@ func start(state: GameState) -> Dictionary:
 
 
 func stop(state: GameState, reason: String = "stopped_by_player") -> void:
+	state.active_action.erase("queue_slot")  # the running cycle becomes a plain manual one: a LOOP keeps going, nothing is half-owned
 	if status(state) == "running" or status(state) == "deadlock":
 		_set_status(state, "stopped", reason)
 
@@ -170,6 +171,9 @@ func _start_slot(state: GameState, i: int) -> bool:
 		return false
 	if registry.actions[id]["type"] == "INSTANT":
 		state.automation["slots"][i]["done"] = int(state.automation["slots"][i]["done"]) + 1
+		var slot: Dictionary = state.automation["slots"][i]
+		if int(slot["repeat"]) > 0 or not (slot["until"] as Dictionary).is_empty():
+			return false  # bounded slot: it ends by itself, only unbounded instants need the spin guard
 		state.automation["instant_streak"] = int(state.automation["instant_streak"]) + 1
 		if int(state.automation["instant_streak"]) > MAX_INSTANT_STREAK:
 			_set_status(state, "stopped", "instant_loop")
@@ -194,7 +198,9 @@ func _feed(state: GameState, waiting: int, check: Dictionary) -> bool:
 		for e in def.get("effects", []):
 			if e["type"] == "add_resource" and (check["detail"] as Dictionary).has(e["resource"]) \
 					and actions.check_can_start(state, def["id"])["ok"]:
-				return _start_slot(state, j)
+				if _start_slot(state, j):
+					return true
+				break  # this producer failed to start: try the next slot
 	return false
 
 

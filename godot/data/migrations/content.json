@@ -1,4 +1,6 @@
 {
- "content_version": 1,
- "migrations": []
+ "content_version": 2,
+ "migrations": [
+  {"to_version": 2, "renames": {"realms": {"pham_the": "vo"}}}
+ ]
 }

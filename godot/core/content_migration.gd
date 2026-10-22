@@ -144,6 +144,8 @@ static func _orphan_phase2b(d: Dictionary, registry: ContentRegistry) -> void:
 		if typeof(parked) == TYPE_STRING and parked != "" and st.get("pending", "") == "" and registry.has_story_node(parked) and not st["done"].has(parked):
 			st["pending"] = parked
 			d["orphans"].erase("story_pending")
+		elif typeof(parked) == TYPE_STRING and parked != "" and st["done"].has(parked):
+			d["orphans"].erase("story_pending")  # resolved meanwhile: nothing left to restore
 	var techs: Variant = d.get("techniques")
 	if typeof(techs) == TYPE_ARRAY:
 		var keep: Array = []
@@ -164,7 +166,10 @@ static func _orphan_phase2b(d: Dictionary, registry: ContentRegistry) -> void:
 	if typeof(au) == TYPE_DICTIONARY and typeof(au.get("slots")) == TYPE_ARRAY:
 		for s in au["slots"]:
 			if typeof(s) == TYPE_DICTIONARY and not registry.has_action(str(s.get("action", ""))):
-				d["orphans"]["automation"] = au  # the queue refers to content that is gone: park it whole, start empty
+				var key: String = "automation"
+				while d["orphans"].has(key):
+					key += "_"  # never overwrite a queue parked earlier
+				d["orphans"][key] = au  # the queue refers to content that is gone: park it whole, start empty
 				d["automation"] = GameState.new().automation.duplicate(true)
 				var a: Variant = d.get("active_action")
 				if typeof(a) == TYPE_DICTIONARY:

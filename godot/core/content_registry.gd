@@ -12,6 +12,7 @@ var upgrades: Dictionary = {}
 ## Phase 2B content. `mastery` is keyed by definition id (one per action, see mastery_for_action);
 ## `story` nodes keep file order in `story_order` (deterministic trigger scan); `relations` and `techniques` by id.
 var mastery: Dictionary = {}
+var _mastery_index: Dictionary = {}  # action id -> mastery def, see mastery_for_action
 var story: Dictionary = {}
 var story_order: Array = []
 var techniques: Dictionary = {}
@@ -43,10 +44,11 @@ func has_relation(id: Variant) -> bool: return relations.has(id)
 
 ## Mastery definition of an action, {} when it has none.
 func mastery_for_action(action_id: String) -> Dictionary:
-	for mid in mastery:
-		if mastery[mid]["action"] == action_id:
-			return mastery[mid]
-	return {}
+	if _mastery_index.size() != mastery.size():  # rebuilt only when definitions were (re)loaded
+		_mastery_index.clear()
+		for mid in mastery:
+			_mastery_index[mastery[mid]["action"]] = mastery[mid]
+	return _mastery_index.get(action_id, {})
 
 
 ## Stage definition for a realm id; "" means the first stage. {} when no realms are defined.
@@ -202,6 +204,8 @@ func _validate_resource(d: Dictionary) -> void:
 		errors.append("%s: cap must be null or > 0" % p)
 	if d.has("cap_from") and (d["cap_from"] != "cultivation_cap" or d.get("cap") != null or realms.is_empty()):
 		errors.append("%s: cap_from must be 'cultivation_cap', exclusive with cap, and needs realms" % p)
+	if d.has("visible_when"):  # UI only: hides the row until the condition holds; the amount is still tracked
+		errors.append_array(_conditions.validate(d["visible_when"], self, p + " visible_when"))
 	if d.has("initial") and not (GameState.is_number(d["initial"]) and float(d["initial"]) >= 0.0):
 		errors.append("%s: initial must be >= 0" % p)
 	elif d.has("initial") and float(d["initial"]) > ResourceSystem.MAX_AMOUNT:
@@ -432,9 +436,9 @@ func _validate_mastery() -> void:
 		else:
 			seen[d["action"]] = id
 		_need_text(d, p, "name_key")
-		if not (GameState.is_number(d.get("xp_base", 20)) and float(d.get("xp_base", 20)) > 0.0 \
-				and GameState.is_number(d.get("xp_growth", 1.35)) and float(d.get("xp_growth", 1.35)) >= 1.0 \
-				and GameState.is_number(d.get("xp_per_completion", 1)) and float(d.get("xp_per_completion", 1)) > 0.0):
+		if not (GameState.is_number(d.get("xp_base")) and float(d["xp_base"]) > 0.0 \
+				and GameState.is_number(d.get("xp_growth")) and float(d["xp_growth"]) >= 1.0 \
+				and GameState.is_number(d.get("xp_per_completion")) and float(d["xp_per_completion"]) > 0.0):
 			errors.append("%s: xp_base > 0, xp_growth >= 1, xp_per_completion > 0" % p)
 		if not (GameState.is_int(d.get("max_level")) and int(d["max_level"]) >= 2 and int(d["max_level"]) <= 99):
 			errors.append("%s: max_level must be an integer in [2, 99]" % p)

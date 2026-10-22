@@ -60,7 +60,8 @@ func _advance_realm(state: GameState) -> void:
 ## GDD §5.3: bonuses of one group add up, groups multiply: R = base x (1+U) x (1+P) x (1+M).
 func yield_multiplier(state: GameState, resource: String) -> float:
 	var stat: String = "yield." + resource
-	return (1.0 + group_bonus(state, stat, "upgrades")) * (1.0 + group_bonus(state, stat, "techniques")) 			* (1.0 + group_bonus(state, stat, "mastery"))
+	return (1.0 + group_bonus(state, stat, "upgrades")) * (1.0 + group_bonus(state, stat, "techniques")) \
+			* (1.0 + group_bonus(state, stat, "mastery"))
 
 
 ## Additive total over all groups (used for speed: T = T_base / (1 + S + M), GDD 5.2).

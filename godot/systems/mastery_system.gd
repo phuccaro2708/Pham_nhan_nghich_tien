@@ -22,7 +22,7 @@ func _init(p_registry: ContentRegistry, p_effects: EffectResolver) -> void:
 
 ## XP needed to go from `level` to `level + 1`: base x growth^(level-1).
 static func xp_required(def: Dictionary, level: int) -> float:
-	return float(def.get("xp_base", 20.0)) * pow(float(def.get("xp_growth", 1.35)), float(level - 1))
+	return float(def["xp_base"]) * pow(float(def["xp_growth"]), float(level - 1))
 
 
 func level_of(state: GameState, action_id: String) -> int:
@@ -34,10 +34,10 @@ func progress(state: GameState, action_id: String) -> Dictionary:
 	var def: Dictionary = registry.mastery_for_action(action_id)
 	if def.is_empty():
 		return {}
-	var m: Dictionary = state.mastery.get(action_id, {"level": 1, "xp": 0.0, "claimed": []})
-	var lvl: int = int(m["level"])
-	return {"level": lvl, "xp": float(m["xp"]), "max_level": int(def["max_level"]),
-		"required": xp_required(def, lvl) if lvl < int(def["max_level"]) else 0.0}
+	var lvl: int = level_of(state, action_id)  # 0 until the first completion, same as every gate
+	var xp: float = float((state.mastery.get(action_id, {}) as Dictionary).get("xp", 0.0))
+	return {"level": lvl, "xp": xp, "max_level": int(def["max_level"]),
+		"required": xp_required(def, maxi(lvl, 1)) if lvl < int(def["max_level"]) else 0.0}
 
 
 ## Pays XP for one completed cycle of `action_id` and every milestone crossed. Returns levels gained.
@@ -51,7 +51,7 @@ func on_completed(state: GameState, action_id: String) -> int:
 	var max_level: int = int(def["max_level"])
 	if int(m["level"]) >= max_level:
 		return 0
-	m["xp"] = GameState.snap(float(m["xp"]) + float(def.get("xp_per_completion", 1.0)))
+	m["xp"] = GameState.snap(float(m["xp"]) + float(def["xp_per_completion"]))
 	var gained: int = 0
 	while int(m["level"]) < max_level and gained < MAX_LEVELS_PER_AWARD and float(m["xp"]) >= xp_required(def, int(m["level"])) - 1e-9:
 		m["xp"] = GameState.snap(maxf(float(m["xp"]) - xp_required(def, int(m["level"])), 0.0))

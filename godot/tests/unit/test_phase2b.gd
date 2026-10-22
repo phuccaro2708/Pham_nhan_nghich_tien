@@ -184,7 +184,7 @@ func test_free_choices_alone_finish_chapter_one() -> void:
 	# a character with no resources and no relations must still be able to complete the chapter (no softlock)
 	s.action_counts["gather_wood"] = 99
 	s.action_counts["train_body"] = 99
-	for realm in ["pham_the", "cuong_than", "cam_khi"]:
+	for realm in ["vo", "cuong_than", "cam_khi"]:
 		s.realm_id = realm
 		for _i in 10:
 			act.story.scan(s)
@@ -323,3 +323,18 @@ func test_breakthrough_cannot_be_automatable() -> void:
 	var r := _fresh()
 	r.actions["breakthrough"]["automation_allowed"] = true
 	assert_string_contains(_errors_after(r), "never be automated")
+
+
+func test_old_realm_id_migrates_to_vo() -> void:
+	var d: Dictionary = s.to_dict()
+	d["realm_id"] = "pham_the"
+	d["content_version"] = 1
+	var m: Dictionary = ContentMigration.apply(d, act.registry)
+	assert_eq(m["realm_id"], "vo")
+
+
+func test_qi_resources_hidden_until_cam_khi() -> void:
+	var cond: Dictionary = act.registry.resources["cultivation"]["visible_when"]
+	assert_false(act.conditions.is_met(cond, s))
+	s.realm_id = "cam_khi"
+	assert_true(act.conditions.is_met(cond, s))

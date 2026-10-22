@@ -13,6 +13,7 @@ func before_each() -> void:
 	act = w["act"]
 	s = w["state"]
 	s.flags["tutorial_started"] = true
+	s.content_version = act.registry.content_version  # a saved state is migrated to the newest content version on load
 	for id in act.registry.resources:
 		s.resources[id] = float(act.registry.resources[id].get("initial", 0.0))
 	s.mastery["gather_wood"] = {"level": 3, "xp": 0.0, "claimed": []}  # unlocks automation

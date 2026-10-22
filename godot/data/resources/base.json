@@ -25,14 +25,22 @@
   "name_key": "resource.spirit_qi",
   "cap": 100,
   "initial": 0,
-  "group": "cultivation"
+  "group": "cultivation",
+  "visible_when": {
+   "type": "realm_at_least",
+   "realm": "cam_khi"
+  }
  },
  {
   "id": "cultivation",
   "name_key": "resource.cultivation",
   "cap_from": "cultivation_cap",
   "initial": 0,
-  "group": "cultivation"
+  "group": "cultivation",
+  "visible_when": {
+   "type": "realm_at_least",
+   "realm": "cam_khi"
+  }
  },
  {
   "id": "herb",

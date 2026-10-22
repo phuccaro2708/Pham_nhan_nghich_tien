@@ -132,7 +132,7 @@ static func from_dict(d: Dictionary) -> GameState:
 	s.orphans = (d.get("orphans", {}) as Dictionary).duplicate(true)
 	for k in d.get("mastery", {}):
 		var m: Dictionary = d["mastery"][k]
-		s.mastery[str(k)] = {"level": int(m["level"]), "xp": float(m["xp"]), "claimed": _int_array(m.get("claimed", []))}
+		s.mastery[str(k)] = {"level": int(m.get("level", 1)), "xp": float(m.get("xp", 0.0)), "claimed": _int_array(m.get("claimed", []))}
 	var st: Dictionary = d.get("story", {})
 	s.story = {"done": (st.get("done", {}) as Dictionary).duplicate(true), "pending": str(st.get("pending", ""))}
 	for k in d.get("relations", {}):
@@ -141,11 +141,12 @@ static func from_dict(d: Dictionary) -> GameState:
 		s.techniques.append(str(tid))
 	var au: Dictionary = d.get("automation", {})
 	if not au.is_empty():
-		s.automation = {"slots": [], "cursor": int(au["cursor"]), "loop": bool(au["loop"]), "status": str(au["status"]),
-			"reason": str(au["reason"]), "instant_streak": int(au["instant_streak"])}
-		for sl in au["slots"]:
-			s.automation["slots"].append({"action": str(sl["action"]), "repeat": int(sl["repeat"]), "on_block": str(sl["on_block"]),
-				"until": (sl.get("until", {}) as Dictionary).duplicate(true), "done": int(sl["done"])})
+		s.automation = {"slots": [], "cursor": int(au.get("cursor", 0)), "loop": bool(au.get("loop", false)),
+			"status": str(au.get("status", "idle")), "reason": str(au.get("reason", "")), "instant_streak": int(au.get("instant_streak", 0))}
+		for sl in au.get("slots", []):
+			s.automation["slots"].append({"action": str(sl.get("action", "")), "repeat": int(sl.get("repeat", 1)),
+				"on_block": str(sl.get("on_block", "skip")), "until": (sl.get("until", {}) as Dictionary).duplicate(true),
+				"done": int(sl.get("done", 0))})
 	return s
 
 

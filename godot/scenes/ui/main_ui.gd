@@ -343,6 +343,7 @@ func _refresh() -> void:
 		var cap: float = rs.cap_of(id, s)
 		var capped: bool = cap < ResourceSystem.MAX_AMOUNT
 		var bar: ProgressBar = _res_rows[id]["bar"]
+		bar.visible = GameController.actions.conditions.is_met(GameController.registry.resources[id].get("visible_when", {}), s)
 		bar.max_value = maxf(cap, 1.0) if capped else 1.0
 		bar.value = v if capped else 0.0
 		_res_rows[id]["value"].text = ("%s/%s" % [_fmt(v), _fmt(cap)]) if capped else _fmt(v)
