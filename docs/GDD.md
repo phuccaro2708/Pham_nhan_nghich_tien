@@ -634,3 +634,15 @@ Casual · Optimizer · Idle (rời game nhiều giờ) · Explorer · Risk Playe
 **Ưu tiên số 1:** vertical slice 20–30 phút đầu (đốn củi → cảm ứng linh khí) gồm một lựa chọn cốt truyện có hậu quả thực tế và một nâng cấp tự động hóa. Chỉ khi phần này hấp dẫn mới đầu tư tiếp.
 
 **Bước thiết kế kế tiếp:** đặc tả chi tiết 30–40 action, 20–30 story node và bảng cân bằng từng phút của MVP trước khi viết lượng lớn gameplay code.
+
+---
+
+## XII. Phụ lục — Khám phá theo hiểu biết (Phase 3, Phase 1)
+
+*Lý do thay đổi:* nhân vật mở đầu là thiếu niên 16 tuổi con nhà tiều phu, chưa biết linh căn, cảnh giới, kinh mạch hay tu vi; UI không được nói thay nhân vật. Chi tiết: [PHASE3_STORY_ANALYSIS.md](PHASE3_STORY_ANALYSIS.md).
+
+- **Knowledge System**: hành động, chỉ số và khái niệm chỉ hiện/chạy được sau khi nhân vật *học* kiến thức tương ứng (`knows`, `learn_knowledge`). Ngăn cả automation và offline, không chỉ UI.
+- **Cảnh giới (đổi nghĩa, giữ id)**: Vô = *Phàm Nhân* (thân phận); Cường Thân = **Đoán Thể** (võ học nhập môn, chỉ đạt qua cốt truyện); Cảm Khí = nhập đạo; Luyện Khí… giữ nguyên.
+- **Tuyến mở đầu**: Phàm Nhân → học nghề → võ học nhập môn (Đoán Thể) → phát hiện tiên duyên → cảm ứng linh khí → Luyện Khí. Phase 1 làm tới Đoán Thể + bước đệm tới Cảm Khí; Chương 4–5 thuộc Phase 2.
+- **Ba đường tới võ học nhập môn**: học hỏi, giúp người, thám hiểm; đều có lựa chọn miễn phí, không softlock.
+- **Tuổi**: hiển thị "16 tuổi" không giới hạn thọ nguyên tới khi nghe chuyện người tu hành.

@@ -59,6 +59,8 @@ func check_can_start(state: GameState, action_id: String) -> Dictionary:
 		var up: Dictionary = registry.upgrades[def["upgrade"]]
 		if int(state.upgrades.get(def["upgrade"], 0)) >= int(up["max_level"]):
 			return {"ok": false, "reason": "max_level", "detail": def["upgrade"]}
+	if not conditions.is_met(def.get("visible_when", {}), state):  # undiscovered: not startable by UI, automation or offline
+		return {"ok": false, "reason": "not_discovered", "detail": null}
 	var fail: Dictionary = conditions.first_failure(def.get("requirements", {}), state)
 	if not fail.is_empty():
 		return {"ok": false, "reason": "requirements_not_met", "detail": fail}

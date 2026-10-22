@@ -17,6 +17,10 @@
       "type": "add_relation",
       "relation": "ba_ly",
       "amount": 2
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "village_life"
      }
     ]
    },
@@ -32,13 +36,23 @@
       "type": "add_resource",
       "resource": "silver",
       "amount": 4
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "village_life"
      }
     ]
    },
    {
     "id": "ignore",
     "text_key": "story.ch1_morning_smoke.ignore",
-    "result_key": "story.ch1_morning_smoke.ignore.result"
+    "result_key": "story.ch1_morning_smoke.ignore.result",
+    "effects": [
+     {
+      "type": "learn_knowledge",
+      "knowledge": "village_life"
+     }
+    ]
    }
   ],
   "trigger": {
@@ -84,6 +98,10 @@
       "type": "add_relation",
       "relation": "truong_thon",
       "amount": 1
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "breathing"
      }
     ]
    },
@@ -127,6 +145,10 @@
       "type": "add_resource",
       "resource": "herb",
       "amount": 2
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "herb_basics"
      }
     ]
    },
@@ -256,6 +278,26 @@
       "type": "add_relation",
       "relation": "dao_si",
       "amount": 1
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "heard_of_cultivators"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "qi_awareness"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "meridian_lore"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "dao_entry"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "spirit_root_lore"
      }
     ]
    },
@@ -273,6 +315,22 @@
       "type": "set_flag",
       "flag": "ch1_complete",
       "value": true
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "heard_of_cultivators"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "qi_awareness"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "meridian_lore"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "dao_entry"
      }
     ]
    }
@@ -327,6 +385,22 @@
       "type": "set_flag",
       "flag": "ch1_complete",
       "value": true
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "heard_of_cultivators"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "qi_awareness"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "meridian_lore"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "dao_entry"
      }
     ]
    }

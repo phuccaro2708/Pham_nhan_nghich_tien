@@ -1,5 +1,17 @@
 {
  "lifespan_warning_years": 5.0,
+ "ui": {
+  "tab_visible_when": {
+   "cultivation": {
+    "type": "realm_at_least",
+    "realm": "cam_khi"
+   }
+  },
+  "lifespan_visible_when": {
+   "type": "knows",
+   "knowledge": "heard_of_cultivators"
+  }
+ },
  "automation": {
   "max_slots": 3,
   "requirements": {

@@ -162,6 +162,22 @@ static func _orphan_phase2b(d: Dictionary, registry: ContentRegistry) -> void:
 			d["orphans"].erase("techniques")
 		else:
 			d["orphans"]["techniques"] = lost_t
+	var know: Variant = d.get("knowledge")
+	if typeof(know) == TYPE_ARRAY:  # same parking rule as techniques: unknown ids wait in orphans
+		var kkeep: Array = []
+		var lost_k: Array = d["orphans"].get("knowledge", [])
+		for kid in know:
+			(kkeep if registry.has_knowledge(str(kid)) else lost_k).append(kid)
+		for kid in lost_k.duplicate():
+			if registry.has_knowledge(str(kid)):
+				kkeep.append(kid)
+				lost_k.erase(kid)
+		kkeep.sort()
+		d["knowledge"] = kkeep
+		if lost_k.is_empty():
+			d["orphans"].erase("knowledge")
+		else:
+			d["orphans"]["knowledge"] = lost_k
 	var au: Variant = d.get("automation")
 	if typeof(au) == TYPE_DICTIONARY and typeof(au.get("slots")) == TYPE_ARRAY:
 		for s in au["slots"]:

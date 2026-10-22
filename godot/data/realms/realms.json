@@ -9,7 +9,9 @@
     "body": 30
    },
    "requirements": {}
-  }
+  },
+  "mortal": true,
+  "story_promotion": true
  },
  {
   "id": "cuong_than",

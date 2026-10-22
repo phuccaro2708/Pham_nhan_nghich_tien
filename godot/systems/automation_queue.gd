@@ -44,6 +44,8 @@ func set_slots(state: GameState, slots: Array) -> Dictionary:
 		var err: String = _slot_error(s)
 		if err != "":
 			return {"ok": false, "error": err}
+		if not actions.conditions.is_met(registry.actions[s["action"]].get("visible_when", {}), state):
+			return {"ok": false, "error": "not_discovered"}  # the queue may not run what the character does not know yet
 		clean.append({"action": str(s["action"]), "repeat": int(s.get("repeat", 1)), "on_block": str(s.get("on_block", "skip")),
 			"until": (s.get("until", {}) as Dictionary).duplicate(true), "done": 0})
 	state.active_action.erase("queue_slot")  # a cycle already running must not credit a slot of the new list

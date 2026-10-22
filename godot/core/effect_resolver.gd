@@ -4,7 +4,7 @@ extends RefCounted
 ## Effect types: add_resource | set_flag | add_upgrade_level | advance_realm | add_relation | learn_technique
 ## Story choices and mastery milestones may not advance the realm (the ritual is always a deliberate player action).
 
-const EFFECT_TYPES: Array = ["add_resource", "set_flag", "add_upgrade_level", "advance_realm", "add_relation", "learn_technique"]
+const EFFECT_TYPES: Array = ["add_resource", "set_flag", "add_upgrade_level", "advance_realm", "add_relation", "learn_technique", "learn_knowledge", "promote_realm"]
 
 var registry: ContentRegistry
 var resource_system: ResourceSystem
@@ -37,6 +37,12 @@ func apply(state: GameState, effects: Array) -> void:
 				if not state.techniques.has(e["technique"]):
 					state.techniques.append(e["technique"])
 					state.techniques.sort()
+			"learn_knowledge":
+				if not state.knowledge.has(e["knowledge"]):
+					state.knowledge.append(e["knowledge"])
+					state.knowledge.sort()
+			"promote_realm":
+				realm_system.promote(state, str(e["realm"]))
 			"add_upgrade_level":
 				var up: Dictionary = registry.upgrades[e["upgrade"]]
 				var lvl: int = int(state.upgrades.get(e["upgrade"], 0)) + int(e.get("levels", 1))
@@ -119,6 +125,13 @@ static func validate_effect(e: Variant, registry: ContentRegistry, path: String,
 		"learn_technique":
 			if not registry.has_technique(e.get("technique", "")):
 				errs.append("%s: learn_technique unknown technique" % path)
+		"learn_knowledge":
+			if not registry.has_knowledge(e.get("knowledge", "")):
+				errs.append("%s: learn_knowledge unknown knowledge" % path)
+		"promote_realm":
+			var ri: int = registry.realm_index(str(e.get("realm", ""))) if registry.has_realm(e.get("realm", "")) else -1
+			if ri < 1 or not registry.realms[registry.realm_order[ri - 1]].get("story_promotion", false):
+				errs.append("%s: promote_realm needs a realm whose previous stage has story_promotion" % path)
 		"set_flag":
 			if typeof(e.get("flag")) != TYPE_STRING or not e.has("value"):
 				errs.append("%s: set_flag needs 'flag' and 'value'" % path)

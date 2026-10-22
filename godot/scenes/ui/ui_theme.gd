@@ -79,8 +79,16 @@ static func make() -> Theme:
 	t.set_stylebox("pressed", "Button", box(FILL_PROGRESS, BORDER_INK))
 	t.set_stylebox("hover_pressed", "Button", box(FILL_PROGRESS, ACCENT_JADE))
 	t.set_stylebox("disabled", "Button", box(STATE_DISABLED, STATE_DISABLED))
-	t.set_stylebox("focus", "Button", StyleBoxEmpty.new())
+	for cls in ["Button", "OptionButton", "CheckBox"]:  # visible focus ring for keyboard / gamepad
+		t.set_stylebox("focus", cls, box(Color(0, 0, 0, 0), ACCENT_CINNABAR))
 	t.set_stylebox("panel", "PanelContainer", box(SURFACE_PANEL, BORDER_INK))
+	# the default tooltip is dark; with the dark ink font it was unreadable, and it overlapped the button text
+	var tip := box(SURFACE_PAGE, BORDER_INK)
+	tip.shadow_size = 4
+	tip.shadow_color = Color(0, 0, 0, 0.25)
+	t.set_stylebox("panel", "TooltipPanel", tip)
+	t.set_color("font_color", "TooltipLabel", INK_PRIMARY)
+	t.set_font_size("font_size", "TooltipLabel", SIZE_SMALL)
 	t.set_font("bold_font", "RichTextLabel", font(700))
 	return t
 

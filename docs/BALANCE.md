@@ -60,3 +60,18 @@ Tuổi lúc tới Trúc Cơ ≈ 38–39 (thọ Luyện Khí 120) → không áp 
 - Bot không mua rìu sắt nên mốc `first_upgrade` không xuất hiện; bot không dùng hàng đợi (hàng đợi chỉ đổi *sự tiện lợi*, không đổi sản lượng — đã kiểm bằng test offline ≡ online).
 - Chọn story đầu tiên khả dụng; chưa so sánh nhánh (nhánh "cướp" so với "cứu" chỉ khác bạc/quan hệ, không đổi tốc độ tu luyện).
 - Casual đang ở cận trên mục tiêu; cần playtest người thật trước khi hạ thêm.
+
+
+# BALANCE — Phase 3 (Phase 1: Knowledge System)
+
+Bước vô → Đoán Thể chuyển từ nghi thức tốn 30 Thể Phách sang sự kiện Ch3 (cần Sức Bền ≥ 30, không tiêu). Điều kiện Ch2: `gather_wood` ≥ 25.
+
+Simulator 20 seed (`balance_sim --seeds=20`), 20/20 tới Trúc Cơ:
+
+| Chiến lược | Trước | Sau |
+|---|---|---|
+| casual | 5,22 h | 5,31 h |
+| optimizer | 4,70 h | 4,74 h |
+| idle | 4,01 h | 4,01 h |
+
+Casual vượt mục tiêu 3–5 h ~0,3 h (đã lệch từ trước, không phải do thay đổi này). Chưa chỉnh số: để Phase 3 của kế hoạch.

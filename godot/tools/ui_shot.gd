@@ -40,21 +40,21 @@ func _run() -> void:
 	gc.actions.story.scan(s)
 	await _shot("2_story_pending")
 	gc.choose_story("give_wood")
-	pages.current_tab = 1
 	await _shot("3_story_history")
 	s.mastery["gather_wood"] = {"level": 4, "xp": 12.0, "claimed": [3]}
 	s.mastery["train_body"] = {"level": 2, "xp": 5.0, "claimed": []}
-	pages.current_tab = 2
+	pages.current_tab = 1
 	await _shot("4_mastery")
-	pages.current_tab = 3
+	pages.current_tab = 2
 	await _shot("5_auto_locked")
 	s.mastery["gather_wood"]["level"] = 5
-	pages.current_tab = 3
+	pages.current_tab = 2
 	await _shot("6_auto")
 	s.realm_id = "luyen_khi_1"
 	s.techniques.append("dan_khi_nhap_mon")
 	s.resources["cultivation"] = 120.0
-	pages.current_tab = 4
+	await process_frame  # the cultivation tab only unhides on the next refresh
+	pages.current_tab = 3
 	await _shot("7_cultivation")
 	quit(0)
 

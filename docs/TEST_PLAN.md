@@ -12,3 +12,14 @@ Chạy toàn bộ: `godot --headless --path godot -s addons/gut/gut_cmdln.gd -gd
 | Thủ công | `tools/ui_shot.gd` | ảnh chụp UI 1280×720 cho mọi tab |
 
 Quy tắc: sửa lỗi logic phải kèm test hồi quy; số cân bằng trong test đọc từ data (không hard-code).
+
+
+## Phase 3 — Knowledge System
+
+`tests/unit/test_knowledge.gd` (+ `TestHelpers.world(seed, knowing_all)`):
+- `knows`/`learn_knowledge` idempotent, validate id lạ.
+- `not_discovered` ở `check_can_start`, `set_slots`, và khi hàng đợi/offline chạy action đã bị "quên" trong save.
+- Migration v3→v4 suy kiến thức (đã tu luyện / phàm nhân), id lạ → `orphans`.
+- `promote_realm` chỉ từ stage `story_promotion`.
+- 3 route Ch3 và 3 lựa chọn dự phòng đều tới `martial_basics` + Đoán Thể; người thiếu bạc vẫn qua được; sự kiện không tự chọn.
+- Chuỗi đạo sĩ cấp `dao_entry` nên nút Đột phá hiện.

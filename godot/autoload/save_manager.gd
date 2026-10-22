@@ -123,11 +123,29 @@ func migrate(data: Dictionary) -> Dictionary:
 				d["relations"] = {}
 				d["techniques"] = []
 				d["automation"] = GameState.new().automation.duplicate(true)
+			3:  # v4 adds knowledge; infer it from progress so an existing save keeps every action it could already use
+				d["knowledge"] = _infer_knowledge(d)
 			_:
 				return {"error": "no migration from version %d" % v}
 		v += 1
 		d["schema_version"] = v
 	return d
+
+
+## Knowledge a v3 save must already have, judged from realm and flags (old saves had no knowledge system).
+func _infer_knowledge(d: Dictionary) -> Array:
+	var realm: String = str(d.get("realm_id", ""))
+	var flags: Dictionary = d.get("flags", {}) if typeof(d.get("flags")) == TYPE_DICTIONARY else {}
+	var k: Array = ["village_life", "literacy", "herb_basics"]
+	if realm != "" and realm != "vo":
+		k.append_array(["body_lore", "martial_basics", "meridian_lore"])
+	var cultivator: bool = realm != "" and not ["vo", "cuong_than"].has(realm)
+	if cultivator or flags.get("knows_qi_method", false):
+		k.append_array(["heard_of_cultivators", "qi_awareness", "dao_entry"])
+	if flags.get("meridian_damaged", false) and not k.has("meridian_lore"):
+		k.append("meridian_lore")
+	k.sort()
+	return k
 
 
 ## Rejects NaN/inf, negatives, unknown ids and impossible progress. Returns error strings.
@@ -146,6 +164,8 @@ func validate_state(d: Dictionary, registry: ContentRegistry) -> Array:
 			errs.append("%s must be an object" % key)
 	if typeof(d.get("techniques")) != TYPE_ARRAY:
 		errs.append("techniques must be an array")
+	if typeof(d.get("knowledge")) != TYPE_ARRAY:
+		errs.append("knowledge must be an array")
 	if not errs.is_empty():
 		return errs
 	for id in d["resources"]:
@@ -232,6 +252,9 @@ func _validate_phase2b(d: Dictionary, registry: ContentRegistry, errs: Array) ->
 	for tid in d["techniques"]:
 		if typeof(tid) != TYPE_STRING or not registry.has_technique(tid):
 			errs.append("unknown technique %s" % tid)
+	for kid in d["knowledge"]:
+		if typeof(kid) != TYPE_STRING or not registry.has_knowledge(kid):
+			errs.append("unknown knowledge %s" % kid)
 	var au: Dictionary = d["automation"]
 	if typeof(au.get("slots")) != TYPE_ARRAY or not ["idle", "running", "stopped", "finished", "deadlock"].has(au.get("status")) 			or typeof(au.get("loop")) != TYPE_BOOL or typeof(au.get("reason")) != TYPE_STRING 			or not GameState.is_int(au.get("cursor")) or not GameState.is_int(au.get("instant_streak")) 			or int(au["cursor"]) < 0 or int(au["instant_streak"]) < 0:
 		errs.append("bad automation")

@@ -1,5 +1,5 @@
 extends TabContainer
-## Phase 2B pages (Story, Mastery, Automation, Cultivation). Display + commands only: every change goes through
+## Phase 2B pages (Mastery, Automation, Cultivation) plus the story event card on the main page. Display + commands only: every change goes through
 ## GameController. Pages are rebuilt only when what they show changes, so buttons are never replaced mid-click.
 
 const UiTheme = preload("res://scenes/ui/ui_theme.gd")
@@ -11,6 +11,9 @@ var _auto_warn: Label
 var _auto_loop: CheckBox
 var _auto_start: Button
 var _auto_built: bool = false
+var _auto_ids: Array = []  # automatable actions the draft was built for
+var _tab_shown: Dictionary = {}  # page -> last applied visibility
+var _event_panel: PanelContainer  # pending story event, above the main columns; hidden when nothing is pending
 const REPEATS: Array = [1, 2, 3, 5, 10, 20, 50, 0]  # 0 = until blocked / forever
 
 
@@ -22,11 +25,29 @@ func setup(main_page: Control) -> void:
 	add_theme_stylebox_override("tab_hovered", UiTheme.box(UiTheme.FILL_PROGRESS, UiTheme.BORDER_INK))
 	for c in ["font_selected_color", "font_unselected_color", "font_hovered_color"]:
 		add_theme_color_override(c, UiTheme.INK_PRIMARY)
-	add_child(main_page)
+	var wrap := VBoxContainer.new()
+	_event_panel = PanelContainer.new()
+	_event_panel.add_theme_stylebox_override("panel", UiTheme.box(UiTheme.SURFACE_PANEL, UiTheme.ACCENT_CINNABAR))
+	_event_panel.visible = false
+	var event_scroll := ScrollContainer.new()
+	event_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	event_scroll.follow_focus = true
+	event_scroll.custom_minimum_size.y = 215
+	var event_box := VBoxContainer.new()
+	event_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	event_box.add_theme_constant_override("separation", 6)
+	event_scroll.add_child(event_box)
+	_event_panel.add_child(event_scroll)
+	_pages["event"] = {"box": event_box, "sig": ""}
+	wrap.add_child(_event_panel)
+	main_page.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	wrap.add_child(main_page)
+	add_child(wrap)
 	set_tab_title(0, reg.text("ui.nav_main"))
-	for p in ["story", "mastery", "automation", "cultivation"]:
+	for p in ["mastery", "automation", "cultivation"]:
 		var sc := ScrollContainer.new()
 		sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		sc.follow_focus = true
 		var box := VBoxContainer.new()
 		box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		box.add_theme_constant_override("separation", 8)
@@ -36,19 +57,57 @@ func setup(main_page: Control) -> void:
 		_pages[p] = {"box": box, "sig": ""}
 
 
+## Relations and story history live at the bottom of the right-hand column of the main page.
+func attach_history(parent: VBoxContainer) -> void:
+	var box := VBoxContainer.new()
+	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	box.add_theme_constant_override("separation", 4)
+	parent.add_child(box)
+	_pages["history"] = {"box": box, "sig": ""}
+
+
+## Keyboard / gamepad can pick a choice right away when an event arrives.
+func focus_event() -> void:
+	var box: VBoxContainer = _pages["event"]["box"]
+	for c in box.get_children():
+		if c is Button and not c.disabled:
+			c.grab_focus.call_deferred()
+			return
+
+
 ## Forget drafts and signatures after a load / new life.
 func reset() -> void:
 	_auto_built = false
+	_tab_shown.clear()
 	for p in _pages:
 		_pages[p]["sig"] = ""
 
 
 func refresh() -> void:
 	var s: GameState = GameController.state
-	_story(s)
+	_event(s)
+	_history(s)
 	_mastery(s)
 	_automation(s)
 	_cultivation(s)
+	_tab_visibility(s)
+
+
+## Tabs listed in config ui.tab_visible_when stay hidden until their condition holds.
+func _tab_visibility(s: GameState) -> void:
+	var rules: Dictionary = GameController.registry.config.get("ui", {}).get("tab_visible_when", {})
+	for p in rules:
+		var shown: bool = GameController.actions.conditions.is_met(rules[p], s)
+		if _tab_shown.get(p) != shown:  # tab bar is only touched when the state changes
+			_tab_shown[p] = shown
+			set_tab_hidden(page_index(p), not shown)
+		if not shown and current_tab == page_index(p):
+			current_tab = 0
+
+
+## Tab index of a page by name ("mastery", ...), so callers never hardcode positions.
+func page_index(page: String) -> int:
+	return get_tab_idx_from_control(_pages[page]["box"].get_parent())
 
 
 func _t(key: String) -> String:
@@ -95,37 +154,46 @@ func _reason(code: String, detail: Variant = null) -> String:
 	return s
 
 
-# ---------- story ----------
+# ---------- story (event card on the main page + history column) ----------
 
-func _story(s: GameState) -> void:
+func _event(s: GameState) -> void:
 	var reg: ContentRegistry = GameController.registry
 	var pending: String = GameController.actions.story.pending(s)
-	var sig: String = "%s|%s|%s|%s" % [pending, s.story["done"], s.relations, GameController.registry.language]
+	_event_panel.visible = pending != ""
+	var sig: String = "%s|%s" % [pending, reg.language]
 	if pending != "":  # affordability changes while the player waits
 		for c in reg.story[pending]["choices"]:
 			sig += str(GameController.actions.story.check_choice(s, c["id"])["ok"])
-	var box := _sync("story", sig)
+	var box := _sync("event", sig)
+	if box == null or pending == "":
+		return
+	var node_def: Dictionary = reg.story[pending]
+	_label(box, _t("ui.story.pending"), UiTheme.SIZE_SMALL, UiTheme.ACCENT_CINNABAR)
+	_label(box, _t(node_def["title_key"]), UiTheme.SIZE_HEADER)
+	_label(box, _t(node_def["text_key"]))
+	for c in node_def["choices"]:
+		var chk: Dictionary = GameController.actions.story.check_choice(s, c["id"])
+		var b := Button.new()
+		b.text = _t(c["text_key"])
+		b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		b.custom_minimum_size.y = 36
+		UiTheme.set_locked(b, not chk["ok"])
+		b.tooltip_text = "" if chk["ok"] else _reason(str(chk["reason"]), chk["detail"])
+		b.pressed.connect(func() -> void: GameController.choose_story(str(c["id"])))
+		box.add_child(b)
+		if c == node_def["choices"][0] and get_viewport().gui_get_focus_owner() == null:
+			b.grab_focus.call_deferred()
+		if not chk["ok"]:
+			_label(box, "   " + _t("ui.story.locked_choice") + ": " + _reason(str(chk["reason"]), chk["detail"]), UiTheme.SIZE_SMALL, UiTheme.INK_SECONDARY)
+
+
+func _history(s: GameState) -> void:
+	if not _pages.has("history"):
+		return
+	var reg: ContentRegistry = GameController.registry
+	var box := _sync("history", "%s|%s|%s" % [s.story["done"], s.relations, reg.language])
 	if box == null:
 		return
-	var node_def: Dictionary = reg.story.get(pending, {})
-	if pending != "":
-		_label(box, _t("ui.story.pending"), UiTheme.SIZE_SMALL, UiTheme.ACCENT_CINNABAR)
-		_label(box, _t(node_def["title_key"]), UiTheme.SIZE_HEADER)
-		_label(box, _t(node_def["text_key"]))
-		for c in node_def["choices"]:
-			var chk: Dictionary = GameController.actions.story.check_choice(s, c["id"])
-			var b := Button.new()
-			b.text = _t(c["text_key"])
-			b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-			b.custom_minimum_size.y = 40
-			UiTheme.set_locked(b, not chk["ok"])
-			b.tooltip_text = "" if chk["ok"] else _reason(str(chk["reason"]), chk["detail"])
-			b.pressed.connect(func() -> void: GameController.choose_story(str(c["id"])))
-			box.add_child(b)
-			if not chk["ok"]:
-				_label(box, "   " + _t("ui.story.locked_choice") + ": " + _reason(str(chk["reason"]), chk["detail"]), UiTheme.SIZE_SMALL, UiTheme.INK_SECONDARY)
-	else:
-		_label(box, _t("ui.story.none"), UiTheme.SIZE_BODY, UiTheme.INK_SECONDARY)
 	_label(box, _t("ui.story.relations"), UiTheme.SIZE_HEADER)
 	for rid in reg.relations:
 		_label(box, "%s: %d" % [_t(reg.relations[rid]["name_key"]), int(s.relations.get(rid, 0))])
@@ -139,7 +207,7 @@ func _story(s: GameState) -> void:
 		for c in done_def["choices"]:
 			if c["id"] == picked:
 				line += " — " + _t(c["text_key"])
-				_label(box, line, UiTheme.SIZE_BODY, UiTheme.INK_PRIMARY)
+				_label(box, line, UiTheme.SIZE_SMALL, UiTheme.INK_PRIMARY)
 				_label(box, "   " + _t(c["result_key"]), UiTheme.SIZE_SMALL, UiTheme.INK_SECONDARY)
 
 
@@ -175,12 +243,12 @@ func _mastery(s: GameState) -> void:
 
 # ---------- automation ----------
 
-func _automatable() -> Array:
+func _automatable(s: GameState) -> Array:
 	var out: Array = []
 	var reg: ContentRegistry = GameController.registry
 	for id in reg.actions:
 		var d: Dictionary = reg.actions[id]
-		if not d.get("breakthrough", false) and d.get("automation_allowed", true) and not d.has("upgrade"):
+		if not d.get("breakthrough", false) and d.get("automation_allowed", true) and not d.has("upgrade") 				and GameController.actions.conditions.is_met(d.get("visible_when", {}), s):
 			out.append(id)
 	return out
 
@@ -195,7 +263,7 @@ func _automation(s: GameState) -> void:
 			_auto_built = false
 			_label(b, _t("ui.auto.locked"), UiTheme.SIZE_BODY, UiTheme.INK_SECONDARY)
 		return
-	if not _auto_built:
+	if not _auto_built or _auto_ids != _automatable(s):
 		_build_automation(s, box)
 	var running: bool = q.status(s) == "running"
 	_auto_status.text = _t("ui.auto.status") % _t("ui.auto.status." + q.status(s))
@@ -233,7 +301,8 @@ func _build_automation(s: GameState, box: VBoxContainer) -> void:
 		c.queue_free()
 	_slot_ui.clear()
 	_auto_built = true
-	var ids: Array = _automatable()
+	var ids: Array = _automatable(s)
+	_auto_ids = ids
 	var saved: Array = s.automation["slots"]
 	for i in q.max_slots():
 		var row := HBoxContainer.new()

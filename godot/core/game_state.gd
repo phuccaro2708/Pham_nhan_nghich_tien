@@ -2,7 +2,7 @@ class_name GameState
 extends RefCounted
 ## Pure runtime data. No Node references, no behaviour beyond (de)serialisation.
 
-const SCHEMA_VERSION: int = 3
+const SCHEMA_VERSION: int = 4
 const START_AGE_YEARS: float = 16.0
 ## Fixed precision so values survive a JSON round trip and never drift.
 const SNAP_SCALE: float = 1000000.0
@@ -37,6 +37,8 @@ var story: Dictionary = {"done": {}, "pending": ""}
 var relations: Dictionary = {}
 ## Learned technique ids (công pháp), sorted.
 var techniques: Array = []
+## Learned knowledge ids (Phase 3): what the character knows decides which actions, stats and concepts the UI may show.
+var knowledge: Array = []
 ## Automation queue (see AutomationQueue). Never holds a story choice or a breakthrough.
 var automation: Dictionary = {"slots": [], "cursor": 0, "loop": false, "status": "idle", "reason": "", "instant_streak": 0}
 ## Data the running content does not recognise. Preserved, never deleted: {resources, upgrades, action_counts, active_action}.
@@ -90,6 +92,7 @@ func to_dict() -> Dictionary:
 		"story": story.duplicate(true),
 		"relations": relations.duplicate(true),
 		"techniques": techniques.duplicate(),
+		"knowledge": knowledge.duplicate(),
 		"automation": automation.duplicate(true),
 	}
 
@@ -139,6 +142,8 @@ static func from_dict(d: Dictionary) -> GameState:
 		s.relations[str(k)] = int(d["relations"][k])
 	for tid in d.get("techniques", []):
 		s.techniques.append(str(tid))
+	for kid in d.get("knowledge", []):
+		s.knowledge.append(str(kid))
 	var au: Dictionary = d.get("automation", {})
 	if not au.is_empty():
 		s.automation = {"slots": [], "cursor": int(au.get("cursor", 0)), "loop": bool(au.get("loop", false)),

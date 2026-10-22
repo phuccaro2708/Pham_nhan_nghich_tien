@@ -16,6 +16,7 @@ var _mastery_index: Dictionary = {}  # action id -> mastery def, see mastery_for
 var story: Dictionary = {}
 var story_order: Array = []
 var techniques: Dictionary = {}
+var knowledge: Dictionary = {}
 var relations: Dictionary = {}
 ## `texts` is the primary language (vi) and the validation base; `texts_en` etc. live in `translations`.
 var texts: Dictionary = {}
@@ -40,6 +41,7 @@ func has_realm(id: Variant) -> bool: return realms.has(id)
 func has_story_node(id: Variant) -> bool: return story.has(id)
 func has_technique(id: Variant) -> bool: return techniques.has(id)
 func has_relation(id: Variant) -> bool: return relations.has(id)
+func has_knowledge(id: Variant) -> bool: return knowledge.has(id)
 
 
 ## Mastery definition of an action, {} when it has none.
@@ -78,6 +80,7 @@ func load_all(base: String = "res://data") -> bool:
 	_load_dir(base + "/realms", realms, "realm")
 	_load_dir(base + "/relations", relations, "relation")
 	_load_dir(base + "/techniques", techniques, "technique")
+	_load_dir(base + "/knowledge", knowledge, "knowledge")
 	_load_dir(base + "/mastery", mastery, "mastery")
 	_load_dir(base + "/story", story, "story")
 	_load_texts(base + "/localization/vi.json")
@@ -131,6 +134,7 @@ func _register(kind: String, d: Variant, source: String) -> void:
 		"realm": target = realms
 		"relation": target = relations
 		"technique": target = techniques
+		"knowledge": target = knowledge
 		"mastery": target = mastery
 		"story": target = story
 		_: target = actions
@@ -186,10 +190,12 @@ func validate() -> void:
 	_validate_realms()
 	_validate_relations()
 	_validate_techniques()
+	_validate_knowledge()
 	_validate_mastery()
 	_validate_story()
 	_validate_migrations()
 	_validate_automation_config()
+	_validate_ui_config()
 	if not config.is_empty() and not (GameState.is_number(config.get("lifespan_warning_years")) and float(config["lifespan_warning_years"]) > 0.0):
 		errors.append("config: lifespan_warning_years must be > 0")
 
@@ -253,6 +259,8 @@ func _validate_action(d: Dictionary) -> void:
 		errors.append("%s: name_key missing in localization" % p)
 	if d.has("group") and not texts.is_empty() and not texts.has("group." + str(d["group"])):
 		errors.append("%s: group needs localization key group.%s" % [p, d["group"]])
+	if d.has("visible_when"):  # UI only: hides the button until the condition holds
+		errors.append_array(_conditions.validate(d["visible_when"], self, p + " visible_when"))
 	var dur: Variant = d.get("duration", 0.0)
 	if d.get("type", "") == "INSTANT":
 		if d.has("duration") and (not GameState.is_number(dur) or float(dur) != 0.0):
@@ -392,6 +400,14 @@ func _validate_relations() -> void:
 			errors.append("%s: min/max must be integers with min <= 0 <= max" % p)
 
 
+func _validate_knowledge() -> void:
+	for id in knowledge:
+		var d: Dictionary = knowledge[id]
+		var p: String = "knowledge '%s'" % id
+		_need_text(d, p, "name_key")
+		_need_text(d, p, "desc_key")
+
+
 func _validate_techniques() -> void:
 	for id in techniques:
 		var d: Dictionary = techniques[id]
@@ -518,6 +534,24 @@ func _story_cycle(id: String, state: Dictionary) -> bool:
 			return true
 	state[id] = 2
 	return false
+
+
+const UI_TABS: Array = ["mastery", "automation", "cultivation"]  # pages of StoryPages
+
+
+func _validate_ui_config() -> void:
+	var ui: Variant = config.get("ui", {})
+	if typeof(ui) == TYPE_DICTIONARY and ui.has("lifespan_visible_when"):
+		errors.append_array(_conditions.validate(ui["lifespan_visible_when"], self, "config.ui.lifespan_visible_when"))
+	var rules: Variant = ui.get("tab_visible_when", {}) if typeof(ui) == TYPE_DICTIONARY else null
+	if typeof(rules) != TYPE_DICTIONARY:
+		errors.append("config.ui.tab_visible_when must be an object")
+		return
+	for page in rules:
+		if not UI_TABS.has(page):
+			errors.append("config.ui.tab_visible_when: unknown page '%s'" % page)
+		else:
+			errors.append_array(_conditions.validate(rules[page], self, "config.ui.tab_visible_when." + page))
 
 
 func _validate_automation_config() -> void:

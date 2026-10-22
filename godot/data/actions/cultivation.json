@@ -23,10 +23,14 @@
   },
   "age_cost_years": 0.002,
   "offline_allowed": true,
-  "group": "cultivation"
+  "group": "village"
  },
  {
   "id": "absorb_qi",
+  "visible_when": {
+   "type": "realm_at_least",
+   "realm": "cam_khi"
+  },
   "type": "LOOP",
   "name_key": "action.absorb_qi",
   "duration": 4.0,
@@ -52,6 +56,10 @@
  },
  {
   "id": "refine_qi",
+  "visible_when": {
+   "type": "realm_at_least",
+   "realm": "cam_khi"
+  },
   "type": "LOOP",
   "name_key": "action.refine_qi",
   "duration": 4.0,
@@ -90,7 +98,11 @@
   "requirements": {},
   "age_cost_years": 0.0,
   "offline_allowed": false,
-  "group": "cultivation"
+  "group": "cultivation",
+  "visible_when": {
+   "type": "knows",
+   "knowledge": "dao_entry"
+  }
  },
  {
   "id": "treat_meridian",
@@ -118,10 +130,18 @@
   },
   "age_cost_years": 0.05,
   "offline_allowed": false,
-  "group": "cultivation"
+  "group": "cultivation",
+  "visible_when": {
+   "type": "knows",
+   "knowledge": "meridian_lore"
+  }
  },
  {
   "id": "sense_qi",
+  "visible_when": {
+   "type": "realm_at_least",
+   "realm": "cam_khi"
+  },
   "type": "TIMED",
   "name_key": "action.sense_qi",
   "duration": 30.0,
@@ -161,6 +181,10 @@
  },
  {
   "id": "learn_dan_khi",
+  "visible_when": {
+   "type": "realm_at_least",
+   "realm": "cam_khi"
+  },
   "type": "INSTANT",
   "name_key": "action.learn_dan_khi",
   "costs": {

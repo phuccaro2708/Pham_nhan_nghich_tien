@@ -338,3 +338,35 @@ func test_qi_resources_hidden_until_cam_khi() -> void:
 	assert_false(act.conditions.is_met(cond, s))
 	s.realm_id = "cam_khi"
 	assert_true(act.conditions.is_met(cond, s))
+
+
+func test_early_cultivation_actions_and_tab_are_gated_until_cam_khi() -> void:
+	var reg: ContentRegistry = TestHelpers.real_registry()
+	var w: Dictionary = TestHelpers.world(3, false)
+	var s: GameState = w["state"]
+	var cond: ConditionEvaluator = w["act"].conditions
+	for id in ["absorb_qi", "refine_qi", "sense_qi", "learn_dan_khi"]:
+		assert_false(cond.is_met(reg.actions[id]["visible_when"], s), id)
+	assert_false(reg.actions["train_body"].has("visible_when"))
+	var tab: Dictionary = reg.config["ui"]["tab_visible_when"]
+	assert_false(cond.is_met(tab["cultivation"], s))
+	s.realm_id = "cam_khi"
+	assert_true(cond.is_met(tab["cultivation"], s))
+	assert_true(cond.is_met(reg.actions["absorb_qi"]["visible_when"], s))
+
+
+func test_bad_ui_visibility_config_is_rejected() -> void:
+	var r: ContentRegistry = TestHelpers.real_registry()
+	r.errors.clear()
+	r.config["ui"] = {"tab_visible_when": {"cultivaton": {"type": "realm_at_least", "realm": "cam_khi"}}}
+	r.validate()
+	assert_true(str(r.errors).contains("unknown page"))
+	r.errors.clear()
+	r.config["ui"] = []
+	r.validate()
+	assert_true(str(r.errors).contains("tab_visible_when must be an object"))
+	r.errors.clear()
+	r.config["ui"] = {}
+	r.actions["absorb_qi"]["visible_when"] = {"type": "realm_at_least", "realm": "nope"}
+	r.validate()
+	assert_true(str(r.errors).contains("absorb_qi"))

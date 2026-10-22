@@ -18,6 +18,7 @@ var _buttons: Dictionary = {}  # action_id -> Button
 var _bars: Dictionary = {}  # action_id -> progress overlay on its button
 var _res_rows: Dictionary = {}  # resource_id -> {"bar": ProgressBar, "value": Label}
 var _groups: Dictionary = {}  # "column|group" -> VBoxContainer body
+var _group_heads: Dictionary = {}  # same key -> header button, hidden while the group has nothing visible
 var _since: float = 0.0
 var _pages: StoryPages
 
@@ -36,7 +37,8 @@ func _ready() -> void:
 	EventBus.story_pending.connect(func(n: String) -> void:
 		var r: ContentRegistry = GameController.registry
 		_say(r.text("ui.log_story_pending") % r.text(r.story[n]["title_key"]), UiTheme.ACCENT_CINNABAR)
-		_pages.current_tab = 1)  # bring the event to the player; the queue is already waiting for the choice
+		_pages.current_tab = 0  # bring the event to the player; the queue is already waiting for the choice
+		_pages.focus_event())
 	EventBus.action_stopped.connect(func(id: String, why: String) -> void: _say(GameController.registry.text("ui.stopped") % [GameController.registry.text(GameController.registry.actions[id]["name_key"]), _reason(why)]))
 	EventBus.lifespan_warning.connect(func(r: float) -> void: _say(GameController.registry.text("ui.log_warning") % r, UiTheme.ACCENT_CINNABAR))
 	EventBus.life_ended.connect(func(a: float) -> void: _say(GameController.registry.text("ui.log_death") % a, UiTheme.ACCENT_CINNABAR))
@@ -103,6 +105,7 @@ func _build() -> void:
 	var res := _column(main_page, "", 230)
 	for id in reg.resources:
 		_add_resource(_group_body("r", res, str(reg.resources[id].get("group", ""))), id)
+	_pages.attach_history(res)
 
 	_active_label = Label.new()
 	page.add_child(_active_label)
@@ -213,6 +216,7 @@ func _group_body(key: String, parent: VBoxContainer, group: String) -> VBoxConta
 		body.visible = not body.visible
 		head.text = ("▾ " if body.visible else "▸ ") + group_name)
 	_groups[k] = body
+	_group_heads[k] = head
 	return body
 
 
@@ -333,9 +337,13 @@ func _refresh() -> void:
 	var reg: ContentRegistry = GameController.registry
 	var stage: Dictionary = GameController.actions.realms.stage(s)
 	var life: LifespanSystem = GameController.actions.lifespan
-	_age_label.text = reg.text("ui.realm_line") % [
-		reg.text(stage["name_key"]), s.age_years, life.limit(s),
-		reg.text("ui.deceased_suffix") if not life.is_alive(s) else (reg.text("ui.warning_suffix") if life.is_warning(s) else "")]
+	var lifespan_known: bool = GameController.actions.conditions.is_met(reg.config.get("ui", {}).get("lifespan_visible_when", {}), s)
+	if stage.get("mortal", false) and not lifespan_known:  # a commoner knows neither realms nor a lifespan limit
+		_age_label.text = reg.text("ui.status_line") % [reg.text(stage["name_key"]), int(s.age_years)]
+	else:
+		_age_label.text = reg.text("ui.realm_line") % [
+			reg.text(stage["name_key"]), s.age_years, life.limit(s),
+			reg.text("ui.deceased_suffix") if not life.is_alive(s) else (reg.text("ui.warning_suffix") if life.is_warning(s) else "")]
 	_new_life.visible = not life.is_alive(s)
 	var rs: ResourceSystem = GameController.actions.resources
 	for id in _res_rows:
@@ -355,6 +363,7 @@ func _refresh() -> void:
 		if def.has("upgrade"):
 			label += " (%s)" % (reg.text("ui.level_short") % int(s.upgrades.get(def["upgrade"], 0)))
 		_buttons[id].text = label
+		_buttons[id].visible = GameController.actions.conditions.is_met(def.get("visible_when", {}), s)
 		UiTheme.set_locked(_buttons[id], not (chk["ok"] or id == active))
 		_buttons[id].tooltip_text = "" if chk["ok"] else _explain(chk)
 		var pbar: ProgressBar = _bars[id]
@@ -363,6 +372,8 @@ func _refresh() -> void:
 			pbar.value = float(s.active_action["progress_ticks"])
 		else:
 			pbar.value = 0.0
+	for k in _groups:
+		_group_heads[k].visible = _groups[k].get_children().any(func(c: Control) -> bool: return c.visible)
 	_pages.refresh()
 	_active_label.text = reg.text("ui.idle") if active == "" else reg.text("ui.doing") % reg.text(reg.actions[active]["name_key"])
 

@@ -5,7 +5,7 @@ extends RefCounted
 
 const LEAF_TYPES: Array = [
 	"resource_at_least", "flag_is", "stat_at_least", "upgrade_level_at_least", "action_count_at_least", "realm_at_least",
-	"mastery_level_at_least", "story_done", "choice_is", "relation_at_least", "technique_known",
+	"mastery_level_at_least", "story_done", "choice_is", "relation_at_least", "technique_known", "knows",
 ]
 
 
@@ -66,6 +66,8 @@ func _leaf(c: Dictionary, s: GameState) -> bool:
 			return int(s.relations.get(c["relation"], 0)) >= int(c["value"])
 		"technique_known":
 			return s.techniques.has(c["technique"])
+		"knows":
+			return s.knowledge.has(c["knowledge"])
 	return false  # unknown type never unlocks anything
 
 
@@ -120,6 +122,7 @@ func validate(cond: Variant, registry: ContentRegistry, path: String = "requirem
 		"choice_is": req = ["node", "choice"]
 		"relation_at_least": req = ["relation", "value"]
 		"technique_known": req = ["technique"]
+		"knows": req = ["knowledge"]
 	for k in req:
 		if not d.has(k):
 			errs.append("%s: '%s' missing field '%s'" % [path, t, k])
@@ -143,6 +146,8 @@ func validate(cond: Variant, registry: ContentRegistry, path: String = "requirem
 		errs.append("%s: unknown relation '%s'" % [path, d["relation"]])
 	if t == "technique_known" and not registry.has_technique(d["technique"]):
 		errs.append("%s: unknown technique '%s'" % [path, d["technique"]])
+	if t == "knows" and not registry.has_knowledge(d["knowledge"]):
+		errs.append("%s: unknown knowledge '%s'" % [path, d["knowledge"]])
 	if t == "stat_at_least" and not ["age_years"].has(d["stat"]):
 		errs.append("%s: unknown stat '%s'" % [path, d["stat"]])
 	return errs

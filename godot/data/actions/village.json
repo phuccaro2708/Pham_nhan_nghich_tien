@@ -74,23 +74,14 @@
     "amount": 1
    }
   ],
-  "requirements": {
-   "any_of": [
-    {
-     "type": "flag_is",
-     "flag": "herb_path",
-     "value": true
-    },
-    {
-     "type": "mastery_level_at_least",
-     "action": "gather_wood",
-     "level": 5
-    }
-   ]
-  },
+  "requirements": {},
   "age_cost_years": 0.003,
   "offline_allowed": true,
-  "group": "village"
+  "group": "village",
+  "visible_when": {
+   "type": "knows",
+   "knowledge": "herb_basics"
+  }
  },
  {
   "id": "carry_water",

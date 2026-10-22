@@ -20,6 +20,11 @@ static func mini_registry(extra_actions: Array = []) -> ContentRegistry:
 	return r
 
 
-static func world(seed_value: int = 7) -> Dictionary:
+## `knowing_all` skips discovery gating so older tests can use any action; pass false for a fresh commoner.
+static func world(seed_value: int = 7, knowing_all: bool = true) -> Dictionary:
 	var reg := real_registry()
-	return {"reg": reg, "act": ActionSystem.new(reg), "state": GameState.new_game(seed_value)}
+	var st := GameState.new_game(seed_value)
+	if knowing_all:
+		st.knowledge = reg.knowledge.keys()
+		st.knowledge.sort()
+	return {"reg": reg, "act": ActionSystem.new(reg), "state": st}

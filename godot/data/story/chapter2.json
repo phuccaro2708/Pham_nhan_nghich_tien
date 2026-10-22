@@ -1,0 +1,74 @@
+[
+ {
+  "id": "ch2_mountain_rumor",
+  "chapter": "ch2",
+  "title_key": "story.ch2_mountain_rumor.title",
+  "text_key": "story.ch2_mountain_rumor.text",
+  "choices": [
+   {
+    "id": "ask_elder",
+    "text_key": "story.ch2_mountain_rumor.ask_elder",
+    "result_key": "story.ch2_mountain_rumor.ask_elder.result",
+    "effects": [
+     {
+      "type": "learn_knowledge",
+      "knowledge": "heard_of_cultivators"
+     },
+     {
+      "type": "add_relation",
+      "relation": "truong_thon",
+      "amount": 1
+     }
+    ]
+   },
+   {
+    "id": "listen_hunters",
+    "text_key": "story.ch2_mountain_rumor.listen_hunters",
+    "result_key": "story.ch2_mountain_rumor.listen_hunters.result",
+    "costs": {
+     "wood": 3
+    },
+    "effects": [
+     {
+      "type": "learn_knowledge",
+      "knowledge": "heard_of_cultivators"
+     },
+     {
+      "type": "add_resource",
+      "resource": "herb",
+      "amount": 1
+     }
+    ]
+   },
+   {
+    "id": "shrug_off",
+    "text_key": "story.ch2_mountain_rumor.shrug_off",
+    "result_key": "story.ch2_mountain_rumor.shrug_off.result",
+    "effects": [
+     {
+      "type": "learn_knowledge",
+      "knowledge": "heard_of_cultivators"
+     },
+     {
+      "type": "set_flag",
+      "flag": "rumor_dismissed",
+      "value": true
+     }
+    ]
+   }
+  ],
+  "trigger": {
+   "all_of": [
+    {
+     "type": "story_done",
+     "node": "ch1_village_elder"
+    },
+    {
+     "type": "action_count_at_least",
+     "action": "gather_wood",
+     "count": 25
+    }
+   ]
+  }
+ }
+]

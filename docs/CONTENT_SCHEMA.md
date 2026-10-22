@@ -130,3 +130,13 @@ Sửa so với Phase 1: `MAX_AMOUNT` 1e7 → 1e15 (mục "Quy tắc bổ sung" �
 **Action**: `automation_allowed` (mặc định true; `breakthrough` phải false), `offline_allowed`. Hàng đợi từ chối `breakthrough` và action có `automation_allowed: false`.
 
 **Save v3** thêm `mastery {action: {level, xp, claimed[]}}`, `relations`, `techniques[]`, `story {pending, done{node: choice}}`, `automation {slots, cursor, loop, status, reason, instant_streak}`. Migration v2→v3 điền giá trị rỗng; `ContentMigration` đưa id mastery/relation không còn tồn tại vào `orphans` thay vì xóa.
+
+## Phase 3 — Knowledge System (schema_version 4)
+
+- **Knowledge** — `data/knowledge/*.json`: `{id, name_key, desc_key, group}`. `name_key`/`desc_key` phải có trong localization.
+- **Condition** `knows {knowledge}` — kiểm tra `GameState.knowledge`.
+- **Effect** `learn_knowledge {knowledge}` (idempotent) và `promote_realm {realm}` (chỉ cho stage kế tiếp của stage có `story_promotion: true`; cốt truyện dùng, không phải `advance_realm`).
+- **Realm** thêm `mortal` (header hiện "Thân phận") và `story_promotion`.
+- **Action** `visible_when` nay là *cổng khám phá thật*: `check_can_start` trả `not_discovered`; `AutomationQueue.set_slots` từ chối ô đó.
+- **Config** `ui.lifespan_visible_when`: điều kiện hiện giới hạn thọ nguyên trong header; `ui.tab_visible_when` không còn trang `story`.
+- **Save v4** thêm `knowledge`; migration v3→v4 suy ra từ cảnh giới và cờ; id lạ vào `orphans["knowledge"]`.

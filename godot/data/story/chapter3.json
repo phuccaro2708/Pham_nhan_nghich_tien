@@ -1,0 +1,259 @@
+[
+ {
+  "id": "ch3_crossroads",
+  "chapter": "ch3",
+  "title_key": "story.ch3_crossroads.title",
+  "text_key": "story.ch3_crossroads.text",
+  "choices": [
+   {
+    "id": "study",
+    "text_key": "story.ch3_crossroads.study",
+    "result_key": "story.ch3_crossroads.study.result",
+    "costs": {
+     "silver": 5
+    },
+    "effects": [
+     {
+      "type": "learn_knowledge",
+      "knowledge": "literacy"
+     },
+     {
+      "type": "set_flag",
+      "flag": "route_study",
+      "value": true
+     }
+    ],
+    "next": "ch3_study"
+   },
+   {
+    "id": "help",
+    "text_key": "story.ch3_crossroads.help",
+    "result_key": "story.ch3_crossroads.help.result",
+    "effects": [
+     {
+      "type": "add_relation",
+      "relation": "ba_ly",
+      "amount": 1
+     },
+     {
+      "type": "set_flag",
+      "flag": "route_help",
+      "value": true
+     }
+    ],
+    "next": "ch3_help"
+   },
+   {
+    "id": "explore",
+    "text_key": "story.ch3_crossroads.explore",
+    "result_key": "story.ch3_crossroads.explore.result",
+    "effects": [
+     {
+      "type": "add_resource",
+      "resource": "herb",
+      "amount": 2
+     },
+     {
+      "type": "set_flag",
+      "flag": "route_explore",
+      "value": true
+     }
+    ],
+    "next": "ch3_explore"
+   }
+  ],
+  "trigger": {
+   "all_of": [
+    {
+     "type": "story_done",
+     "node": "ch2_mountain_rumor"
+    },
+    {
+     "type": "resource_at_least",
+     "resource": "body",
+     "amount": 30
+    }
+   ]
+  }
+ },
+ {
+  "id": "ch3_study",
+  "chapter": "ch3",
+  "title_key": "story.ch3_study.title",
+  "text_key": "story.ch3_study.text",
+  "choices": [
+   {
+    "id": "careful",
+    "text_key": "story.ch3_study.careful",
+    "result_key": "story.ch3_study.careful.result",
+    "effects": [
+     {
+      "type": "learn_knowledge",
+      "knowledge": "body_lore"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "breathing"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "martial_basics"
+     },
+     {
+      "type": "promote_realm",
+      "realm": "cuong_than"
+     },
+     {
+      "type": "add_relation",
+      "relation": "truong_thon",
+      "amount": 1
+     }
+    ]
+   },
+   {
+    "id": "skim",
+    "text_key": "story.ch3_study.skim",
+    "result_key": "story.ch3_study.skim.result",
+    "effects": [
+     {
+      "type": "learn_knowledge",
+      "knowledge": "martial_basics"
+     },
+     {
+      "type": "promote_realm",
+      "realm": "cuong_than"
+     },
+     {
+      "type": "add_resource",
+      "resource": "silver",
+      "amount": 5
+     }
+    ]
+   }
+  ],
+  "chain_only": true
+ },
+ {
+  "id": "ch3_help",
+  "chapter": "ch3",
+  "title_key": "story.ch3_help.title",
+  "text_key": "story.ch3_help.text",
+  "choices": [
+   {
+    "id": "learn_all",
+    "text_key": "story.ch3_help.learn_all",
+    "result_key": "story.ch3_help.learn_all.result",
+    "effects": [
+     {
+      "type": "learn_knowledge",
+      "knowledge": "breathing"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "body_lore"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "herb_basics"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "martial_basics"
+     },
+     {
+      "type": "promote_realm",
+      "realm": "cuong_than"
+     },
+     {
+      "type": "add_relation",
+      "relation": "ba_ly",
+      "amount": 1
+     }
+    ]
+   },
+   {
+    "id": "take_pay",
+    "text_key": "story.ch3_help.take_pay",
+    "result_key": "story.ch3_help.take_pay.result",
+    "effects": [
+     {
+      "type": "learn_knowledge",
+      "knowledge": "martial_basics"
+     },
+     {
+      "type": "promote_realm",
+      "realm": "cuong_than"
+     },
+     {
+      "type": "add_resource",
+      "resource": "silver",
+      "amount": 8
+     }
+    ]
+   }
+  ],
+  "chain_only": true
+ },
+ {
+  "id": "ch3_explore",
+  "chapter": "ch3",
+  "title_key": "story.ch3_explore.title",
+  "text_key": "story.ch3_explore.text",
+  "choices": [
+   {
+    "id": "follow",
+    "text_key": "story.ch3_explore.follow",
+    "result_key": "story.ch3_explore.follow.result",
+    "effects": [
+     {
+      "type": "learn_knowledge",
+      "knowledge": "martial_basics"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "breathing"
+     },
+     {
+      "type": "learn_knowledge",
+      "knowledge": "body_lore"
+     },
+     {
+      "type": "promote_realm",
+      "realm": "cuong_than"
+     },
+     {
+      "type": "set_flag",
+      "flag": "met_martial_artist",
+      "value": true
+     },
+     {
+      "type": "add_resource",
+      "resource": "herb",
+      "amount": 2
+     }
+    ]
+   },
+   {
+    "id": "watch_hidden",
+    "text_key": "story.ch3_explore.watch_hidden",
+    "result_key": "story.ch3_explore.watch_hidden.result",
+    "effects": [
+     {
+      "type": "learn_knowledge",
+      "knowledge": "martial_basics"
+     },
+     {
+      "type": "promote_realm",
+      "realm": "cuong_than"
+     },
+     {
+      "type": "add_resource",
+      "resource": "wood",
+      "amount": 10
+     }
+    ]
+   }
+  ],
+  "chain_only": true
+ }
+]

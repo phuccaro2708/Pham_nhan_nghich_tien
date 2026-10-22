@@ -51,6 +51,18 @@ func pity_reached(state: GameState) -> bool:
 	return pity > 0 and state.breakthrough_failures >= pity
 
 
+## Story-driven step to the next stage; only stages flagged `story_promotion` allow it (no risk, no ritual).
+func promote(state: GameState, realm_id: String) -> void:
+	var nxt: Dictionary = next_stage(state)
+	var cur: Dictionary = stage(state)
+	if nxt.is_empty() or nxt["id"] != realm_id or not cur.get("story_promotion", false):
+		return
+	state.realm_id = realm_id
+	state.breakthrough_failures = 0
+	state.life["warned"] = false
+	breakthrough_resolved.emit(true, str(cur["id"]), realm_id)
+
+
 ## Rolls (seeded, only when the outcome is not certain) and applies the result. Costs were paid by the caller.
 ## Success: next stage, failures reset, lifespan warning re-armed (the limit may have grown).
 ## Failure: nobody dies; failure counter and the data-defined flag record the damaged state.

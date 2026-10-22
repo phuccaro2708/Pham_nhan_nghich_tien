@@ -18,7 +18,7 @@
   "name_key": "resource.body",
   "cap": 1000,
   "initial": 0,
-  "group": "cultivation"
+  "group": "condition"
  },
  {
   "id": "spirit_qi",
