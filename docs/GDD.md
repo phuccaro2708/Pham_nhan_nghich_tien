@@ -670,4 +670,4 @@ Casual · Optimizer · Idle (rời game nhiều giờ) · Explorer · Risk Playe
 - **Cảnh giới (đổi nghĩa, giữ id)**: Vô = *Phàm Nhân* (thân phận); Cường Thân = **Đoán Thể** (võ học nhập môn, chỉ đạt qua cốt truyện); Cảm Khí = nhập đạo; Luyện Khí… giữ nguyên.
 - **Tuyến mở đầu**: Phàm Nhân → học nghề → võ học nhập môn (Đoán Thể) → phát hiện tiên duyên → cảm ứng linh khí → Luyện Khí. Phase 1 làm tới Đoán Thể + bước đệm tới Cảm Khí; Chương 4–5 thuộc Phase 2.
 - **Ba đường tới võ học nhập môn**: học hỏi, giúp người, thám hiểm; đều có lựa chọn miễn phí, không softlock.
-- **Tuổi**: hiển thị "16 tuổi" không giới hạn thọ nguyên tới khi nghe chuyện người tu hành.
+- **Tuổi**: hiển thị "16 tuổi" không giới hạn thọ nguyên tới khi nhập đạo (`dao_entry`, từ chuỗi đạo sĩ); tin đồn Ch2 chỉ cho `heard_of_cultivators`. Trước đó header luôn hiện thân phận Phàm Nhân (không lộ cảnh giới thật như Đoán Thể) và log không báo sắp hết thọ.

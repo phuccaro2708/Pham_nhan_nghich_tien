@@ -201,6 +201,7 @@ func test_ch2_rumour_never_reveals_the_lifespan_limit() -> void:
 		assert_false(act.conditions.is_met(cond, s), c["id"])
 	_fx({"type": "learn_knowledge", "knowledge": "dao_entry"})
 	assert_true(act.conditions.is_met(cond, s))
+	assert_true(act.registry.stage_of("")["mortal"])  # the pre-Way header shows this commoner identity, never the real stage
 
 
 func test_every_queue_error_code_has_a_message_in_both_languages() -> void:

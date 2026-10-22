@@ -1,6 +1,6 @@
 # TEST_PLAN
 
-Chạy toàn bộ: `godot --headless --path godot -s addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit` (hiện **169/169 pass**, xem mục Luân hồi).
+Chạy toàn bộ: `godot --headless --path godot -s addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit` (hiện **173/173 pass**, xem mục Luân hồi).
 
 | Nhóm | File | Bao phủ |
 |---|---|---|

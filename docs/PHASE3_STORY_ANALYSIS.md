@@ -47,4 +47,4 @@ Phase 2 (kế hoạch): Chương 4–5 (tiên duyên, Dẫn Khí Quyết, nhập
 ## 5. Rủi ro đã biết
 
 - Điều kiện kích hoạt Ch2 (`gather_wood` ≥ 25) và Ch3 (Sức Bền ≥ 30) thay chi phí 30 Thể Phách cũ của nghi thức vô → cuong_than; Sức Bền không bị tiêu. Simulator: casual 5,31 h (trước 5,22 h), optimizer 4,74 h, idle 4,01 h.
-- Văn bản tiếng Anh của Ch2–3 đang là bản giữ chỗ (copy tiếng Việt) tới khi có đợt dịch.
+- Văn bản tiếng Anh của Ch2–3 đã được dịch (trước đây là bản giữ chỗ copy tiếng Việt).
