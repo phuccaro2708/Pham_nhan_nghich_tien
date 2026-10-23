@@ -163,71 +163,71 @@
     "max": 0.8,
     "pity_failures": 3,
     "terms": [
-      {
-       "when": {
-        "type": "mastery_level_at_least",
-        "action": "absorb_qi",
-        "level": 10
-       },
-       "weight": 0.08
+     {
+      "when": {
+       "type": "mastery_level_at_least",
+       "action": "absorb_qi",
+       "level": 10
       },
-      {
-       "when": {
-        "type": "mastery_level_at_least",
-        "action": "absorb_qi",
-        "level": 20
-       },
-       "weight": 0.05
+      "weight": 0.08
+     },
+     {
+      "when": {
+       "type": "mastery_level_at_least",
+       "action": "absorb_qi",
+       "level": 20
       },
-      {
-       "when": {
-        "type": "wounds_at_least",
-        "value": 1
-       },
-       "weight": -0.05
+      "weight": 0.05
+     },
+     {
+      "when": {
+       "type": "wounds_at_least",
+       "value": 1
       },
-      {
-       "when": {
-        "type": "wounds_at_least",
-        "value": 3
-       },
-       "weight": -0.05
+      "weight": -0.05
+     },
+     {
+      "when": {
+       "type": "wounds_at_least",
+       "value": 3
       },
-      {
-       "when": {
-        "type": "wounds_at_least",
-        "value": 5
-       },
-       "weight": -0.1
+      "weight": -0.05
+     },
+     {
+      "when": {
+       "type": "wounds_at_least",
+       "value": 5
       },
-      {
-       "when": {
-        "any_of": [
-         {
-          "type": "choice_is",
-          "node": "ch6_rock_echo",
-          "choice": "echo_guided"
-         },
-         {
-          "type": "choice_is",
-          "node": "ch6_rock_echo",
-          "choice": "echo_evidence"
-         },
-         {
-          "type": "choice_is",
-          "node": "ch6_rock_echo",
-          "choice": "echo_relic"
-         },
-         {
-          "type": "choice_is",
-          "node": "ch6_rock_echo",
-          "choice": "echo_rogue"
-         }
-        ]
-       },
-       "weight": 0.06
-      }
-     ]
+      "weight": -0.1
+     },
+     {
+      "when": {
+       "any_of": [
+        {
+         "type": "choice_is",
+         "node": "ch6_rock_echo",
+         "choice": "echo_guided"
+        },
+        {
+         "type": "choice_is",
+         "node": "ch6_rock_echo",
+         "choice": "echo_evidence"
+        },
+        {
+         "type": "choice_is",
+         "node": "ch6_rock_echo",
+         "choice": "echo_relic"
+        },
+        {
+         "type": "choice_is",
+         "node": "ch6_rock_echo",
+         "choice": "echo_rogue"
+        }
+       ]
+      },
+      "weight": 0.06
+     }
+    ]
    },
    "on_fail_flag": "meridian_damaged",
    "on_fail_refund": {
@@ -239,6 +239,299 @@
   "id": "truc_co_so",
   "name_key": "realm.truc_co_so",
   "lifespan_years": 200,
-  "cultivation_cap": 22040
+  "cultivation_cap": 22040,
+  "breakthrough": {
+   "costs": {
+    "cultivation": 11020
+   },
+   "requirements": {
+    "all_of": [
+     {
+      "type": "flag_is",
+      "flag": "phase2_open",
+      "value": true
+     }
+    ]
+   },
+   "chance": {
+    "base": 0.6,
+    "min": 0.4,
+    "max": 0.8,
+    "pity_failures": 3,
+    "terms": []
+   }
+  }
+ },
+ {
+  "id": "truc_co_trung",
+  "name_key": "realm.truc_co_trung",
+  "lifespan_years": 200,
+  "cultivation_cap": 39672,
+  "breakthrough": {
+   "costs": {
+    "cultivation": 19836
+   },
+   "requirements": {},
+   "chance": {
+    "base": 0.6,
+    "min": 0.4,
+    "max": 0.8,
+    "pity_failures": 3,
+    "terms": []
+   }
+  }
+ },
+ {
+  "id": "truc_co_hau",
+  "name_key": "realm.truc_co_hau",
+  "lifespan_years": 200,
+  "cultivation_cap": 71410,
+  "breakthrough": {
+   "costs": {
+    "cultivation": 35705
+   },
+   "requirements": {},
+   "chance": {
+    "base": 0.6,
+    "min": 0.4,
+    "max": 0.8,
+    "pity_failures": 3,
+    "terms": []
+   }
+  }
+ },
+ {
+  "id": "truc_co_vien_man",
+  "name_key": "realm.truc_co_vien_man",
+  "lifespan_years": 200,
+  "cultivation_cap": 128538,
+  "breakthrough": {
+   "costs": {
+    "cultivation": 64269
+   },
+   "requirements": {},
+   "chance": {
+    "base": 0.6,
+    "min": 0.4,
+    "max": 0.8,
+    "pity_failures": 3,
+    "terms": []
+   }
+  }
+ },
+ {
+  "id": "kim_dan_so",
+  "name_key": "realm.kim_dan_so",
+  "lifespan_years": 500,
+  "cultivation_cap": 231368,
+  "breakthrough": {
+   "costs": {
+    "cultivation": 115684
+   },
+   "requirements": {},
+   "chance": {
+    "base": 0.6,
+    "min": 0.4,
+    "max": 0.8,
+    "pity_failures": 3,
+    "terms": []
+   }
+  }
+ },
+ {
+  "id": "kim_dan_trung",
+  "name_key": "realm.kim_dan_trung",
+  "lifespan_years": 500,
+  "cultivation_cap": 416462,
+  "breakthrough": {
+   "costs": {
+    "cultivation": 208231
+   },
+   "requirements": {},
+   "chance": {
+    "base": 0.6,
+    "min": 0.4,
+    "max": 0.8,
+    "pity_failures": 3,
+    "terms": []
+   }
+  }
+ },
+ {
+  "id": "kim_dan_hau",
+  "name_key": "realm.kim_dan_hau",
+  "lifespan_years": 500,
+  "cultivation_cap": 749632,
+  "breakthrough": {
+   "costs": {
+    "cultivation": 374816
+   },
+   "requirements": {},
+   "chance": {
+    "base": 0.6,
+    "min": 0.4,
+    "max": 0.8,
+    "pity_failures": 3,
+    "terms": []
+   }
+  }
+ },
+ {
+  "id": "kim_dan_vien_man",
+  "name_key": "realm.kim_dan_vien_man",
+  "lifespan_years": 500,
+  "cultivation_cap": 1349338,
+  "breakthrough": {
+   "costs": {
+    "cultivation": 674669
+   },
+   "requirements": {},
+   "chance": {
+    "base": 0.6,
+    "min": 0.4,
+    "max": 0.8,
+    "pity_failures": 3,
+    "terms": []
+   }
+  }
+ },
+ {
+  "id": "nguyen_anh_so",
+  "name_key": "realm.nguyen_anh_so",
+  "lifespan_years": 1000,
+  "cultivation_cap": 2428808,
+  "breakthrough": {
+   "costs": {
+    "cultivation": 1214404
+   },
+   "requirements": {},
+   "chance": {
+    "base": 0.6,
+    "min": 0.4,
+    "max": 0.8,
+    "pity_failures": 3,
+    "terms": []
+   }
+  }
+ },
+ {
+  "id": "nguyen_anh_trung",
+  "name_key": "realm.nguyen_anh_trung",
+  "lifespan_years": 1000,
+  "cultivation_cap": 4371854,
+  "breakthrough": {
+   "costs": {
+    "cultivation": 2185927
+   },
+   "requirements": {},
+   "chance": {
+    "base": 0.6,
+    "min": 0.4,
+    "max": 0.8,
+    "pity_failures": 3,
+    "terms": []
+   }
+  }
+ },
+ {
+  "id": "nguyen_anh_hau",
+  "name_key": "realm.nguyen_anh_hau",
+  "lifespan_years": 1000,
+  "cultivation_cap": 7869337,
+  "breakthrough": {
+   "costs": {
+    "cultivation": 3934668
+   },
+   "requirements": {},
+   "chance": {
+    "base": 0.6,
+    "min": 0.4,
+    "max": 0.8,
+    "pity_failures": 3,
+    "terms": []
+   }
+  }
+ },
+ {
+  "id": "nguyen_anh_vien_man",
+  "name_key": "realm.nguyen_anh_vien_man",
+  "lifespan_years": 1000,
+  "cultivation_cap": 14164807,
+  "breakthrough": {
+   "costs": {
+    "cultivation": 7082404
+   },
+   "requirements": {},
+   "chance": {
+    "base": 0.6,
+    "min": 0.4,
+    "max": 0.8,
+    "pity_failures": 3,
+    "terms": []
+   }
+  }
+ },
+ {
+  "id": "hoa_than_so",
+  "name_key": "realm.hoa_than_so",
+  "lifespan_years": 2000,
+  "cultivation_cap": 25496653,
+  "breakthrough": {
+   "costs": {
+    "cultivation": 12748326
+   },
+   "requirements": {},
+   "chance": {
+    "base": 0.6,
+    "min": 0.4,
+    "max": 0.8,
+    "pity_failures": 3,
+    "terms": []
+   }
+  }
+ },
+ {
+  "id": "hoa_than_trung",
+  "name_key": "realm.hoa_than_trung",
+  "lifespan_years": 2000,
+  "cultivation_cap": 45893975,
+  "breakthrough": {
+   "costs": {
+    "cultivation": 22946988
+   },
+   "requirements": {},
+   "chance": {
+    "base": 0.6,
+    "min": 0.4,
+    "max": 0.8,
+    "pity_failures": 3,
+    "terms": []
+   }
+  }
+ },
+ {
+  "id": "hoa_than_hau",
+  "name_key": "realm.hoa_than_hau",
+  "lifespan_years": 2000,
+  "cultivation_cap": 82609155,
+  "breakthrough": {
+   "costs": {
+    "cultivation": 41304578
+   },
+   "requirements": {},
+   "chance": {
+    "base": 0.6,
+    "min": 0.4,
+    "max": 0.8,
+    "pity_failures": 3,
+    "terms": []
+   }
+  }
+ },
+ {
+  "id": "hoa_than_vien_man",
+  "name_key": "realm.hoa_than_vien_man",
+  "lifespan_years": 2000,
+  "cultivation_cap": 148696479
  }
 ]

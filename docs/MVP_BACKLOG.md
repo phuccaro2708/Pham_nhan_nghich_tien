@@ -12,7 +12,7 @@ Nguồn: GDD §XIV.1. Mỗi version nhỏ: docs → test → GUT xanh → báo c
 | V5 | Story hệ quả về sau | GĐ1 | 9 | Xong (đã duyệt) |
 | V6 | Đột phá Trúc Cơ + cổng lát cắt (3 hướng) | GĐ1 | 9 | Xong (đã duyệt) |
 | V7 | Chống softlock chiến dịch dài | GĐ1 | 9 | Xong (đã duyệt) |
-| V8 | Nền GĐ2: đại cảnh giới Kim Đan–Hóa Thần trong `realms.json`, thọ nguyên, validator; chưa có nội dung chơi | GĐ2 | 10 | Đề xuất |
+| V8 | Nền GĐ2: đại cảnh giới Kim Đan–Hóa Thần trong `realms.json`, thọ nguyên, validator; chưa có nội dung chơi | GĐ2 |  9 | Xong (chờ duyệt) |
 | V9 | Kim Đan: ổn định công pháp, `dan_grade` từ công pháp + mastery + thương tích | GĐ2 | 10 | Đề xuất |
 | V10 | Truyền thừa hậu duệ + Đạo Quả (thay `deceased` cụt) | GĐ2 | 11 | Đề xuất |
 | V11 | Nguyên Anh: tri thức + quan hệ, nguyên thần | GĐ2 | 12 | Đề xuất |

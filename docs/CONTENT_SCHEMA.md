@@ -191,3 +191,7 @@ Không có trường mới: dùng `text_variants`, `later_hint_key`, `trigger` s
 ## V7 — `required_for_main` (không đổi schema)
 
 Resource có thể khai `"required_for_main": true`. Validator kiểm tĩnh: có action sinh ra nó mà mọi chi phí đều tái tạo được, và mỗi `on_fail_flag`/thương tích có action phục hồi tương tự. Điều kiện (`requirements`) của action không được mô phỏng.
+
+## V8 — thang cảnh giới GĐ2 (không đổi schema)
+
+`realms.json` kéo dài từ `truc_co_so` tới `hoa_than_vien_man` (28 bậc; id `truc_co_{so,trung,hau,vien_man}`, `kim_dan_*`, `nguyen_anh_*`, `hoa_than_*`). `lifespan_years` theo GDD §3.2 (200/500/1.000/2.000). `cultivation_cap` tăng ×1,8 mỗi bậc, chi phí đột phá = cap/2, `chance` {base 0,6, min 0,4, max 0,8, pity 3, chưa có số hạng}: **tạm thời, sẽ thay bằng số từ simulation** (BALANCE.md). Bậc `truc_co_so` có `breakthrough.requirements` đòi cờ `phase2_open` mà chưa nội dung nào đặt, nên người chơi vẫn dừng ở Trúc Cơ Sơ; V9 mở cờ này. Không thêm state nên không nâng schema (backlog ghi 10 ở V9, khi có `dan_grade`).

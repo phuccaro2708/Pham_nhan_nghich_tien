@@ -64,3 +64,7 @@ Số hạng có dữ liệu, P trong [min, max ≤ 0,8]; P phản ánh mastery/t
 ## V7 — `tests/unit/test_softlock.gd`
 
 Tài nguyên bắt buộc có nguồn tái tạo; validator bắt resource mất nguồn, nguồn tự phụ thuộc, resource hiếm bị đánh dấu nhầm; mọi thất bại có hành động phục hồi; chuỗi thất bại đột phá + thương tích tối đa + hết bạc vẫn thoát được; hết thọ nguyên giữ story + tri thức qua save.
+
+## V8 — `tests/unit/test_phase2_realms.gd`
+
+Thang 16 bậc từ Trúc Cơ Sơ tới Hóa Thần Viên Mãn đúng thứ tự, validator không lỗi; thọ nguyên theo GDD §3.2; tên bậc có vi + en; đột phá khỏi Trúc Cơ Sơ bị chặn (`requirements_not_met`) tới khi có cờ `phase2_open`; cap và chi phí tăng dần, P tối đa ≤ 0,8. `test_progression` cập nhật: 28 bậc, bậc cuối là Hóa Thần Viên Mãn.

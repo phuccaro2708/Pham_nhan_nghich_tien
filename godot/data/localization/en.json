@@ -578,5 +578,20 @@
  "story.ch6_rock_echo.echo_rogue.later": "You took everything: much more silver, goodwill with the taoist falls.",
  "story.ch6_rock_echo.walk_on": "Leave without looking back",
  "story.ch6_rock_echo.walk_on.result": "You grab one fragment and go.",
- "story.ch6_rock_echo.walk_on.later": "Nobody remembers you were here: only one technique fragment."
+ "story.ch6_rock_echo.walk_on.later": "Nobody remembers you were here: only one technique fragment.",
+ "realm.truc_co_trung": "Foundation Establishment (Middle)",
+ "realm.truc_co_hau": "Foundation Establishment (Late)",
+ "realm.truc_co_vien_man": "Foundation Establishment (Perfection)",
+ "realm.kim_dan_so": "Golden Core (Early)",
+ "realm.kim_dan_trung": "Golden Core (Middle)",
+ "realm.kim_dan_hau": "Golden Core (Late)",
+ "realm.kim_dan_vien_man": "Golden Core (Perfection)",
+ "realm.nguyen_anh_so": "Nascent Soul (Early)",
+ "realm.nguyen_anh_trung": "Nascent Soul (Middle)",
+ "realm.nguyen_anh_hau": "Nascent Soul (Late)",
+ "realm.nguyen_anh_vien_man": "Nascent Soul (Perfection)",
+ "realm.hoa_than_so": "Soul Transformation (Early)",
+ "realm.hoa_than_trung": "Soul Transformation (Middle)",
+ "realm.hoa_than_hau": "Soul Transformation (Late)",
+ "realm.hoa_than_vien_man": "Soul Transformation (Perfection)"
 }

@@ -578,5 +578,20 @@
  "story.ch6_rock_echo.echo_rogue.later": "Lấy tất cả: nhiều bạc hơn hẳn, tình nghĩa với đạo sĩ giảm.",
  "story.ch6_rock_echo.walk_on": "Rời đi, không ngoảnh lại",
  "story.ch6_rock_echo.walk_on.result": "Bạn nhặt tạm một mảnh rồi đi.",
- "story.ch6_rock_echo.walk_on.later": "Không ai nhớ bạn đã đến: chỉ được một mảnh công pháp."
+ "story.ch6_rock_echo.walk_on.later": "Không ai nhớ bạn đã đến: chỉ được một mảnh công pháp.",
+ "realm.truc_co_trung": "Trúc Cơ Trung Kỳ",
+ "realm.truc_co_hau": "Trúc Cơ Hậu Kỳ",
+ "realm.truc_co_vien_man": "Trúc Cơ Viên Mãn",
+ "realm.kim_dan_so": "Kim Đan Sơ Kỳ",
+ "realm.kim_dan_trung": "Kim Đan Trung Kỳ",
+ "realm.kim_dan_hau": "Kim Đan Hậu Kỳ",
+ "realm.kim_dan_vien_man": "Kim Đan Viên Mãn",
+ "realm.nguyen_anh_so": "Nguyên Anh Sơ Kỳ",
+ "realm.nguyen_anh_trung": "Nguyên Anh Trung Kỳ",
+ "realm.nguyen_anh_hau": "Nguyên Anh Hậu Kỳ",
+ "realm.nguyen_anh_vien_man": "Nguyên Anh Viên Mãn",
+ "realm.hoa_than_so": "Hóa Thần Sơ Kỳ",
+ "realm.hoa_than_trung": "Hóa Thần Trung Kỳ",
+ "realm.hoa_than_hau": "Hóa Thần Hậu Kỳ",
+ "realm.hoa_than_vien_man": "Hóa Thần Viên Mãn"
 }
