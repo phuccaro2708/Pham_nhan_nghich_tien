@@ -720,3 +720,8 @@ Lý do: Tàn Kinh phải đổi *con đường tu luyện*, không phải cộng
 - 3 hướng, mỗi hướng ra một biến thể `role: main` nên tranh ô chủ tu với Thanh Mộc, Huyết Luyện, Ngũ Hành: Ổn Định (an toàn, 90%, bonus nhỏ, hồi thêm thương tích), Cấp Tốc (65%, hấp thu mạnh, +1 thương tích mỗi chuyến), Nghịch Kinh (40%, hấp thu/công kích/ngộ tính cao, +2 thương tích mỗi chuyến, hỏng thì bị thương).
 - Thất bại không mất Tàn Kinh: hoàn 40–50% vật liệu, tính vào pity (sau 2 lần hỏng, lần kế chắc chắn thành). Đã có biến thể thì hướng đó đóng, thưởng chỉ phát một lần. Đếm thất bại là ký ức của nhân vật, không bị luân hồi đảo ngược.
 - Tương tác: công pháp chủ tu (V2), loot thám hiểm (V3), tri thức, thương tích, thọ nguyên (mỗi lần thử tốn tuổi), RNG có seed.
+
+### 8.3. Hệ quả về sau của lựa chọn (V5, GĐ1)
+
+Lý do: lựa chọn ở chương I chỉ có nghĩa nếu nhiều giờ chơi sau đó thế giới còn nhớ. Sau khi thông Hắc Thạch Động (`black_rock_cleared`), node `ch6_rock_echo` mở ra và **nhận ra nguồn pháp môn** (`qi_source`: guided, evidence, relic, rogue) bằng văn bản riêng. Mỗi nguồn có một lựa chọn riêng (đền đáp đạo sĩ, báo trưởng thôn, ghép tàn quyển, lục sạch), và ai cũng có lựa chọn miễn phí `walk_on`. Các nhánh gặp nhau ở cùng một node nhưng để lại `rock_echo` khác nhau cùng phần thưởng/quan hệ khác nhau. Không đổi cơ chế nào ngoài dữ liệu.
+- Tương tác: thám hiểm (trigger từ cờ thông hang), story (`qi_source`), quan hệ, tài nguyên (mảnh công pháp cho V4).

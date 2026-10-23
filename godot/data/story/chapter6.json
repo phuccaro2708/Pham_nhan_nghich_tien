@@ -1,0 +1,174 @@
+[
+ {
+  "id": "ch6_rock_echo",
+  "chapter": "ch6",
+  "title_key": "story.ch6_rock_echo.title",
+  "text_key": "story.ch6_rock_echo.text",
+  "choices": [
+   {
+    "id": "echo_guided",
+    "text_key": "story.ch6_rock_echo.echo_guided",
+    "result_key": "story.ch6_rock_echo.echo_guided.result",
+    "requirements": {
+     "type": "flag_is",
+     "flag": "qi_source",
+     "value": "guided"
+    },
+    "effects": [
+     {
+      "type": "add_relation",
+      "relation": "dao_si",
+      "amount": 1
+     },
+     {
+      "type": "add_resource",
+      "resource": "technique_fragment",
+      "amount": 2
+     },
+     {
+      "type": "set_flag",
+      "flag": "rock_echo",
+      "value": "guided"
+     }
+    ],
+    "later_hint_key": "story.ch6_rock_echo.echo_guided.later"
+   },
+   {
+    "id": "echo_evidence",
+    "text_key": "story.ch6_rock_echo.echo_evidence",
+    "result_key": "story.ch6_rock_echo.echo_evidence.result",
+    "requirements": {
+     "type": "flag_is",
+     "flag": "qi_source",
+     "value": "evidence"
+    },
+    "effects": [
+     {
+      "type": "add_relation",
+      "relation": "truong_thon",
+      "amount": 1
+     },
+     {
+      "type": "add_resource",
+      "resource": "silver",
+      "amount": 20
+     },
+     {
+      "type": "set_flag",
+      "flag": "rock_echo",
+      "value": "evidence"
+     }
+    ],
+    "later_hint_key": "story.ch6_rock_echo.echo_evidence.later"
+   },
+   {
+    "id": "echo_relic",
+    "text_key": "story.ch6_rock_echo.echo_relic",
+    "result_key": "story.ch6_rock_echo.echo_relic.result",
+    "requirements": {
+     "type": "flag_is",
+     "flag": "qi_source",
+     "value": "relic"
+    },
+    "effects": [
+     {
+      "type": "add_resource",
+      "resource": "technique_fragment",
+      "amount": 3
+     },
+     {
+      "type": "set_flag",
+      "flag": "rock_echo",
+      "value": "relic"
+     }
+    ],
+    "later_hint_key": "story.ch6_rock_echo.echo_relic.later"
+   },
+   {
+    "id": "echo_rogue",
+    "text_key": "story.ch6_rock_echo.echo_rogue",
+    "result_key": "story.ch6_rock_echo.echo_rogue.result",
+    "requirements": {
+     "type": "flag_is",
+     "flag": "qi_source",
+     "value": "rogue"
+    },
+    "effects": [
+     {
+      "type": "add_resource",
+      "resource": "silver",
+      "amount": 40
+     },
+     {
+      "type": "add_relation",
+      "relation": "dao_si",
+      "amount": -1
+     },
+     {
+      "type": "set_flag",
+      "flag": "rock_echo",
+      "value": "rogue"
+     }
+    ],
+    "later_hint_key": "story.ch6_rock_echo.echo_rogue.later"
+   },
+   {
+    "id": "walk_on",
+    "text_key": "story.ch6_rock_echo.walk_on",
+    "result_key": "story.ch6_rock_echo.walk_on.result",
+    "effects": [
+     {
+      "type": "add_resource",
+      "resource": "technique_fragment",
+      "amount": 1
+     },
+     {
+      "type": "set_flag",
+      "flag": "rock_echo",
+      "value": "none"
+     }
+    ],
+    "later_hint_key": "story.ch6_rock_echo.walk_on.later"
+   }
+  ],
+  "text_variants": [
+   {
+    "when": {
+     "type": "flag_is",
+     "flag": "qi_source",
+     "value": "guided"
+    },
+    "text_key": "story.ch6_rock_echo.text.guided"
+   },
+   {
+    "when": {
+     "type": "flag_is",
+     "flag": "qi_source",
+     "value": "evidence"
+    },
+    "text_key": "story.ch6_rock_echo.text.evidence"
+   },
+   {
+    "when": {
+     "type": "flag_is",
+     "flag": "qi_source",
+     "value": "relic"
+    },
+    "text_key": "story.ch6_rock_echo.text.relic"
+   },
+   {
+    "when": {
+     "type": "flag_is",
+     "flag": "qi_source",
+     "value": "rogue"
+    },
+    "text_key": "story.ch6_rock_echo.text.rogue"
+   }
+  ],
+  "trigger": {
+   "type": "flag_is",
+   "flag": "black_rock_cleared",
+   "value": true
+  }
+ }
+]

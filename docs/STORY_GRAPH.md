@@ -85,3 +85,16 @@ Test: `tests/unit/test_knowledge.gd` — `test_three_routes_reach_martial_basics
 ## V1 — Nhận ra lựa chọn trước
 
 `ch1_mountain_incident` có 2 biến thể văn bản theo `ch1_wounded_taoist`: `heal` và `loot` (`ask_first` dùng văn bản gốc). Ba lựa chọn của `ch1_wounded_taoist` có `later_hint_key`.
+
+## V5 — Hệ quả về sau (`chapter6.json`)
+
+`ch6_rock_echo` (chapter `ch6`, trigger `flag_is black_rock_cleared`) — 4 biến thể văn bản theo `qi_source`, mỗi nguồn một lựa chọn riêng, cộng `walk_on` miễn phí:
+
+```
+black_rock_cleared ─▶ ch6_rock_echo ─ echo_guided   (qi_source=guided)   ─ dao_si +1, 2 mảnh   ┐
+                                    ├ echo_evidence (qi_source=evidence) ─ truong_thon +1, 20 bạc │ rock_echo = nguồn
+                                    ├ echo_relic    (qi_source=relic)    ─ 3 mảnh               │
+                                    ├ echo_rogue    (qi_source=rogue)    ─ 40 bạc, dao_si -1    ┘
+                                    └ walk_on       (miễn phí)           ─ 1 mảnh, rock_echo = none
+```
+Mọi choice có `result_key` và `later_hint_key`; ledger Nhân Quả hiển thị. Ba nhánh `ch1_wounded_taoist` đã có hệ quả tức thì (V1) và về sau (`ch1_mountain_incident` biến thể, `ch6_rock_echo`).

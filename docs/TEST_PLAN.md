@@ -52,3 +52,7 @@ Tầng là dữ liệu (kể cả `enemies` phẳng); điều kiện vào; tần
 ## V4 — `tests/unit/test_research.gd`
 
 Khiếm khuyết cần chứng cứ; hướng nghiên cứu đóng đến khi thấy khiếm khuyết; cần công pháp gốc; từ chối không mất gì; biến thể có cái giá; 3 hướng ra 3 biến thể khác nhau; thất bại hoàn một phần + pity; tất định theo seed; thưởng một lần và save round-trip + validate; không nghiên cứu khi ở bí cảnh/đã chết; migration 8→9; validate content; localization vi/en.
+
+## V5 — `tests/unit/test_story_echo.gd`
+
+Node chờ thông hang mới mở; văn bản khác nhau cho từng nguồn pháp môn; mỗi nhánh chỉ thấy lựa chọn riêng + lựa chọn miễn phí; 4 nhánh hội tụ ở một node với cờ/quan hệ/tài nguyên khác nhau; `walk_on` vẫn hội tụ; không mở lại và không trả thưởng hai lần qua save/load; mọi choice có hint và hiện trong sổ Nhân Quả; localization vi/en.

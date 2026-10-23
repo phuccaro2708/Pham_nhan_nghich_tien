@@ -179,3 +179,7 @@ Sửa so với Phase 1: `MAX_AMOUNT` 1e7 → 1e15 (mục "Quy tắc bổ sung" �
 - `data/research/*.json`: `{id, name_key, desc_key, technique, variant, costs{}, chance (0,1], pity_failures ≥ 0, on_fail_refund [0,1], on_fail_wounds ≥ 0, age_cost_years ≥ 0, visible_when, requirements}`. `variant` phải là công pháp `role: main` có `variant_of == technique`.
 - Technique thêm `variant_of` (id công pháp khác).
 - Save v9: `research_failures` = `{route_id: int ≥ 0}`. Lý do từ chối: `unknown_route`, `already_done`.
+
+## V5 — hệ quả story (không đổi schema)
+
+Không có trường mới: dùng `text_variants`, `later_hint_key`, `trigger` sẵn có. Node `ch6_rock_echo` mở bằng `flag_is black_rock_cleared`; lựa chọn riêng của từng nhánh khóa bằng `requirements: flag_is qi_source`.
