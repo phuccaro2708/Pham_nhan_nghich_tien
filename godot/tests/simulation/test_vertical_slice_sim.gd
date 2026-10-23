@@ -37,3 +37,20 @@ func test_every_main_technique_reaches_truc_co_alive() -> void:
 func test_missing_rare_resource_does_not_block_the_goal() -> void:
 	for main in MAINS:
 		assert_eq(_play(main, true).realm_id, "truc_co_so", main)
+
+
+func test_exploring_bot_prepares_cave_researches_and_reaches_goal() -> void:
+	var sim := BalanceSimulator.new(TestHelpers.real_registry())
+	for main in MAINS:
+		var plain: Dictionary = sim.run("optimizer", 1, main, false)
+		var explored: Dictionary = sim.run("optimizer", 1, main, true)
+		assert_true(plain["reached"] and explored["reached"], main)
+		assert_eq(plain["actual_main"], main)
+		assert_eq(explored["actual_main"], main)
+		assert_eq(plain["dungeon_attempts"], 0, main)
+		assert_true(explored["cave_cleared"], main)
+		assert_gt(explored["dungeon_attempts"], 0, main)
+		assert_gt(explored["research_attempts"], 0, main)
+		assert_true(explored["variant"], main)
+		assert_true(str(explored["echo"]).begins_with("echo_"), main)
+		assert_eq(explored["wounds_at_breakthrough"], 0, main)

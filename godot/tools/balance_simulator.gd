@@ -28,7 +28,7 @@ static func _load_registry() -> ContentRegistry:
 
 
 ## Plays one life. Returns a plain Dictionary (see _result).
-func run(strategy: String, seed_value: int) -> Dictionary:
+func run(strategy: String, seed_value: int, main: String = "", explore: bool = false) -> Dictionary:
 	var act := ActionSystem.new(registry)
 	var s := GameState.new_game(seed_value)
 	for id in registry.resources:
@@ -37,6 +37,7 @@ func run(strategy: String, seed_value: int) -> Dictionary:
 	var m := {
 		"active_ticks": 0, "offline_ticks": 0, "idle_ticks": 0, "by_action": {}, "milestones": {},
 		"failed_breakthroughs": 0, "burned": {}, "decisions": 0, "blocked": {}, "stuck": false,
+		"dungeon_attempts": 0, "research_attempts": 0, "wounds_at_breakthrough": -1,
 	}
 	act.realms.breakthrough_resolved.connect(func(ok: bool, _from: String, _to: String) -> void:
 		if ok:
@@ -52,8 +53,19 @@ func run(strategy: String, seed_value: int) -> Dictionary:
 		m["decisions"] += 1
 		_mark(m, act, s)
 		var before_tick: int = s.game_time_ticks
-		resolve_story(act, s)
-		var id: String = _choose(act, s, m)
+		resolve_story(act, s, main)
+		if main != "" and s.techniques.has(main) and s.main_technique != main:
+			act.set_main_technique(s, main)
+		if explore and s.knowledge.has("flaw_dan_khi") and not s.techniques.has("dan_khi_on_dinh") and s.resources.get("technique_fragment", 0.0) >= 3.0 and s.resources.get("silver", 0.0) >= 20.0:
+			m["research_attempts"] += 1
+			act.research(s, "fix_stable")
+		if explore and _prepare_exploration(act, s, m):
+			continue
+		var id: String = policy(act, s, main, explore)
+		if id == "breakthrough" and s.realm_id == "luyen_khi_9":
+			m["wounds_at_breakthrough"] = s.wounds
+			if not m.has("first_chance"):
+				m["first_chance"] = act.realms.success_chance(s)
 		if id != "" and (s.active_action.is_empty() or str(s.active_action["id"]) != id):
 			var bt: bool = registry.actions[id].get("breakthrough", false)
 			m["_cost"] = act.realms.breakthrough_costs(s).duplicate() if bt else {}
@@ -61,6 +73,7 @@ func run(strategy: String, seed_value: int) -> Dictionary:
 			var r: Dictionary = act.start_action(s, id)
 			if not r["ok"] and s.active_action.is_empty():
 				m["stuck"] = true
+				m["stuck_reason"] = "%s: %s" % [id, r["reason"]]
 				break
 		var step: int = _step_ticks(strategy, act, s)
 		if step <= 0:
@@ -74,7 +87,45 @@ func run(strategy: String, seed_value: int) -> Dictionary:
 			session_ticks = 0
 			_go_away(m, act, s)
 	_mark(m, act, s)
-	return _result(strategy, seed_value, s, m)
+	var result: Dictionary = _result(strategy, seed_value, s, m)
+	result.merge({"main": main, "explore": explore, "dungeon_attempts": m["dungeon_attempts"],
+		"research_attempts": m["research_attempts"], "wounds_at_breakthrough": m["wounds_at_breakthrough"],
+		"first_chance": m.get("first_chance", -1.0),
+		"actual_main": s.main_technique, "techniques": s.techniques.duplicate(),
+		"cave_cleared": s.dungeon_clears.has("black_rock_cave"),
+		"echo": s.story["done"].get("ch6_rock_echo", ""), "variant": s.techniques.has("dan_khi_on_dinh")})
+	return result
+
+
+func _prepare_exploration(act: ActionSystem, s: GameState, m: Dictionary) -> bool:
+	if not s.combat.is_empty():
+		if act.combat.is_paused(s):
+			act.continue_run(s)
+		else:
+			_advance(m, act, s, 1)
+		return true
+	if s.wounds > 0:
+		return false  # policy heals before the next expedition
+	if act.registry.realm_index(s.realm_id) < act.registry.realm_index("luyen_khi_5"):
+		return false
+	var dungeon: String = "bamboo_forest" if not s.dungeon_clears.has("bamboo_forest") else "black_rock_cave"
+	if dungeon == "black_rock_cave" and not _needs_cave(s):
+		return false
+	if not act.combat.check_enter(s, dungeon)["ok"]:
+		return false
+	if dungeon == "black_rock_cave" and s.resources.get("healing_pill", 0.0) < 5.0:
+		return false  # policy gathers herbs and brews five pills
+	if act.enter_dungeon(s, dungeon, {"pills": 5 if dungeon == "black_rock_cave" else 0})["ok"]:
+		m["dungeon_attempts"] += 1
+	return true
+
+
+static func _needs_cave(s: GameState) -> bool:
+	if not s.dungeon_clears.has("black_rock_cave"):
+		return true
+	if s.techniques.has("dan_khi_on_dinh"):
+		return false
+	return s.resources.get("technique_fragment", 0.0) < (3.0 if s.knowledge.has("flaw_dan_khi") else 2.0)
 
 
 func _mark(m: Dictionary, act: ActionSystem, s: GameState) -> void:
@@ -126,17 +177,23 @@ func _go_away(m: Dictionary, act: ActionSystem, s: GameState) -> void:
 	m["offline_ticks"] += s.game_time_ticks - before
 
 
-## Greedy needs-driven policy shared by all strategies; strategies differ in latency and offline use.
-## Static so the GUT progression test plays with exactly the policy the balance report measures.
-func _choose(act: ActionSystem, s: GameState, _m: Dictionary) -> String:
-	return policy(act, s)
-
-
 ## Picks the first affordable choice of every pending story event (a deliberately uncreative player).
-static func resolve_story(act: ActionSystem, s: GameState) -> void:
+static func resolve_story(act: ActionSystem, s: GameState, main: String = "") -> void:
 	while act.story.pending(s) != "":
 		var picked: bool = false
-		for c in act.registry.story[act.story.pending(s)]["choices"]:
+		var node: String = act.story.pending(s)
+		var choices: Array = act.registry.story[node]["choices"].duplicate()
+		var preferred: String = ""
+		if main == "ngu_hanh_dan_khi" and node == "ch1_mountain_incident":
+			preferred = "watch_hunter"
+		elif main == "ngu_hanh_dan_khi" and node == "ch1_return":
+			preferred = "trace_hunter"
+		for c in choices:
+			if c["id"] == preferred:
+				choices.erase(c)
+				choices.push_front(c)
+				break
+		for c in choices:
 			if act.story.choose(s, c["id"])["ok"]:
 				picked = true
 				break
@@ -144,7 +201,24 @@ static func resolve_story(act: ActionSystem, s: GameState) -> void:
 			return
 
 
-static func policy(act: ActionSystem, s: GameState) -> String:
+static func policy(act: ActionSystem, s: GameState, main: String = "", explore: bool = false) -> String:
+	if s.wounds > 0:
+		return "rest_heal"
+	if main != "" and s.techniques.has("dan_khi_nhap_mon") and not s.techniques.has(main) and act.registry.realm_index(s.realm_id) >= act.registry.realm_index("luyen_khi_2"):
+		var learn: String = "learn_" + main
+		if act.check_can_start(s, learn)["ok"]:
+			return learn
+		if s.resources.get("herb", 0.0) < act.registry.actions[learn].get("costs", {}).get("herb", 0):
+			return "gather_herbs"
+		if s.resources.get("silver", 0.0) < act.registry.actions[learn].get("costs", {}).get("silver", 0):
+			return _earn_silver(act, s)
+	if explore and s.dungeon_clears.has("bamboo_forest") and act.registry.realm_index(s.realm_id) >= act.registry.realm_index("luyen_khi_5") and _needs_cave(s):
+		if s.resources.get("healing_pill", 0.0) < 5.0:
+			return "gather_herbs" if s.resources.get("herb", 0.0) < 2.0 else "brew_pill"
+	if explore and s.dungeon_clears.has("black_rock_cave") and not s.knowledge.has("flaw_dan_khi") and act.check_can_start(s, "study_flaw")["ok"]:
+		return "study_flaw"
+	if explore and s.knowledge.has("flaw_dan_khi") and not s.techniques.has("dan_khi_on_dinh") and s.resources.get("technique_fragment", 0.0) >= 3.0 and s.resources.get("silver", 0.0) < 20.0:
+		return _earn_silver(act, s)
 	if act.check_can_start(s, "breakthrough")["ok"]:
 		return "breakthrough"
 	if s.flags.get("meridian_damaged", false):
@@ -190,6 +264,7 @@ func _result(strategy: String, seed_value: int, s: GameState, m: Dictionary) -> 
 		"failed_breakthroughs": m["failed_breakthroughs"], "milestones": m["milestones"],
 		"seconds_by_action": by, "burned": m["burned"], "stop_reasons": m["blocked"], "stuck": m["stuck"],
 		"decisions": m["decisions"], "upgrades": s.upgrades.duplicate(),
+		"stuck_reason": m.get("stuck_reason", ""),
 	}
 
 
