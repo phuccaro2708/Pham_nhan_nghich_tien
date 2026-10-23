@@ -7,6 +7,9 @@ extends RefCounted
 
 const EFFECT_TYPES: Array = ["add_resource", "set_flag", "add_upgrade_level", "advance_realm", "add_relation", "learn_technique", "learn_knowledge", "promote_realm", "set_checkpoint", "rewind"]
 
+## Emitted just before a rewind wipes the world, so a dungeon run can end through its normal path.
+signal world_rewinding(state: GameState)
+
 var registry: ContentRegistry
 var resource_system: ResourceSystem
 var realm_system: RealmSystem
@@ -48,6 +51,7 @@ func apply(state: GameState, effects: Array) -> void:
 				state.checkpoint = state.world_snapshot()
 			"rewind":
 				if not state.checkpoint.is_empty():
+					world_rewinding.emit(state)
 					state.restore_world(state.checkpoint)
 					state.checkpoint = {}
 					state.loop += 1

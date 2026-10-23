@@ -121,7 +121,7 @@ func test_save_validation_rejects_bad_combat() -> void:
 		d["combat"].merge(mut, true)
 		assert_false(sm.validate_state(d, reg).is_empty(), str(mut))
 	var d2: Dictionary = good.duplicate(true)
-	d2["dungeon_clears"] = {"nope": 1}
+	d2["dungeon_clears"] = {"nope": -1}
 	assert_false(sm.validate_state(d2, reg).is_empty())
 	sm.free()
 
@@ -147,3 +147,51 @@ func test_offline_drops_a_run_without_cost() -> void:
 	assert_true(s.combat.is_empty())
 	assert_eq(s.age_years, age)
 	assert_false(s.dungeon_clears.has(DUNGEON))
+
+
+func test_stats_scale_with_realm_and_technique_bonus() -> void:
+	var base_hp: int = act.combat.player_stats(s)["hp"]
+	reg.techniques["t_test"] = {"id": "t_test", "bonuses": [{"stat": "combat.atk", "value": 10}, {"stat": "combat.spd", "value": -1000}]}
+	var atk0: float = act.combat.player_stats(s)["atk"]
+	s.techniques.append("t_test")
+	var ps: Dictionary = act.combat.player_stats(s)
+	assert_eq(ps["atk"], atk0 + 10.0)
+	assert_true(ps["spd"] > 0.0, "a negative speed bonus is clamped")
+	assert_true(act.combat.interval_ticks(ps["spd"]) >= 1)
+	s.realm_id = reg.realm_order[1]
+	assert_true(act.combat.player_stats(s)["hp"] > base_hp, "a higher realm stage grows hp")
+
+
+func test_entering_stops_a_running_automation_queue() -> void:
+	s.mastery["gather_wood"] = {"level": 3, "xp": 0.0, "claimed": []}
+	s.story["done"]["ch1_morning_smoke"] = "ignore"
+	assert_true(act.automation.set_slots(s, [{"action": "gather_wood", "repeat": 0, "on_block": "skip"}])["ok"])
+	act.automation.start(s)
+	act.advance(s, 2)
+	assert_true(act.enter_dungeon(s, DUNGEON)["ok"])
+	act.advance(s, 3)
+	assert_true(s.active_action.is_empty(), "the queue does not start actions during a run")
+	assert_false(s.combat.is_empty())
+
+
+func test_rewind_ends_the_run_through_the_normal_path() -> void:
+	s.checkpoint = s.world_snapshot()
+	act.enter_dungeon(s, DUNGEON)
+	var res: Array = []
+	act.combat.run_ended.connect(func(_d: String, r: String) -> void: res.append(r))
+	act.effects.apply(s, [{"type": "rewind"}])
+	assert_true(s.combat.is_empty())
+	assert_eq(res, ["aborted"])
+
+
+func test_player_hp_above_maximum_is_clamped_and_unknown_dungeon_clears_load() -> void:
+	act.enter_dungeon(s, DUNGEON)
+	s.combat["player_hp"] = 999999
+	s.combat["enemy_cd"] = 1
+	act.advance(s, 1)
+	assert_true(s.combat.is_empty() or int(s.combat["player_hp"]) <= act.combat.player_stats(s)["hp"])
+	var sm: Node = load("res://autoload/save_manager.gd").new()
+	s.combat = {}
+	s.dungeon_clears["gone_dungeon"] = 2
+	assert_eq(sm.validate_state(s.to_dict(), reg), [])
+	sm.free()

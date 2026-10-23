@@ -129,9 +129,13 @@ func enter_dungeon(id: String) -> Dictionary:
 	return actions.enter_dungeon(state, id)
 
 
+func retreat() -> void:
+	actions.combat.retreat(state)
+
+
 ## Stop leaves a dungeon run too (the time spent is still paid in age).
 func stop_action() -> void:
-	actions.combat.retreat(state)
+	retreat()
 	actions.stop_action(state)
 
 

@@ -171,7 +171,7 @@ func _build_dungeon(col: VBoxContainer) -> void:
 		n.show_percentage = false
 	var retreat := Button.new()
 	retreat.text = reg.text("ui.dungeon.retreat")
-	retreat.pressed.connect(func() -> void: GameController.actions.combat.retreat(GameController.state))
+	retreat.pressed.connect(func() -> void: GameController.retreat())
 	for n in [_run_enemy, _run_enemy_bar, _run_you, _run_you_bar, retreat]:
 		_run_box.add_child(n)
 

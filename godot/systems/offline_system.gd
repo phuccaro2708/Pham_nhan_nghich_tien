@@ -25,7 +25,6 @@ static func apply(state: GameState, actions: ActionSystem, elapsed_seconds: floa
 	var on_stop := func(id: String, reason: String) -> void: stop[0] = "%s:%s" % [id, reason]
 	actions.action_stopped.connect(on_stop)
 
-	actions.combat.abort(state)  # a dungeon run is never decided offline
 	if not state.active_action.is_empty():
 		var def: Dictionary = actions.registry.actions[state.active_action["id"]]
 		if not def.get("offline_allowed", false):

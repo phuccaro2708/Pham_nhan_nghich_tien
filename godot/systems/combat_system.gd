@@ -39,7 +39,7 @@ func player_stats(state: GameState) -> Dictionary:
 	for k in ["hp", "atk", "def"]:
 		out[k] = (float(base[k]) + effects.stat_bonus(state, "combat." + k)) * grow
 	out["hp"] = maxi(int(round(out["hp"])), 1)
-	out["spd"] = float(base["spd"]) + effects.stat_bonus(state, "combat.spd")
+	out["spd"] = maxf(float(base["spd"]) + effects.stat_bonus(state, "combat.spd"), 0.1)  # a negative bonus must not stall or divide by zero
 	return out
 
 
@@ -78,9 +78,10 @@ func step(state: GameState) -> bool:
 	var c: Dictionary = state.combat
 	var def: Dictionary = registry.dungeons[c["dungeon"]]
 	var enemy: Dictionary = registry.enemies[def["enemies"][int(c["index"])]]
-	var ps: Dictionary = player_stats(state)
+	var ps: Dictionary = {}  # stats only change between runs; computed when somebody actually swings
 	c["player_cd"] = int(c["player_cd"]) - 1
 	if int(c["player_cd"]) <= 0:
+		ps = player_stats(state)
 		c["player_cd"] = interval_ticks(ps["spd"])
 		c["enemy_hp"] = maxi(int(c["enemy_hp"]) - _damage(state, ps, enemy), 0)
 		if int(c["enemy_hp"]) <= 0:
@@ -88,7 +89,10 @@ func step(state: GameState) -> bool:
 			return true
 	c["enemy_cd"] = int(c["enemy_cd"]) - 1
 	if int(c["enemy_cd"]) <= 0:
+		if ps.is_empty():
+			ps = player_stats(state)
 		c["enemy_cd"] = interval_ticks(float(enemy["spd"]))
+		c["player_hp"] = mini(int(c["player_hp"]), ps["hp"])  # a save can never carry more than the maximum
 		c["player_hp"] = maxi(int(c["player_hp"]) - _damage(state, enemy, ps), 0)
 		if int(c["player_hp"]) <= 0:
 			_end(state, "defeated")

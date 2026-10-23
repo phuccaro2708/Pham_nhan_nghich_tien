@@ -85,6 +85,8 @@ func _read_envelope(path: String, registry: ContentRegistry) -> Dictionary:
 	if int(migrated["content_version"]) > registry.content_version:
 		return {"error": "save was made with newer content (%d)" % int(migrated["content_version"])}
 	migrated = ContentMigration.apply(migrated, registry)
+	if not (migrated.get("combat", {}) as Dictionary).is_empty() and not registry.has_dungeon(migrated["combat"].get("dungeon")):
+		migrated["combat"] = {}  # a run in a dungeon the content no longer has: dropped, it paid nothing yet
 	var errs: Array = validate_state(migrated, registry)
 	if not errs.is_empty():
 		return {"error": "invalid state: %s" % [errs]}
@@ -203,7 +205,7 @@ func validate_state(d: Dictionary, registry: ContentRegistry) -> Array:
 
 func _validate_combat(d: Dictionary, registry: ContentRegistry, errs: Array) -> void:
 	for id in d["dungeon_clears"]:
-		if not registry.has_dungeon(id) or not GameState.is_int(d["dungeon_clears"][id]) or int(d["dungeon_clears"][id]) < 0:
+		if not GameState.is_int(d["dungeon_clears"][id]) or int(d["dungeon_clears"][id]) < 0:
 			errs.append("bad dungeon_clears %s" % id)
 	var c: Dictionary = d["combat"]
 	if c.is_empty():

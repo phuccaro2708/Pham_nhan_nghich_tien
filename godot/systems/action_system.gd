@@ -35,6 +35,7 @@ func _init(p_registry: ContentRegistry) -> void:
 	story = StorySystem.new(registry, conditions, effects, resources)
 	automation = AutomationQueue.new(self)
 	combat = CombatSystem.new(registry, conditions, effects, lifespan)
+	effects.world_rewinding.connect(combat.abort)
 
 
 # ---------- queries ----------
