@@ -585,6 +585,28 @@ Quy tắc chung mọi giai đoạn:
 - **Thám hiểm:** có chuẩn bị (công pháp + vật tư), người chơi quyết định đi sâu hay quay về sau mỗi tầng; **không có ngưỡng rút lui tự động** (nút rút lui thủ công giữ nguyên).
 - Chi tiết backlog theo tính năng: `docs/MVP_BACKLOG.md`.
 
+### XIV.2. Giai đoạn 2 — Kim Đan → Hóa Thần (đề xuất, chờ duyệt)
+
+> **Lý do:** GĐ1 chỉ chứng minh vòng "chuẩn bị → thử → hậu quả" ở một đại cảnh giới. GĐ2 phải đổi *bài toán* ở mỗi đại cảnh giới (không chỉ nhân số liệu), và thêm vòng đời nhiều kiếp (truyền thừa) vì thọ nguyên 500–2.000 năm khiến một đời không đủ cho cả chặng. Mọi hệ thống mới phải chạm ≥ 2 hệ thống đã có (nguyên tắc 4).
+
+**Bài toán riêng từng cảnh giới**
+
+| Cảnh giới | Bài toán | Hệ thống chạm tới |
+|---|---|---|
+| Kim Đan | Ổn định công pháp: Kim Đan kết từ công pháp chủ tu, phẩm chất (`dan_grade`) phụ thuộc độ thuần của công pháp (biến thể Tàn Kinh đã sửa, mastery) và thương tích | công pháp chủ tu, Tàn Kinh, thương tích, đột phá |
+| Nguyên Anh | Tri thức + quan hệ: nguyên thần chỉ thành khi đủ `knowledge` nhóm đạo lý và các quan hệ then chốt không đứt; phân thân là slot hành động thứ hai (hậu MVP, chỉ mở ở GĐ2 cuối) | knowledge, relations, automation |
+| Hóa Thần | Vượt giới: chọn một đạo tắc (3 hướng), cái giá là đóng các hướng còn lại trong kiếp này | story, công pháp, truyền thừa |
+
+**Truyền thừa hậu duệ (GDD §X được kích hoạt ở GĐ2)**
+
+- Tọa hóa khi hết thọ nguyên không còn là `deceased` cụt: người chơi chọn *hậu duệ* (nếu có) hoặc kết thúc kiếp. Hậu duệ kế thừa `story.done`, `knowledge`, một phần `technique` (ký ức công pháp) và Đạo Quả; tài nguyên thường, quan hệ trong kiếp, tu vi, tiến độ luyện thể làm mới (đúng bảng §X).
+- Đạo Quả dùng công thức §X, hệ số lấy từ simulation, không đoán.
+- Không softlock: kiếp mới luôn có đường về cảnh giới đã đạt trong thời gian chơi hợp lý (tính bằng simulation).
+
+**Quy tắc giữ từ GĐ1:** bước đột phá lớn do người chơi ra lệnh; chỉ chuẩn bị mới tự động; thám hiểm không rút lui tự động; mọi chuỗi qua `name_key` vi + en; mỗi version tự nâng `schema_version` nếu đụng state, kèm migration.
+
+**Cổng GĐ2 → GĐ3:** bot 3 hướng đạo tắc tới `hoa_than_so` (kể cả qua một lần truyền thừa), báo cáo cân bằng, Codex review độc lập.
+
 ### Ngoài MVP (GĐ1)
 
 Tông môn toàn diện, đa nhân vật, PvP, cloud sync, đấu giá, hàng trăm công pháp, tự sáng tạo công pháp phức tạp, luân hồi hoàn chỉnh, cảnh giới từ Kim Đan trở lên.

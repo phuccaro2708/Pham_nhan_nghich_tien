@@ -12,7 +12,13 @@ Nguồn: GDD §XIV.1. Mỗi version nhỏ: docs → test → GUT xanh → báo c
 | V5 | Story hệ quả về sau | GĐ1 | 9 | Xong (đã duyệt) |
 | V6 | Đột phá Trúc Cơ + cổng lát cắt (3 hướng) | GĐ1 | 9 | Xong (đã duyệt) |
 | V7 | Chống softlock chiến dịch dài | GĐ1 | 9 | Xong (đã duyệt) |
-| GĐ2 | Kim Đan → Hóa Thần, truyền thừa hậu duệ, Đạo Quả | GĐ2 | — | Backlog |
+| V8 | Nền GĐ2: đại cảnh giới Kim Đan–Hóa Thần trong `realms.json`, thọ nguyên, validator; chưa có nội dung chơi | GĐ2 | 10 | Đề xuất |
+| V9 | Kim Đan: ổn định công pháp, `dan_grade` từ công pháp + mastery + thương tích | GĐ2 | 10 | Đề xuất |
+| V10 | Truyền thừa hậu duệ + Đạo Quả (thay `deceased` cụt) | GĐ2 | 11 | Đề xuất |
+| V11 | Nguyên Anh: tri thức + quan hệ, nguyên thần | GĐ2 | 12 | Đề xuất |
+| V12 | Khu thám hiểm + biến thể Tàn Kinh tầng Kim Đan/Nguyên Anh (dùng lại V3–V4) | GĐ2 | 12 | Đề xuất |
+| V13 | Hóa Thần: chọn đạo tắc, đóng hướng còn lại | GĐ2 | 13 | Đề xuất |
+| V14 | Cổng GĐ2: bot 3 hướng tới Hóa Thần (qua một truyền thừa), softlock, cân bằng | GĐ2 | 13 | Đề xuất |
 | GĐ3 | Độ Kiếp → Phi Thăng | GĐ3 | — | Backlog |
 
 Cổng sang GĐ2: bot đi 3 hướng công pháp tới `truc_co_so` còn sống (cả khi thiếu một tài nguyên hiếm), báo cáo cân bằng, Codex review độc lập.
