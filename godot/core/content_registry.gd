@@ -233,6 +233,7 @@ func validate() -> void:
 	_validate_story()
 	_validate_path()
 	_validate_research()
+	_validate_softlock()
 	_validate_combat()
 	_validate_migrations()
 	_validate_automation_config()
@@ -479,6 +480,51 @@ func _validate_techniques() -> void:
 					errors.append("%s: trait '%s' must be one of %s with an integer >= 0" % [p, k, TECHNIQUE_TRAITS])
 		if typeof(d.get("element", "")) != TYPE_STRING or typeof(d.get("grade", "")) != TYPE_STRING:
 			errors.append("%s: element and grade must be strings" % p)
+
+
+## Softlock guard (GDD 11.4, V7): every `required_for_main` resource has a source that needs nothing but renewable resources,
+## and each failure state (damaged meridian, wounds) has a recovery action that needs only renewable resources.
+## Action requirements are not simulated: a source behind an unreachable condition is still the designer's call.
+func _validate_softlock() -> void:
+	var renewable: Dictionary = {}
+	var changed: bool = true
+	while changed:
+		changed = false
+		for aid in actions:
+			if not _all_renewable(actions[aid], renewable):
+				continue
+			for e in actions[aid].get("effects", []):
+				if e.get("type") == "add_resource" and not renewable.has(e.get("resource")):
+					renewable[e["resource"]] = true
+					changed = true
+	for rid in resources:
+		if resources[rid].get("required_for_main", false) and not renewable.has(rid):
+			errors.append("resource '%s': required_for_main but no action renews it without spending other non-renewable resources" % rid)
+	var cures: Array = []
+	for rid in realm_order:
+		var flag: Variant = realms[rid].get("breakthrough", {}).get("on_fail_flag")
+		if flag != null:
+			cures.append({"type": "set_flag", "flag": flag, "value": false})
+	if not dungeons.is_empty():
+		cures.append({"type": "heal_wounds"})
+	for cure in cures:
+		var found: bool = false
+		for aid in actions:
+			for e in actions[aid].get("effects", []):
+				if e.get("type") == cure["type"] and (cure["type"] == "heal_wounds" or (e.get("flag") == cure["flag"] and e.get("value") == false)) and _all_renewable(actions[aid], renewable):
+					found = true
+		if not found:
+			errors.append("softlock: no renewable action recovers from %s" % JSON.stringify(cure))
+
+
+func _all_renewable(action: Dictionary, renewable: Dictionary) -> bool:
+	var costs: Variant = action.get("costs", {})
+	if typeof(costs) != TYPE_DICTIONARY:
+		return false
+	for rid in costs:
+		if not renewable.has(rid):
+			return false
+	return true
 
 
 func _validate_research() -> void:

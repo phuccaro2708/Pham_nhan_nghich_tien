@@ -729,3 +729,7 @@ Lý do: lựa chọn ở chương I chỉ có nghĩa nếu nhiều giờ chơi s
 ### 6.6. Đột phá Trúc Cơ có số hạng thật (V6, GĐ1)
 
 Lý do: `chance.terms` để trống khiến P không phản ánh cách chơi. Nay P gồm nền tảng (mastery), thương tích (âm), Đạo Tâm (lựa chọn story) và `insight_modifier` công pháp; trần giảm 0,95 → 0,80 theo §6.5. Đột phá vẫn chỉ do người chơi ra lệnh (automation và offline không chạy), pity sau 3 lần hỏng giữ nguyên.
+
+### 11.5. Kiểm tĩnh chống softlock chiến dịch dài (V7, GĐ1)
+
+Lý do: §11.4 mới bảo vệ từng node story; chiến dịch dài còn cần bảo đảm tài nguyên bắt buộc không cạn vĩnh viễn. Resource đánh dấu `required_for_main` phải có ít nhất một action sinh ra nó mà chi phí chỉ gồm tài nguyên tái tạo được; mỗi trạng thái thất bại (`on_fail_flag` của đột phá, thương tích khi có hang) phải có action phục hồi cũng chỉ tốn tài nguyên tái tạo được. ContentRegistry báo lỗi khi vi phạm. Hết thọ nguyên giữ nguyên story và tri thức (truyền thừa dời sang GĐ2).

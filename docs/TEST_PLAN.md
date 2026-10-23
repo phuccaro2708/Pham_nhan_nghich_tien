@@ -60,3 +60,7 @@ Node chờ thông hang mới mở; văn bản khác nhau cho từng nguồn phá
 ## V6 — `tests/unit/test_breakthrough_chance.gd`, `tests/simulation/test_vertical_slice_sim.gd`
 
 Số hạng có dữ liệu, P trong [min, max ≤ 0,8]; P phản ánh mastery/thương tích/Đạo Tâm/công pháp; kẹp sàn trần; automation và offline không đột phá; pity sau 3 lần hỏng; số hạng sai bị validate chặn. Sim: 3 công pháp chủ tu × 3 seed tới Trúc Cơ còn sống, cả khi thiếu mảnh công pháp.
+
+## V7 — `tests/unit/test_softlock.gd`
+
+Tài nguyên bắt buộc có nguồn tái tạo; validator bắt resource mất nguồn, nguồn tự phụ thuộc, resource hiếm bị đánh dấu nhầm; mọi thất bại có hành động phục hồi; chuỗi thất bại đột phá + thương tích tối đa + hết bạc vẫn thoát được; hết thọ nguyên giữ story + tri thức qua save.

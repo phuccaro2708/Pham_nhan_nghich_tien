@@ -187,3 +187,7 @@ Không có trường mới: dùng `text_variants`, `later_hint_key`, `trigger` s
 ## V6 — số hạng đột phá (không đổi schema)
 
 `chance.terms[]` nhận thêm dạng `{"when": <condition>, "weight": n}`: cộng `weight` khi điều kiện đúng (dùng cho thương tích, mastery, lựa chọn story). Dạng cũ `{resource, weight, max}` giữ nguyên; không trộn hai dạng trong một số hạng.
+
+## V7 — `required_for_main` (không đổi schema)
+
+Resource có thể khai `"required_for_main": true`. Validator kiểm tĩnh: có action sinh ra nó mà mọi chi phí đều tái tạo được, và mỗi `on_fail_flag`/thương tích có action phục hồi tương tự. Điều kiện (`requirements`) của action không được mô phỏng.

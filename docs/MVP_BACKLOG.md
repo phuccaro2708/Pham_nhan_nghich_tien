@@ -11,7 +11,7 @@ Nguồn: GDD §XIV.1. Mỗi version nhỏ: docs → test → GUT xanh → báo c
 | V4 | Nghịch Mệnh Tàn Kinh | GĐ1 | 9 | Xong (chờ duyệt) |
 | V5 | Story hệ quả về sau | GĐ1 | 9 | Xong (chờ duyệt) |
 | V6 | Đột phá Trúc Cơ + cổng lát cắt (3 hướng) | GĐ1 | 9 | Xong (chờ duyệt) |
-| V7 | Chống softlock chiến dịch dài | GĐ1 | 9 | Chờ |
+| V7 | Chống softlock chiến dịch dài | GĐ1 | 9 | Xong (chờ duyệt) |
 | GĐ2 | Kim Đan → Hóa Thần, truyền thừa hậu duệ, Đạo Quả | GĐ2 | — | Backlog |
 | GĐ3 | Độ Kiếp → Phi Thăng | GĐ3 | — | Backlog |
 
