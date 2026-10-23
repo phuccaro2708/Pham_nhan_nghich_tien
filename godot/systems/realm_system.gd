@@ -51,6 +51,25 @@ func success_chance(state: GameState) -> float:
 	return clampf(p, float(ch["min"]), float(ch["max"]))
 
 
+## V9: Σ weights of the `core.terms` that hold now (technique purity, mastery, wounds, Đạo Tâm).
+func core_score(state: GameState) -> float:
+	var score: float = 0.0
+	for t in registry.core_def().get("terms", []):
+		if _conditions.is_met(t["when"], state):
+			score += float(t["weight"])
+	return score
+
+
+## Highest grade whose min_score the current score reaches ("" when the game has no core).
+func core_grade(state: GameState) -> String:
+	var score: float = core_score(state)
+	var out: String = ""
+	for g in registry.core_def().get("grades", []):
+		if score >= float(g["min_score"]):
+			out = g["id"]
+	return out
+
+
 ## After `pity_failures` failures the ritual is guaranteed (GDD §6.5).
 func pity_reached(state: GameState) -> bool:
 	var pity: int = int(breakthrough_def(state).get("chance", {}).get("pity_failures", 0))
@@ -81,6 +100,8 @@ func attempt(state: GameState) -> Dictionary:
 	var p: float = success_chance(state)
 	var ok: bool = p >= 1.0 or pity_reached(state) or SimRng.next_float(state) < p
 	if ok:
+		if nxt.has("core"):
+			state.dan_grade = core_grade(state)
 		state.realm_id = nxt["id"]
 		state.breakthrough_failures = 0
 		state.life["warned"] = false

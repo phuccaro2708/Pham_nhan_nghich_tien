@@ -244,15 +244,7 @@
    "costs": {
     "cultivation": 11020
    },
-   "requirements": {
-    "all_of": [
-     {
-      "type": "flag_is",
-      "flag": "phase2_open",
-      "value": true
-     }
-    ]
-   },
+   "requirements": {},
    "chance": {
     "base": 0.6,
     "min": 0.4,
@@ -309,13 +301,25 @@
    "costs": {
     "cultivation": 64269
    },
-   "requirements": {},
+   "requirements": {
+    "all_of": [
+     {
+      "type": "flag_is",
+      "flag": "meridian_damaged",
+      "value": false
+     }
+    ]
+   },
    "chance": {
     "base": 0.6,
     "min": 0.4,
     "max": 0.8,
     "pity_failures": 3,
     "terms": []
+   },
+   "on_fail_flag": "meridian_damaged",
+   "on_fail_refund": {
+    "cultivation": 0.8
    }
   }
  },
@@ -334,8 +338,193 @@
     "min": 0.4,
     "max": 0.8,
     "pity_failures": 3,
-    "terms": []
+    "terms": [
+     {
+      "when": {
+       "type": "dan_grade_at_least",
+       "grade": "trung_pham"
+      },
+      "weight": 0.05
+     },
+     {
+      "when": {
+       "type": "dan_grade_at_least",
+       "grade": "thuong_pham"
+      },
+      "weight": 0.05
+     },
+     {
+      "when": {
+       "type": "dan_grade_at_least",
+       "grade": "cuc_pham"
+      },
+      "weight": 0.05
+     }
+    ]
    }
+  },
+  "core": {
+   "grades": [
+    {
+     "id": "ha_pham",
+     "name_key": "dan.ha_pham",
+     "min_score": 0,
+     "bonuses": [
+      {
+       "stat": "speed.absorb_qi",
+       "value": 0.1
+      },
+      {
+       "stat": "combat.hp",
+       "value": 10
+      }
+     ]
+    },
+    {
+     "id": "trung_pham",
+     "name_key": "dan.trung_pham",
+     "min_score": 2,
+     "bonuses": [
+      {
+       "stat": "speed.absorb_qi",
+       "value": 0.2
+      },
+      {
+       "stat": "combat.hp",
+       "value": 25
+      }
+     ]
+    },
+    {
+     "id": "thuong_pham",
+     "name_key": "dan.thuong_pham",
+     "min_score": 4,
+     "bonuses": [
+      {
+       "stat": "speed.absorb_qi",
+       "value": 0.3
+      },
+      {
+       "stat": "combat.hp",
+       "value": 45
+      }
+     ]
+    },
+    {
+     "id": "cuc_pham",
+     "name_key": "dan.cuc_pham",
+     "min_score": 5,
+     "bonuses": [
+      {
+       "stat": "speed.absorb_qi",
+       "value": 0.45
+      },
+      {
+       "stat": "combat.hp",
+       "value": 70
+      }
+     ]
+    }
+   ],
+   "terms": [
+    {
+     "when": {
+      "any_of": [
+       {
+        "type": "main_technique_is",
+        "technique": "thanh_moc_duong_khi"
+       },
+       {
+        "type": "main_technique_is",
+        "technique": "huyet_luyen_than_kinh"
+       },
+       {
+        "type": "main_technique_is",
+        "technique": "ngu_hanh_dan_khi"
+       }
+      ]
+     },
+     "weight": 1
+    },
+    {
+     "when": {
+      "type": "main_technique_is",
+      "technique": "dan_khi_cap_toc"
+     },
+     "weight": 1
+    },
+    {
+     "when": {
+      "type": "main_technique_is",
+      "technique": "dan_khi_on_dinh"
+     },
+     "weight": 2
+    },
+    {
+     "when": {
+      "type": "main_technique_is",
+      "technique": "dan_khi_nghich_kinh"
+     },
+     "weight": 2
+    },
+    {
+     "when": {
+      "type": "mastery_level_at_least",
+      "action": "absorb_qi",
+      "level": 10
+     },
+     "weight": 1
+    },
+    {
+     "when": {
+      "type": "mastery_level_at_least",
+      "action": "absorb_qi",
+      "level": 20
+     },
+     "weight": 1
+    },
+    {
+     "when": {
+      "type": "wounds_at_least",
+      "value": 1
+     },
+     "weight": -1
+    },
+    {
+     "when": {
+      "type": "wounds_at_least",
+      "value": 3
+     },
+     "weight": -1
+    },
+    {
+     "when": {
+      "any_of": [
+       {
+        "type": "choice_is",
+        "node": "ch6_rock_echo",
+        "choice": "echo_guided"
+       },
+       {
+        "type": "choice_is",
+        "node": "ch6_rock_echo",
+        "choice": "echo_evidence"
+       },
+       {
+        "type": "choice_is",
+        "node": "ch6_rock_echo",
+        "choice": "echo_relic"
+       },
+       {
+        "type": "choice_is",
+        "node": "ch6_rock_echo",
+        "choice": "echo_rogue"
+       }
+      ]
+     },
+     "weight": 1
+    }
+   ]
   }
  },
  {
@@ -353,7 +542,29 @@
     "min": 0.4,
     "max": 0.8,
     "pity_failures": 3,
-    "terms": []
+    "terms": [
+     {
+      "when": {
+       "type": "dan_grade_at_least",
+       "grade": "trung_pham"
+      },
+      "weight": 0.05
+     },
+     {
+      "when": {
+       "type": "dan_grade_at_least",
+       "grade": "thuong_pham"
+      },
+      "weight": 0.05
+     },
+     {
+      "when": {
+       "type": "dan_grade_at_least",
+       "grade": "cuc_pham"
+      },
+      "weight": 0.05
+     }
+    ]
    }
   }
  },
@@ -372,7 +583,29 @@
     "min": 0.4,
     "max": 0.8,
     "pity_failures": 3,
-    "terms": []
+    "terms": [
+     {
+      "when": {
+       "type": "dan_grade_at_least",
+       "grade": "trung_pham"
+      },
+      "weight": 0.05
+     },
+     {
+      "when": {
+       "type": "dan_grade_at_least",
+       "grade": "thuong_pham"
+      },
+      "weight": 0.05
+     },
+     {
+      "when": {
+       "type": "dan_grade_at_least",
+       "grade": "cuc_pham"
+      },
+      "weight": 0.05
+     }
+    ]
    }
   }
  },

@@ -187,7 +187,7 @@ func test_v8_save_migrates_to_v9() -> void:
 	old.erase("research_failures")
 	old["schema_version"] = 8
 	var m: Dictionary = sm.migrate(old)
-	assert_eq(m["schema_version"], 9)
+	assert_eq(m["schema_version"], GameState.SCHEMA_VERSION)
 	assert_eq(m["research_failures"], {})
 	assert_eq(sm.validate_state(m, reg), [])
 	sm.free()

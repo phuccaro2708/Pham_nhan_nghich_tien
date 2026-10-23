@@ -2,7 +2,7 @@ class_name GameState
 extends RefCounted
 ## Pure runtime data. No Node references, no behaviour beyond (de)serialisation.
 
-const SCHEMA_VERSION: int = 9
+const SCHEMA_VERSION: int = 10
 const START_AGE_YEARS: float = 16.0
 ## Fixed precision so values survive a JSON round trip and never drift.
 const SNAP_SCALE: float = 1000000.0
@@ -41,6 +41,8 @@ var techniques: Array = []
 var main_technique: String = ""
 ## Thương tích (V2): 0..combat.max_wounds. Cut max HP in dungeons, healed by resting; never blocks an action.
 var wounds: int = 0
+## Phẩm Kim Đan (V9): "" until the core forms, then an id from the `core.grades` of the stage that forms it. Part of the world a rewind restores.
+var dan_grade: String = ""
 ## Learned knowledge ids (Phase 3): what the character knows decides which actions, stats and concepts the UI may show.
 var knowledge: Array = []
 ## Luân hồi (GDD X): `checkpoint` is the world as it stood at a mốc the character lived through ({} = none);
@@ -111,6 +113,7 @@ func to_dict() -> Dictionary:
 		"techniques": techniques.duplicate(),
 		"main_technique": main_technique,
 		"wounds": wounds,
+		"dan_grade": dan_grade,
 		"knowledge": knowledge.duplicate(),
 		"loop": loop,
 		"checkpoint": checkpoint.duplicate(true),
@@ -169,6 +172,7 @@ static func from_dict(d: Dictionary) -> GameState:
 		s.techniques.append(str(tid))
 	s.main_technique = str(d.get("main_technique", ""))
 	s.wounds = int(d.get("wounds", 0))
+	s.dan_grade = str(d.get("dan_grade", ""))
 	for kid in d.get("knowledge", []):
 		s.knowledge.append(str(kid))
 	s.loop = int(d.get("loop", 0))
@@ -203,7 +207,7 @@ static func from_dict(d: Dictionary) -> GameState:
 ## World fields a checkpoint stores and a rewind restores. Everything else (story, knowledge, clock, rng, orphans, save
 ## metadata) is the character's own continuity and is never rewound.
 const WORLD_KEYS: Array = ["resources", "upgrades", "flags", "action_counts", "mastery", "relations", "techniques",
-		"main_technique", "wounds", "realm_id", "age_years", "breakthrough_failures", "life_warned"]
+		"main_technique", "wounds", "dan_grade", "realm_id", "age_years", "breakthrough_failures", "life_warned"]
 
 
 func world_snapshot() -> Dictionary:

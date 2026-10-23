@@ -593,5 +593,13 @@
  "realm.hoa_than_so": "Soul Transformation (Early)",
  "realm.hoa_than_trung": "Soul Transformation (Middle)",
  "realm.hoa_than_hau": "Soul Transformation (Late)",
- "realm.hoa_than_vien_man": "Soul Transformation (Perfection)"
+ "realm.hoa_than_vien_man": "Soul Transformation (Perfection)",
+ "dan.ha_pham": "Lower-grade Golden Core",
+ "dan.trung_pham": "Middle-grade Golden Core",
+ "dan.thuong_pham": "Upper-grade Golden Core",
+ "dan.cuc_pham": "Supreme Golden Core",
+ "path.core.name": "Forming the Golden Core",
+ "path.core.goal": "Refine your technique, keep your meridians sound and your wounds few, then break through to Golden Core",
+ "path.core.blocked_realm": "Reach Foundation Establishment Perfection before forming the core",
+ "path.core.blocked_meridian": "Your meridians are damaged: treat them before forming the core"
 }

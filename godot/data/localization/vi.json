@@ -593,5 +593,13 @@
  "realm.hoa_than_so": "Hóa Thần Sơ Kỳ",
  "realm.hoa_than_trung": "Hóa Thần Trung Kỳ",
  "realm.hoa_than_hau": "Hóa Thần Hậu Kỳ",
- "realm.hoa_than_vien_man": "Hóa Thần Viên Mãn"
+ "realm.hoa_than_vien_man": "Hóa Thần Viên Mãn",
+ "dan.ha_pham": "Hạ Phẩm Kim Đan",
+ "dan.trung_pham": "Trung Phẩm Kim Đan",
+ "dan.thuong_pham": "Thượng Phẩm Kim Đan",
+ "dan.cuc_pham": "Cực Phẩm Kim Đan",
+ "path.core.name": "Kết Kim Đan",
+ "path.core.goal": "Luyện công pháp cho thuần, giữ kinh mạch lành và ít thương tích, rồi đột phá lên Kim Đan",
+ "path.core.blocked_realm": "Cần tu tới Trúc Cơ Viên Mãn trước khi kết đan",
+ "path.core.blocked_meridian": "Kinh mạch đang tổn thương: chữa trị rồi mới kết đan"
 }

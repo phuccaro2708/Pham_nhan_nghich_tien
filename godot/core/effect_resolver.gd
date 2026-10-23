@@ -77,12 +77,13 @@ func _advance_realm(state: GameState) -> void:
 func yield_multiplier(state: GameState, resource: String) -> float:
 	var stat: String = "yield." + resource
 	return (1.0 + group_bonus(state, stat, "upgrades")) * (1.0 + group_bonus(state, stat, "techniques")) \
-			* (1.0 + group_bonus(state, stat, "mastery"))
+			* (1.0 + group_bonus(state, stat, "mastery")) * (1.0 + group_bonus(state, stat, "core"))
 
 
 ## Additive total over all groups (used for speed: T = T_base / (1 + S + M), GDD 5.2).
 func stat_bonus(state: GameState, stat: String) -> float:
-	return group_bonus(state, stat, "upgrades") + group_bonus(state, stat, "techniques") + group_bonus(state, stat, "mastery")
+	return group_bonus(state, stat, "upgrades") + group_bonus(state, stat, "techniques") + group_bonus(state, stat, "mastery") \
+			+ group_bonus(state, stat, "core")
 
 
 ## Sum of one group's bonuses for `stat`. Derived from state every time, never stored, so it cannot be granted twice.
@@ -97,6 +98,12 @@ func group_bonus(state: GameState, stat: String, group: String) -> float:
 		"techniques":
 			for tid in registry.active_techniques(state):
 				for b in registry.techniques.get(tid, {}).get("bonuses", []):
+					if b["stat"] == stat:
+						total += float(b["value"])
+		"core":  # V9: the formed Kim Đan's grade
+			var i: int = registry.dan_grade_index(state.dan_grade)
+			if i >= 0:
+				for b in registry.core_def()["grades"][i].get("bonuses", []):
 					if b["stat"] == stat:
 						total += float(b["value"])
 		"mastery":

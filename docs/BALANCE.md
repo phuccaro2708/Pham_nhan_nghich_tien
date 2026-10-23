@@ -102,3 +102,7 @@ Casual vượt mục tiêu 3–5 h ~0,3 h (đã lệch từ trước, không ph�
 | Nghịch Kinh | 8 | 60 | 0,4 | 2 | 40% | 1 |
 
 Chưa đo bằng simulation; sẽ chỉnh ở cổng cân bằng V6.
+
+## V9 — Phẩm Kim Đan (tạm thời)
+
+Điểm = tổng term: chủ tu thường +1, Cấp Tốc +1, Ổn Định +2, Nghịch Kinh +2, mastery hấp thu ≥10 / ≥20 mỗi mức +1, thương tích ≥1 / ≥3 mỗi mức −1, đã chọn nhánh tiếng vọng Hắc Thạch +1 (tối đa 5). Phẩm: Hạ ≥0, Trung ≥2, Thượng ≥4, Cực ≥5. Bonus phẩm: tốc độ hấp thu +0,10/+0,20/+0,30/+0,45, HP +10/25/45/70. Cả hai bộ số là giả định chờ simulation (V14).

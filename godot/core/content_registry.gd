@@ -52,6 +52,23 @@ func has_story_node(id: Variant) -> bool: return story.has(id)
 func has_technique(id: Variant) -> bool: return techniques.has(id)
 
 
+## The one stage that forms the Kim Đan (its `core` block, V9): {grades:[{id,name_key,min_score,bonuses}], terms:[{when,weight}]}.
+func core_def() -> Dictionary:
+	for rid in realm_order:
+		if realms[rid].has("core"):
+			return realms[rid]["core"]
+	return {}
+
+
+## Rank of a grade id in the ladder (0 = lowest), -1 when unknown.
+func dan_grade_index(id: Variant) -> int:
+	var g: Array = core_def().get("grades", [])
+	for i in g.size():
+		if g[i]["id"] == id:
+			return i
+	return -1
+
+
 ## Techniques whose bonuses count: every learned `base` technique plus the chosen main one.
 func active_techniques(state: GameState) -> Array:
 	var out: Array = []
@@ -352,6 +369,7 @@ func _validate_action(d: Dictionary) -> void:
 
 func _validate_realms() -> void:
 	var prev_life: float = 0.0
+	var cores: int = 0
 	for i in realm_order.size():
 		var d: Dictionary = realms[realm_order[i]]
 		var p: String = "realm '%s'" % d["id"]
@@ -368,6 +386,37 @@ func _validate_realms() -> void:
 			errors.append("%s: only the last stage has no 'breakthrough'" % p)
 		elif not is_last:
 			_validate_breakthrough(d["breakthrough"], p + ".breakthrough")
+		if d.has("core"):
+			cores += 1
+			_validate_core(d["core"], p + ".core")
+	if cores > 1:
+		errors.append("realms: only one stage may have a 'core' block")
+
+
+func _validate_core(c: Variant, p: String) -> void:
+	if typeof(c) != TYPE_DICTIONARY or typeof(c.get("grades")) != TYPE_ARRAY or (c["grades"] as Array).is_empty():
+		errors.append("%s: needs a non-empty 'grades' array" % p)
+		return
+	var prev: float = -INF
+	var seen: Dictionary = {}
+	for g in c["grades"]:
+		if typeof(g) != TYPE_DICTIONARY or typeof(g.get("id")) != TYPE_STRING or seen.has(g["id"]) or not GameState.is_number(g.get("min_score")) or float(g["min_score"]) <= prev:
+			errors.append("%s: grades need unique ids and strictly rising numeric min_score" % p)
+			return
+		seen[g["id"]] = true
+		prev = float(g["min_score"])
+		if not texts.is_empty() and not texts.has(g.get("name_key", "")):
+			errors.append("%s: grade '%s' name_key missing in localization" % [p, g["id"]])
+		for b in g.get("bonuses", []):
+			if typeof(b) != TYPE_DICTIONARY or typeof(b.get("stat")) != TYPE_STRING or not GameState.is_number(b.get("value")):
+				errors.append("%s: grade '%s' bonus needs stat and numeric value" % [p, g["id"]])
+	if float((c["grades"] as Array)[0]["min_score"]) > 0.0:
+		errors.append("%s: the first grade must start at score 0 or below so every core gets a grade" % p)
+	for t in c.get("terms", []):
+		if typeof(t) != TYPE_DICTIONARY or not t.has("when") or not GameState.is_number(t.get("weight")):
+			errors.append("%s: a term needs 'when' and numeric 'weight'" % p)
+		else:
+			errors.append_array(_conditions.validate(t["when"], self, p + ".terms.when"))
 
 
 func _validate_breakthrough(b: Variant, p: String) -> void:

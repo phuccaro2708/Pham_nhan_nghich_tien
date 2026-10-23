@@ -597,6 +597,8 @@ Quy tắc chung mọi giai đoạn:
 | Nguyên Anh | Tri thức + quan hệ: nguyên thần chỉ thành khi đủ `knowledge` nhóm đạo lý và các quan hệ then chốt không đứt; phân thân là slot hành động thứ hai (hậu MVP, chỉ mở ở GĐ2 cuối) | knowledge, relations, automation |
 | Hóa Thần | Vượt giới: chọn một đạo tắc (3 hướng), cái giá là đóng các hướng còn lại trong kiếp này | story, công pháp, truyền thừa |
 
+**Kết Đan (V9, đã triển khai):** đột phá khỏi Trúc Cơ Viên Mãn tính *phẩm Kim Đan* (Hạ/Trung/Thượng/Cực) từ độ thuần công pháp chủ tu (biến thể Tàn Kinh đã sửa thuần hơn), mastery, thương tích và Đạo Tâm; phẩm cộng chỉ số và nâng nhẹ xác suất đột phá ở Kim Đan Sơ–Hậu. Lý do: biến "ổn định công pháp" thành quyết định đã đầu tư từ GĐ1 chứ không phải số mới. Số liệu tạm, chốt ở V14.
+
 **Truyền thừa hậu duệ (GDD §X được kích hoạt ở GĐ2)**
 
 - Tọa hóa khi hết thọ nguyên không còn là `deceased` cụt: người chơi chọn *hậu duệ* (nếu có) hoặc kết thúc kiếp. Hậu duệ kế thừa `story.done`, `knowledge`, một phần `technique` (ký ức công pháp) và Đạo Quả; tài nguyên thường, quan hệ trong kiếp, tu vi, tiến độ luyện thể làm mới (đúng bảng §X).

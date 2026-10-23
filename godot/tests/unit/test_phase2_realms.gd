@@ -1,5 +1,5 @@
 extends GutTest
-## V8 nền GĐ2: thang cảnh giới tới Hóa Thần có trong data, nhưng chưa mở cho người chơi (cờ `phase2_open`).
+## V8 nền GĐ2: thang cảnh giới tới Hóa Thần có trong data, (V9 đã mở cổng Trúc Cơ Sơ → Trung).
 
 const LADDER: Array = [
 	"truc_co_so", "truc_co_trung", "truc_co_hau", "truc_co_vien_man",
@@ -38,15 +38,13 @@ func test_every_new_stage_is_localized_in_both_languages() -> void:
 		assert_true(reg.texts.has(k) and en.has(k), id)
 
 
-func test_phase2_stays_closed_until_flag_is_set() -> void:
+func test_foundation_breakthrough_is_open_since_v9() -> void:
 	var w: Dictionary = TestHelpers.world(5, true)
 	var act: ActionSystem = w["act"]
 	var s: GameState = w["state"]
 	s.realm_id = "truc_co_so"
 	s.resources["cultivation"] = 1.0e9
 	s.resources["silver"] = 1.0e9
-	assert_eq(act.start_action(s, "breakthrough")["reason"], "requirements_not_met", "GĐ2 chưa mở cho người chơi")
-	s.flags["phase2_open"] = true
 	assert_true(act.start_action(s, "breakthrough")["ok"])
 
 

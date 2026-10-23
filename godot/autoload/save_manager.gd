@@ -144,6 +144,10 @@ func migrate(data: Dictionary) -> Dictionary:
 					d["combat"].merge({"tier": 0, "paused": false, "pills": 0})
 			8:  # v9 adds Tàn Kinh research: no attempt yet
 				d["research_failures"] = {}
+			9:  # v10 adds the Kim Đan grade: no core formed yet; an old mốc gets the same field
+				d["dan_grade"] = ""
+				if not (d.get("checkpoint", {}) as Dictionary).is_empty():
+					d["checkpoint"]["dan_grade"] = ""
 			_:
 				return {"error": "no migration from version %d" % v}
 		v += 1
@@ -347,6 +351,9 @@ func _validate_phase2b(d: Dictionary, registry: ContentRegistry, errs: Array) ->
 	var max_w: int = int(registry.config.get("combat", {}).get("max_wounds", 0))
 	if not GameState.is_int(d.get("wounds")) or int(d["wounds"]) < 0 or int(d["wounds"]) > max_w:
 		errs.append("bad wounds")
+	var dg: Variant = d.get("dan_grade")
+	if typeof(dg) != TYPE_STRING or (dg != "" and registry.dan_grade_index(dg) < 0):
+		errs.append("bad dan_grade")
 	for kid in d["knowledge"]:
 		if typeof(kid) != TYPE_STRING or not registry.has_knowledge(kid):
 			errs.append("unknown knowledge %s" % kid)

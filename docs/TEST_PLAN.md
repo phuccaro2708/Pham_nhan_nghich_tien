@@ -68,3 +68,7 @@ Tài nguyên bắt buộc có nguồn tái tạo; validator bắt resource mất
 ## V8 — `tests/unit/test_phase2_realms.gd`
 
 Thang 16 bậc từ Trúc Cơ Sơ tới Hóa Thần Viên Mãn đúng thứ tự, validator không lỗi; thọ nguyên theo GDD §3.2; tên bậc có vi + en; đột phá khỏi Trúc Cơ Sơ bị chặn (`requirements_not_met`) tới khi có cờ `phase2_open`; cap và chi phí tăng dần, P tối đa ≤ 0,8. `test_progression` cập nhật: 28 bậc, bậc cuối là Hóa Thần Viên Mãn.
+
+## V9 — `tests/unit/test_dan_core.gd`
+
+Phẩm rỗng trước khi kết đan; nhân vật trần ra Hạ phẩm; công pháp thuần + mastery + Đạo Tâm ra Cực phẩm; thương tích hạ phẩm; 3 cấu hình ra 3 phẩm khác nhau; phẩm cộng chỉ số và nâng xác suất đột phá kế (trần ≤ 0,8); condition mới + validate; save round-trip, migration 9→10, id lạ bị chặn, `dan_grade` ∈ `WORLD_KEYS`; thất bại Kết Đan để lại `meridian_damaged`.

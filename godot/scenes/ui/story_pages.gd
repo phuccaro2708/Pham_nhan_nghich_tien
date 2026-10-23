@@ -533,6 +533,8 @@ func _cultivation(s: GameState) -> void:
 		return
 	_label(box, _t("ui.cult.chain"), UiTheme.SIZE_SMALL, UiTheme.INK_SECONDARY)
 	_label(box, "%s: %s" % [_t("ui.cult.stage"), _t(rs.stage(s)["name_key"])], UiTheme.SIZE_HEADER)
+	if s.dan_grade != "":
+		_label(box, _t(reg.core_def()["grades"][reg.dan_grade_index(s.dan_grade)]["name_key"]), UiTheme.SIZE_SMALL, UiTheme.INK_SECONDARY)
 	if not costs.is_empty():
 		for rid in costs:
 			var have: float = float(s.resources.get(rid, 0.0))
