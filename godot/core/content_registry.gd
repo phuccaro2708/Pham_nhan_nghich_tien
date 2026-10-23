@@ -255,6 +255,7 @@ func validate() -> void:
 	_validate_migrations()
 	_validate_automation_config()
 	_validate_ui_config()
+	_validate_legacy_config()
 	if not config.is_empty() and not (GameState.is_number(config.get("lifespan_warning_years")) and float(config["lifespan_warning_years"]) > 0.0):
 		errors.append("config: lifespan_warning_years must be > 0")
 
@@ -882,6 +883,31 @@ func _validate_ui_config() -> void:
 			errors.append("config.ui.tab_visible_when: unknown page '%s'" % page)
 		else:
 			errors.append_array(_conditions.validate(rules[page], self, "config.ui.tab_visible_when." + page))
+
+
+func _validate_legacy_config() -> void:
+	var c: Variant = config.get("legacy")
+	if c == null:
+		return
+	if typeof(c) != TYPE_DICTIONARY:
+		errors.append("config.legacy must be an object")
+		return
+	for k in ["scale", "p0", "w_realm", "w_mastery"]:
+		if not (GameState.is_number(c.get(k)) and float(c[k]) >= 0.0):
+			errors.append("config.legacy.%s must be a number >= 0" % k)
+	if GameState.is_number(c.get("p0")) and float(c["p0"]) <= 0.0:
+		errors.append("config.legacy.p0 must be > 0")
+	var start: Variant = c.get("start_realm")
+	if typeof(start) != TYPE_STRING or not has_realm(start):
+		errors.append("config.legacy.start_realm must be a known realm")
+	elif realms[start].get("story_promotion", false) or realms[start].get("mortal", false):
+		errors.append("config.legacy.start_realm must not be a story-promoted stage (the heir could never leave it)")
+	for t in c.get("keep_technique_roles", []):
+		if not ["base", "main"].has(t):
+			errors.append("config.legacy.keep_technique_roles: unknown role %s" % t)
+	for b in c.get("bonuses", []):
+		if typeof(b) != TYPE_DICTIONARY or typeof(b.get("stat")) != TYPE_STRING or not GameState.is_number(b.get("per_dao_qua")) 				or not GameState.is_number(b.get("cap")) or float(b["per_dao_qua"]) < 0.0 or float(b["cap"]) < 0.0:
+			errors.append("config.legacy.bonuses: each needs stat, per_dao_qua >= 0, cap >= 0")
 
 
 func _validate_automation_config() -> void:

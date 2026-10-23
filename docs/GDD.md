@@ -601,7 +601,7 @@ Quy tắc chung mọi giai đoạn:
 
 **Truyền thừa hậu duệ (GDD §X được kích hoạt ở GĐ2)**
 
-- Tọa hóa khi hết thọ nguyên không còn là `deceased` cụt: người chơi chọn *hậu duệ* (nếu có) hoặc kết thúc kiếp. Hậu duệ kế thừa `story.done`, `knowledge`, một phần `technique` (ký ức công pháp) và Đạo Quả; tài nguyên thường, quan hệ trong kiếp, tu vi, tiến độ luyện thể làm mới (đúng bảng §X).
+- Tọa hóa khi hết thọ nguyên không còn là `deceased` cụt: người chơi ra lệnh nối dòng sang *hậu duệ* (luôn có, xem §3.2.1; bản V10 bỏ phương án "kết thúc kiếp" vì nó chính là kết thúc cụt). Hậu duệ kế thừa `story.done`, `knowledge`, một phần `technique` (ký ức công pháp) và Đạo Quả; tài nguyên thường, quan hệ trong kiếp, tu vi, tiến độ luyện thể làm mới (đúng bảng §X).
 - Đạo Quả dùng công thức §X, hệ số lấy từ simulation, không đoán.
 - Không softlock: kiếp mới luôn có đường về cảnh giới đã đạt trong thời gian chơi hợp lý (tính bằng simulation).
 
@@ -756,4 +756,23 @@ Lý do: `chance.terms` để trống khiến P không phản ánh cách chơi. N
 
 ### 11.5. Kiểm tĩnh chống softlock chiến dịch dài (V7, GĐ1)
 
-Lý do: §11.4 mới bảo vệ từng node story; chiến dịch dài còn cần bảo đảm tài nguyên bắt buộc không cạn vĩnh viễn. Resource đánh dấu `required_for_main` phải có ít nhất một action sinh ra nó mà chi phí chỉ gồm tài nguyên tái tạo được; mỗi trạng thái thất bại (`on_fail_flag` của đột phá, thương tích khi có hang) phải có action phục hồi cũng chỉ tốn tài nguyên tái tạo được. ContentRegistry báo lỗi khi vi phạm. Hết thọ nguyên giữ nguyên story và tri thức (truyền thừa dời sang GĐ2).
+Lý do: §11.4 mới bảo vệ từng node story; chiến dịch dài còn cần bảo đảm tài nguyên bắt buộc không cạn vĩnh viễn. Resource đánh dấu `required_for_main` phải có ít nhất một action sinh ra nó mà chi phí chỉ gồm tài nguyên tái tạo được; mỗi trạng thái thất bại (`on_fail_flag` của đột phá, thương tích khi có hang) phải có action phục hồi cũng chỉ tốn tài nguyên tái tạo được. ContentRegistry báo lỗi khi vi phạm. Hết thọ nguyên giữ nguyên story và tri thức (truyền thừa dời sang GĐ2; V10 đã làm, xem §3.2.1).
+
+### 3.2.1. Truyền thừa hậu duệ (V10, GĐ2)
+
+> **Lý do (đổi so với bản đề xuất §XIV.2):** bỏ nhánh "kết thúc kiếp / chỉ có hậu duệ nếu có" vì nó giữ lại đúng kết thúc cụt cần xóa; bỏ nút "Đời mới" cũ của UI vì nó gọi `new_game()` xóa luôn story và tri thức (reset cưỡng ép). Chủ động chuyển thế (kết thúc kiếp khi còn thọ) **chưa làm**, dời sang phiên bản sau.
+
+Khi hết thọ nguyên nhân vật vẫn `deceased`: mọi hành động bị chặn, offline dừng tại đó (không tự quyết). Người chơi ra lệnh **Nối dòng** (UI → `GameController.succeed()` → `LegacySystem.succeed` → event `succession_done`). Lệnh chỉ hợp lệ khi đang `deceased`; sau khi chạy nhân vật `alive` nên không thể chạy lần hai → Đạo Quả của một đời nhận đúng một lần, kể cả qua save/load.
+
+| Giữ (cả dòng họ) | Mất/làm mới (thuộc thân xác kiếp trước) |
+|---|---|
+| `story` (done, pending), `knowledge`, `flags` (trừ danh sách reset) | tài nguyên (về `initial`), nâng cấp, `relations` (quan hệ trong kiếp), `action_counts`, `mastery` (kể cả mốc đã nhận: mỗi thân xác nhận một lần), tu vi/`realm_id`, tuổi (về 16), `breakthrough_failures`, `wounds`, `dan_grade`, `main_technique`, `research_failures`, `last_run`, `combat`, `automation`, `checkpoint` |
+| `techniques` loại `base` + công pháp chủ tu của đời trước (ký ức; phải chọn lại chủ tu, tốn `switch_age_years`) | công pháp chủ tu khác chưa học lại → mất |
+| `dungeon_clears` (bách khoa thế giới), `loop`, RNG/đồng hồ, `orphans` | cờ trạng thái thân xác: mọi `breakthrough.on_fail_flag` + `legacy.reset_flags` (vd. `meridian_damaged`) |
+| `legacy`: `generation`, `dao_qua`, `lineage` | |
+
+- **Cảnh giới khởi điểm:** `legacy.start_realm` (hiện `cuong_than`). Không thể là `vo`: bước `vo → cuong_than` là bước story đã xong và không phát lại; bắt đầu ở `vo` sẽ softlock. Tuổi 16, thọ nguyên theo bậc đó.
+- **Đạo Quả:** `DQ = floor(scale · sqrt(P / P0))`, hệ số `A` (thử thách thiên mệnh) = 0 vì hệ thống đó chưa tồn tại. `P` = điểm thành tựu *của đời vừa kết thúc*: `w_realm` × số bậc đã vượt so với bậc khởi điểm + `w_mastery` × tổng (level − 1) của mastery. Vì mọi thứ trong `P` đều bị làm mới, hậu duệ không thể ăn lại điểm của tổ tiên.
+- **Tác dụng của Đạo Quả:** nhóm bonus `legacy` trong `EffectResolver` (tính từ `legacy.dao_qua` mỗi lần như nhóm `core`, không lưu riêng, có trần): `bonus = min(dao_qua · per_dao_qua, cap)` cho từng `stat`. Chạm: lifespan (kích hoạt), realm, mastery (đầu vào P), story/knowledge/technique (giữ), save (schema 11), effects.
+- **Không softlock:** hậu duệ luôn khởi điểm ở bậc mà các bước story đã xong không chặn đường; cờ cần cho đột phá (`qi_sensed`, `knows_qi_method`) được giữ cùng story. Chứng minh bằng test bot: hậu duệ tự đi lại tới `truc_co_so`.
+- **Chưa làm (chỉ ở mức thiết kế):** chọn hậu duệ có đặc tính khác nhau; chủ động chuyển thế; tiêu Đạo Quả đổi lấy quà; hệ số `P0`/`scale`/bonus là số tạm (BALANCE.md), chốt ở V14.

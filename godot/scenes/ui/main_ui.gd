@@ -333,9 +333,9 @@ func _build_nav(parent: Control) -> void:
 			return
 		_confirm_new_life = false
 		_new_life.text = reg.text("ui.new_life")
-		GameController.new_game()
-		GameController.clock.reset()
-		_say(reg.text("ui.new_life_log")))
+		var r: Dictionary = GameController.succeed()
+		if r["ok"]:
+			_say(reg.text("ui.new_life_log") % [r["generation"], r["dao_qua"], GameController.state.legacy["dao_qua"]]))
 	nav.add_child(_new_life)
 
 

@@ -72,3 +72,7 @@ Thang 16 bậc từ Trúc Cơ Sơ tới Hóa Thần Viên Mãn đúng thứ tự
 ## V9 — `tests/unit/test_dan_core.gd`
 
 Phẩm rỗng trước khi kết đan; nhân vật trần ra Hạ phẩm; công pháp thuần + mastery + Đạo Tâm ra Cực phẩm; thương tích hạ phẩm; 3 cấu hình ra 3 phẩm khác nhau; phẩm cộng chỉ số và nâng xác suất đột phá kế (trần ≤ 0,8); condition mới + validate; save round-trip, migration 9→10, id lạ bị chặn, `dan_grade` ∈ `WORLD_KEYS`; thất bại Kết Đan để lại `meridian_damaged`.
+
+## V10 — `tests/unit/test_succession.gd`
+
+Sống thì không nối dòng được; nối dòng giữ story/tri thức/cờ/công pháp base + chủ tu cũ/dungeon_clears, làm mới tài nguyên/nâng cấp/mastery/quan hệ/cảnh giới/tuổi/thương tích/`meridian_damaged`; Đạo Quả nhận đúng một lần (lệnh thứ hai bị từ chối); công thức DQ và hậu duệ chết ngay nhận 0; bonus `legacy` dẫn xuất và có trần; rewind không hoàn tác dòng họ; chết→save→load→nối dòng giống hệt chết→nối dòng; migration 10→11 trên save `deceased` rồi nối dòng được; offline dừng ở tọa hóa, không tự nối dòng, bằng online cùng tick, và vẫn trần 8 giờ sau nối dòng; validate chặn NaN/âm/`generation` sai/realm lạ/tổng DQ lệch/`legacy` sai kiểu; config chặn `start_realm` sai; bot hậu duệ đi lại tới `truc_co_so` mà không cần story (không softlock).

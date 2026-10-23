@@ -14,7 +14,7 @@ Nguồn: GDD §XIV.1. Mỗi version nhỏ: docs → test → GUT xanh → báo c
 | V7 | Chống softlock chiến dịch dài | GĐ1 | 9 | Xong (đã duyệt) |
 | V8 | Nền GĐ2: đại cảnh giới Kim Đan–Hóa Thần trong `realms.json`, thọ nguyên, validator; chưa có nội dung chơi | GĐ2 |  9 | Xong (đã duyệt) |
 | V9 | Kim Đan: ổn định công pháp, `dan_grade` từ công pháp + mastery + thương tích | GĐ2 | 10 | Xong (chờ duyệt) |
-| V10 | Truyền thừa hậu duệ + Đạo Quả (thay `deceased` cụt) | GĐ2 | 11 | Đề xuất |
+| V10 | Truyền thừa hậu duệ + Đạo Quả (thay `deceased` cụt) | GĐ2 | 11 | Xong (chờ duyệt) |
 | V11 | Nguyên Anh: tri thức + quan hệ, nguyên thần | GĐ2 | 12 | Đề xuất |
 | V12 | Khu thám hiểm + biến thể Tàn Kinh tầng Kim Đan/Nguyên Anh (dùng lại V3–V4) | GĐ2 | 12 | Đề xuất |
 | V13 | Hóa Thần: chọn đạo tắc, đóng hướng còn lại | GĐ2 | 13 | Đề xuất |

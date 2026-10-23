@@ -106,3 +106,8 @@ Chưa đo bằng simulation; sẽ chỉnh ở cổng cân bằng V6.
 ## V9 — Phẩm Kim Đan (tạm thời)
 
 Điểm = tổng term: chủ tu thường +1, Cấp Tốc +1, Ổn Định +2, Nghịch Kinh +2, mastery hấp thu ≥10 / ≥20 mỗi mức +1, thương tích ≥1 / ≥3 mỗi mức −1, đã chọn nhánh tiếng vọng Hắc Thạch +1 (tối đa 5). Phẩm: Hạ ≥0, Trung ≥2, Thượng ≥4, Cực ≥5. Bonus phẩm: tốc độ hấp thu +0,10/+0,20/+0,30/+0,45, HP +10/25/45/70. Cả hai bộ số là giả định chờ simulation (V14).
+
+## V10 — Truyền thừa và Đạo Quả (tạm thời)
+
+`DQ = floor(scale · sqrt(P / P0))`, `scale` 3, `P0` 20, hệ số `A` = 0 (chưa có thử thách thiên mệnh). `P` = 1 × số bậc vượt quá bậc khởi điểm `cuong_than` + 0,25 × tổng (level mastery − 1). Đo bằng bot (`test_heir_walks_back_to_truc_co_without_story`, seed 11): một đời tới `truc_co_so` ở tuổi 38,5 cho P = 20,25 → **DQ = 3**, đúng mục tiêu "một đời điển hình ≈ 3". Hậu duệ chết ngay (không làm gì) nhận 0, nên không farm bằng cách tự sát lặp.
+Bonus Đạo Quả (nhóm `legacy`, tính từ `legacy.dao_qua`, có trần): tốc độ hấp thu +0,02/DQ trần +0,30; HP chiến đấu +2/DQ trần +30. Trần đạt ở 15 DQ ≈ 5 kiếp tới Trúc Cơ, nên một đời sau không thể mạnh gấp bội. Hậu duệ đi lại tới Trúc Cơ mất cùng thời gian chơi với tổ tiên (không có đường tắt cảnh giới, chỉ bỏ story đã xong): đây là mức tối thiểu để không softlock; mọi con số là giả định chờ simulation đầy đủ ở V14.

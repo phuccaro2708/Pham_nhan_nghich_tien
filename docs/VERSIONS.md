@@ -26,7 +26,7 @@ Nguồn kế hoạch: [MVP_BACKLOG.md](MVP_BACKLOG.md) · thiết kế: [GDD.md]
 | — | Đề xuất GDD §XIV.2, chia V8–V14 | `dae7844` | 9 | — | Đã duyệt |
 | V8 | Thang 28 bậc tới Hóa Thần Viên Mãn, thọ nguyên, validator | `2c01884` | 9 | 261 | Đã duyệt |
 | V9 | Kết Đan, phẩm Kim Đan (`dan_grade`) | `0fdc995` | 10 | 270 | Chờ duyệt |
-| V10 | Truyền thừa hậu duệ + Đạo Quả (thay `deceased` cụt) | — | 11 | — | Chưa làm |
+| V10 | Truyền thừa hậu duệ + Đạo Quả (thay `deceased` cụt) | `25dfc98` | 11 | 283 | Chờ duyệt |
 | V11 | Nguyên Anh: tri thức + quan hệ, nguyên thần | — | 12 | — | Chưa làm |
 | V12 | Khu thám hiểm + biến thể Tàn Kinh tầng Kim Đan/Nguyên Anh | — | 12 | — | Chưa làm |
 | V13 | Hóa Thần: chọn đạo tắc, đóng hướng còn lại | — | 13 | — | Chưa làm |

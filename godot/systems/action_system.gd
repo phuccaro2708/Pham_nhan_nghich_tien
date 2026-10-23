@@ -16,6 +16,7 @@ var conditions: ConditionEvaluator
 var effects: EffectResolver
 var realms: RealmSystem
 var lifespan: LifespanSystem
+var legacy: LegacySystem
 var mastery: MasterySystem
 var story: StorySystem
 var automation: AutomationQueue
@@ -32,6 +33,7 @@ func _init(p_registry: ContentRegistry) -> void:
 	conditions.content = registry
 	realms = RealmSystem.new(registry)
 	lifespan = LifespanSystem.new(registry, realms)
+	legacy = LegacySystem.new(registry, realms, lifespan)
 	effects = EffectResolver.new(registry, resources, realms)
 	mastery = MasterySystem.new(registry, effects)
 	story = StorySystem.new(registry, conditions, effects, resources)

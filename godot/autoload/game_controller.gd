@@ -32,6 +32,7 @@ func _ready() -> void:
 	actions.action_stopped.connect(func(id: String, why: String) -> void: EventBus.action_stopped.emit(id, why))
 	actions.lifespan.lifespan_warning.connect(func(r: float) -> void: EventBus.lifespan_warning.emit(r))
 	actions.lifespan.life_ended.connect(func(a: float) -> void: EventBus.life_ended.emit(a))
+	actions.legacy.succeeded.connect(func(g: int, d: int) -> void: EventBus.succession_done.emit(g, d))
 	actions.realms.breakthrough_resolved.connect(func(ok: bool, f: String, t: String) -> void: EventBus.breakthrough_resolved.emit(ok, f, t))
 	actions.mastery.level_up.connect(func(id: String, lv: int) -> void: EventBus.mastery_level_up.emit(id, lv))
 	actions.story.event_pending.connect(func(n: String) -> void: EventBus.story_pending.emit(n))
@@ -125,6 +126,15 @@ func set_language(lang: String, persist: bool = true) -> void:
 		cfg.load(SETTINGS_PATH)
 		cfg.set_value("game", "language", lang)
 		cfg.save(SETTINGS_PATH)
+
+
+## Nối dòng sau tọa hóa (UI -> command -> LegacySystem). The story keeps going: a node left pending stays pending.
+func succeed() -> Dictionary:
+	var r: Dictionary = actions.legacy.succeed(state)
+	if r["ok"]:
+		clock.reset()
+		actions.story.scan(state)
+	return r
 
 
 func set_main_technique(id: String) -> Dictionary:

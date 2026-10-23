@@ -2,7 +2,7 @@ class_name GameState
 extends RefCounted
 ## Pure runtime data. No Node references, no behaviour beyond (de)serialisation.
 
-const SCHEMA_VERSION: int = 10
+const SCHEMA_VERSION: int = 11
 const START_AGE_YEARS: float = 16.0
 ## Fixed precision so values survive a JSON round trip and never drift.
 const SNAP_SCALE: float = 1000000.0
@@ -43,6 +43,9 @@ var main_technique: String = ""
 var wounds: int = 0
 ## Phẩm Kim Đan (V9): "" until the core forms, then an id from the `core.grades` of the stage that forms it. Part of the world a rewind restores.
 var dan_grade: String = ""
+## Truyền thừa (V10): the family line, outliving any one body. generation (1 = founder), dao_qua (total earned, drives the
+## `legacy` bonus group), lineage = one {generation, realm_id, age_years, dao_qua} per finished life. Never part of WORLD_KEYS: a rewind does not undo it.
+var legacy: Dictionary = {"generation": 1, "dao_qua": 0, "lineage": []}
 ## Learned knowledge ids (Phase 3): what the character knows decides which actions, stats and concepts the UI may show.
 var knowledge: Array = []
 ## Luân hồi (GDD X): `checkpoint` is the world as it stood at a mốc the character lived through ({} = none);
@@ -114,6 +117,7 @@ func to_dict() -> Dictionary:
 		"main_technique": main_technique,
 		"wounds": wounds,
 		"dan_grade": dan_grade,
+		"legacy": legacy.duplicate(true),
 		"knowledge": knowledge.duplicate(),
 		"loop": loop,
 		"checkpoint": checkpoint.duplicate(true),
@@ -173,6 +177,11 @@ static func from_dict(d: Dictionary) -> GameState:
 	s.main_technique = str(d.get("main_technique", ""))
 	s.wounds = int(d.get("wounds", 0))
 	s.dan_grade = str(d.get("dan_grade", ""))
+	var lg: Dictionary = d.get("legacy", {})
+	s.legacy = {"generation": int(lg.get("generation", 1)), "dao_qua": int(lg.get("dao_qua", 0)), "lineage": []}
+	for e in lg.get("lineage", []):
+		s.legacy["lineage"].append({"generation": int(e["generation"]), "realm_id": str(e["realm_id"]),
+			"age_years": float(e["age_years"]), "dao_qua": int(e["dao_qua"])})
 	for kid in d.get("knowledge", []):
 		s.knowledge.append(str(kid))
 	s.loop = int(d.get("loop", 0))

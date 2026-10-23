@@ -77,13 +77,13 @@ func _advance_realm(state: GameState) -> void:
 func yield_multiplier(state: GameState, resource: String) -> float:
 	var stat: String = "yield." + resource
 	return (1.0 + group_bonus(state, stat, "upgrades")) * (1.0 + group_bonus(state, stat, "techniques")) \
-			* (1.0 + group_bonus(state, stat, "mastery")) * (1.0 + group_bonus(state, stat, "core"))
+			* (1.0 + group_bonus(state, stat, "mastery")) * (1.0 + group_bonus(state, stat, "core")) * (1.0 + group_bonus(state, stat, "legacy"))
 
 
 ## Additive total over all groups (used for speed: T = T_base / (1 + S + M), GDD 5.2).
 func stat_bonus(state: GameState, stat: String) -> float:
 	return group_bonus(state, stat, "upgrades") + group_bonus(state, stat, "techniques") + group_bonus(state, stat, "mastery") \
-			+ group_bonus(state, stat, "core")
+			+ group_bonus(state, stat, "core") + group_bonus(state, stat, "legacy")
 
 
 ## Sum of one group's bonuses for `stat`. Derived from state every time, never stored, so it cannot be granted twice.
@@ -106,6 +106,10 @@ func group_bonus(state: GameState, stat: String, group: String) -> float:
 				for b in registry.core_def()["grades"][i].get("bonuses", []):
 					if b["stat"] == stat:
 						total += float(b["value"])
+		"legacy":  # V10: Đạo Quả of the whole line, capped per stat
+			for b in registry.config.get("legacy", {}).get("bonuses", []):
+				if b["stat"] == stat:
+					total += minf(float(int(state.legacy["dao_qua"])) * float(b["per_dao_qua"]), float(b["cap"]))
 		"mastery":
 			for aid in state.mastery:
 				var level: int = int(state.mastery[aid]["level"])

@@ -43,5 +43,28 @@
  },
  "technique": {
   "switch_age_years": 0.1
+ },
+ "legacy": {
+  "start_realm": "cuong_than",
+  "scale": 3.0,
+  "p0": 20.0,
+  "w_realm": 1.0,
+  "w_mastery": 0.25,
+  "keep_technique_roles": [
+   "base"
+  ],
+  "reset_flags": [],
+  "bonuses": [
+   {
+    "stat": "speed.absorb_qi",
+    "per_dao_qua": 0.02,
+    "cap": 0.3
+   },
+   {
+    "stat": "combat.hp",
+    "per_dao_qua": 2,
+    "cap": 30
+   }
+  ]
  }
 }

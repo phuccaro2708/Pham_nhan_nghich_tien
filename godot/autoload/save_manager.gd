@@ -148,6 +148,8 @@ func migrate(data: Dictionary) -> Dictionary:
 				d["dan_grade"] = ""
 				if not (d.get("checkpoint", {}) as Dictionary).is_empty():
 					d["checkpoint"]["dan_grade"] = ""
+			10:  # v11 adds truyền thừa: the founder's line, no Đạo Quả yet (a deceased save can then succeed)
+				d["legacy"] = {"generation": 1, "dao_qua": 0, "lineage": []}
 			_:
 				return {"error": "no migration from version %d" % v}
 		v += 1
@@ -173,6 +175,8 @@ func validate_state(d: Dictionary, registry: ContentRegistry) -> Array:
 		errs.append("techniques must be an array")
 	if typeof(d.get("knowledge")) != TYPE_ARRAY:
 		errs.append("knowledge must be an array")
+	if typeof(d.get("legacy")) != TYPE_DICTIONARY:
+		errs.append("legacy must be an object")
 	if typeof(d.get("checkpoint")) != TYPE_DICTIONARY:
 		errs.append("checkpoint must be an object")
 	if not GameState.is_int(d.get("loop")) or int(d.get("loop", 0)) < 0:
@@ -317,6 +321,26 @@ func _validate_progression(d: Dictionary, registry: ContentRegistry, errs: Array
 			errs.append("age_years at or above the realm's lifespan but the character is alive")
 
 
+func _validate_legacy(lg: Dictionary, registry: ContentRegistry, errs: Array) -> void:
+	var lin: Variant = lg.get("lineage")
+	if not (GameState.is_int(lg.get("generation")) and int(lg["generation"]) >= 1 and GameState.is_int(lg.get("dao_qua"))
+			and int(lg["dao_qua"]) >= 0 and typeof(lin) == TYPE_ARRAY and (lin as Array).size() == int(lg["generation"]) - 1):
+		errs.append("bad legacy")
+		return
+	var total: int = 0
+	for i in (lin as Array).size():
+		var e: Variant = lin[i]
+		if not (typeof(e) == TYPE_DICTIONARY and GameState.is_int(e.get("generation")) and int(e["generation"]) == i + 1
+				and typeof(e.get("realm_id")) == TYPE_STRING and registry.has_realm(e["realm_id"])
+				and GameState.is_number(e.get("age_years")) and float(e["age_years"]) >= 0.0
+				and GameState.is_int(e.get("dao_qua")) and int(e["dao_qua"]) >= 0):
+			errs.append("bad legacy lineage entry %d" % i)
+			return
+		total += int(e["dao_qua"])
+	if total != int(lg["dao_qua"]):
+		errs.append("legacy dao_qua does not match the lineage")
+
+
 func _validate_phase2b(d: Dictionary, registry: ContentRegistry, errs: Array) -> void:
 	for aid in d["mastery"]:
 		var m: Variant = d["mastery"][aid]
@@ -351,6 +375,7 @@ func _validate_phase2b(d: Dictionary, registry: ContentRegistry, errs: Array) ->
 	var max_w: int = int(registry.config.get("combat", {}).get("max_wounds", 0))
 	if not GameState.is_int(d.get("wounds")) or int(d["wounds"]) < 0 or int(d["wounds"]) > max_w:
 		errs.append("bad wounds")
+	_validate_legacy(d["legacy"], registry, errs)
 	var dg: Variant = d.get("dan_grade")
 	if typeof(dg) != TYPE_STRING or (dg != "" and registry.dan_grade_index(dg) < 0):
 		errs.append("bad dan_grade")
