@@ -134,6 +134,7 @@ func succeed() -> Dictionary:
 	if r["ok"]:
 		clock.reset()
 		actions.story.scan(state)
+		save()  # the old body is gone for good: persist before the player can quit
 	return r
 
 

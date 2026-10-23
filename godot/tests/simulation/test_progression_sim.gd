@@ -7,18 +7,7 @@ func _play(seed_value: int, max_steps: int = 60000) -> Dictionary:
 	var w: Dictionary = TestHelpers.world(seed_value)
 	var act: ActionSystem = w["act"]
 	var s: GameState = w["state"]
-	var steps: int = 0
-	while steps < max_steps and s.realm_id != "truc_co_so" and act.lifespan.is_alive(s):
-		steps += 1
-		BalanceSimulator.resolve_story(act, s)
-		var id: String = BalanceSimulator.policy(act, s)
-		var r: Dictionary = act.start_action(s, id)
-		if not r["ok"]:
-			continue
-		if act.registry.actions[id]["type"] != "INSTANT":
-			act.advance(s, act.duration_ticks(act.registry.actions[id], s))
-			act.stop_action(s)
-	return {"state": s, "steps": steps}
+	return {"state": s, "steps": TestHelpers.climb_to(act, s, "truc_co_so", max_steps)}
 
 
 func test_bot_reaches_truc_co_alive() -> void:

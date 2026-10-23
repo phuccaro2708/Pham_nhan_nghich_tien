@@ -2,7 +2,7 @@ class_name LifespanSystem
 extends RefCounted
 ## Lifespan (thọ nguyên, GDD §3.2). Age moves only through commit_age(), called when an action
 ## completes. Reaching the realm's limit ends the life (tọa hóa): no action can start afterwards.
-## Reincarnation is not implemented; the state just records the end.
+## The end is not terminal: LegacySystem.succeed() continues the line with an heir (V10).
 
 signal lifespan_warning(remaining_years: float)
 signal life_ended(age_years: float)

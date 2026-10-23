@@ -766,12 +766,12 @@ Khi hết thọ nguyên nhân vật vẫn `deceased`: mọi hành động bị c
 
 | Giữ (cả dòng họ) | Mất/làm mới (thuộc thân xác kiếp trước) |
 |---|---|
-| `story` (done, pending), `knowledge`, `flags` (trừ danh sách reset) | tài nguyên (về `initial`), nâng cấp, `relations` (quan hệ trong kiếp), `action_counts`, `mastery` (kể cả mốc đã nhận: mỗi thân xác nhận một lần), tu vi/`realm_id`, tuổi (về 16), `breakthrough_failures`, `wounds`, `dan_grade`, `main_technique`, `research_failures`, `last_run`, `combat`, `automation`, `checkpoint` |
+| `story` (done, pending), `knowledge`, `flags` (trừ danh sách reset) | tài nguyên (về `initial`), nâng cấp, `relations` (quan hệ trong kiếp), `action_counts`, `mastery` (level/xp; **danh sách mốc đã nhận được giữ lại** để quà mốc chỉ phát một lần cho cả dòng họ), tu vi/`realm_id`, tuổi (về 16), `breakthrough_failures`, `wounds`, `dan_grade`, `main_technique`, `research_failures`, `last_run`, `combat`, `automation`, `checkpoint` |
 | `techniques` loại `base` + công pháp chủ tu của đời trước (ký ức; phải chọn lại chủ tu, tốn `switch_age_years`) | công pháp chủ tu khác chưa học lại → mất |
 | `dungeon_clears` (bách khoa thế giới), `loop`, RNG/đồng hồ, `orphans` | cờ trạng thái thân xác: mọi `breakthrough.on_fail_flag` + `legacy.reset_flags` (vd. `meridian_damaged`) |
 | `legacy`: `generation`, `dao_qua`, `lineage` | |
 
-- **Cảnh giới khởi điểm:** `legacy.start_realm` (hiện `cuong_than`). Không thể là `vo`: bước `vo → cuong_than` là bước story đã xong và không phát lại; bắt đầu ở `vo` sẽ softlock. Tuổi 16, thọ nguyên theo bậc đó.
+- **Cảnh giới khởi điểm:** `legacy.start_realm` (hiện `cuong_than`). Không thể là `vo`: bước `vo → cuong_than` là bước story đã xong và không phát lại; bắt đầu ở `vo` sẽ softlock. Tuổi 16, thọ nguyên theo bậc đó. Nếu tổ tiên chết khi chưa vượt bậc khởi điểm (vd. còn ở `vo`), hậu duệ giữ bậc của tổ tiên (không nhảy cóc): node story đang chờ sẽ thăng bậc như thường.
 - **Đạo Quả:** `DQ = floor(scale · sqrt(P / P0))`, hệ số `A` (thử thách thiên mệnh) = 0 vì hệ thống đó chưa tồn tại. `P` = điểm thành tựu *của đời vừa kết thúc*: `w_realm` × số bậc đã vượt so với bậc khởi điểm + `w_mastery` × tổng (level − 1) của mastery. Vì mọi thứ trong `P` đều bị làm mới, hậu duệ không thể ăn lại điểm của tổ tiên.
 - **Tác dụng của Đạo Quả:** nhóm bonus `legacy` trong `EffectResolver` (tính từ `legacy.dao_qua` mỗi lần như nhóm `core`, không lưu riêng, có trần): `bonus = min(dao_qua · per_dao_qua, cap)` cho từng `stat`. Chạm: lifespan (kích hoạt), realm, mastery (đầu vào P), story/knowledge/technique (giữ), save (schema 11), effects.
 - **Không softlock:** hậu duệ luôn khởi điểm ở bậc mà các bước story đã xong không chặn đường; cờ cần cho đột phá (`qi_sensed`, `knows_qi_method`) được giữ cùng story. Chứng minh bằng test bot: hậu duệ tự đi lại tới `truc_co_so`.

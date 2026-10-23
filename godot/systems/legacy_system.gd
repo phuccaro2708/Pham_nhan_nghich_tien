@@ -45,7 +45,7 @@ func can_succeed(state: GameState) -> bool:
 func succeed(state: GameState) -> Dictionary:
 	if cfg().is_empty():
 		return {"ok": false, "reason": "no_legacy_config"}
-	if lifespan.is_alive(state):
+	if not can_succeed(state):
 		return {"ok": false, "reason": "still_alive"}
 	var c: Dictionary = cfg()
 	var gained: int = dao_qua_for(state)
@@ -82,14 +82,23 @@ func _new_body(state: GameState, c: Dictionary) -> void:
 	state.upgrades = {}
 	state.action_counts = {}
 	state.active_action = {}
+	# Levels and xp belong to the body, but a milestone reward is paid once per line (CLAUDE.md: one-time rewards).
+	var claimed: Dictionary = {}
+	for aid in state.mastery:
+		if not (state.mastery[aid]["claimed"] as Array).is_empty():
+			claimed[aid] = (state.mastery[aid]["claimed"] as Array).duplicate()
 	state.mastery = {}
+	for aid in claimed:
+		state.mastery[aid] = {"level": 1, "xp": 0.0, "claimed": claimed[aid]}
 	state.relations = {}
 	state.research_failures = {}
 	state.last_run = {}
 	state.combat = {}
 	state.checkpoint = {}
 	state.automation = GameState.new().automation.duplicate(true)
-	state.realm_id = str(c["start_realm"])
+	# An ancestor who never got past the story-gated stage keeps it: the pending story node promotes the heir too.
+	if registry.realm_index(state.realm_id) >= registry.realm_index(str(c["start_realm"])):
+		state.realm_id = str(c["start_realm"])
 	state.age_years = GameState.START_AGE_YEARS
 	state.breakthrough_failures = 0
 	state.wounds = 0

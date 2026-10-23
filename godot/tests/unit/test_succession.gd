@@ -178,7 +178,7 @@ func test_offline_stops_at_death_and_never_succeeds_itself() -> void:
 	assert_eq(w1["state"].legacy["generation"], 1, "offline never chooses for the player")
 	assert_eq(w1["state"].to_dict(), w2["state"].to_dict())
 	assert_true(w1["act"].legacy.succeed(w1["state"])["ok"])
-	assert_not_null(report)
+	assert_true(report["stop_reason"].begins_with("gather_wood:"), str(report["stop_reason"]))
 
 
 func test_offline_capped_at_eight_hours_after_succession() -> void:
@@ -224,6 +224,47 @@ func test_config_validation_catches_bad_start_realm() -> void:
 	assert_true(TestHelpers.real_registry().errors.is_empty())
 
 
+func test_milestone_reward_is_paid_once_per_line() -> void:
+	_dead_ancestor()
+	s.mastery["gather_wood"] = {"level": 10, "xp": 0.0, "claimed": [5, 10]}
+	assert_true(act.legacy.succeed(s)["ok"])
+	var silver: float = s.resources["silver"]
+	assert_eq(s.mastery["gather_wood"]["level"], 1, "levels are the body's")
+	var def: Dictionary = reg.mastery_for_action("gather_wood")
+	s.mastery["gather_wood"]["level"] = 9
+	s.mastery["gather_wood"]["xp"] = act.mastery.xp_required(def, 9)
+	act.mastery.on_completed(s, "gather_wood")
+	assert_eq(s.mastery["gather_wood"]["level"], 10)
+	assert_eq(s.resources["silver"], silver, "the level-10 reward was already paid to the line")
+	assert_eq(_roundtrip(s).mastery["gather_wood"]["claimed"], [5, 10])
+
+
+func test_heir_does_not_skip_a_stage_the_ancestor_never_left() -> void:
+	_dead_ancestor()
+	s.realm_id = "vo"
+	assert_true(act.legacy.succeed(s)["ok"])
+	assert_eq(s.realm_id, "vo")
+	assert_eq(act.legacy.dao_qua_for(s), 0)
+
+
+func test_can_succeed_needs_config_and_death() -> void:
+	assert_false(act.legacy.can_succeed(s))
+	_dead_ancestor()
+	assert_true(act.legacy.can_succeed(s))
+	reg.config.erase("legacy")
+	assert_false(act.legacy.can_succeed(s))
+
+
+func test_config_validation_catches_bad_flags_and_stats() -> void:
+	for mut in [func(l: Dictionary) -> void: l["reset_flags"] = [123],
+			func(l: Dictionary) -> void: l["bonuses"][0]["stat"] = "speed.khong_co"]:
+		var r := TestHelpers.real_registry()
+		mut.call(r.config["legacy"])
+		r.errors.clear()
+		r.validate()
+		assert_false(r.errors.is_empty())
+
+
 func test_heir_walks_back_to_truc_co_without_story() -> void:
 	# the ancestor's story is done and never replays: the heir must still climb on its own (no softlock)
 	var w: Dictionary = TestHelpers.world(11)
@@ -243,13 +284,4 @@ func test_heir_walks_back_to_truc_co_without_story() -> void:
 
 
 func _climb(a: ActionSystem, st: GameState) -> void:
-	var steps: int = 0
-	while steps < 60000 and st.realm_id != "truc_co_so" and a.lifespan.is_alive(st):
-		steps += 1
-		BalanceSimulator.resolve_story(a, st)
-		var id: String = BalanceSimulator.policy(a, st)
-		if not a.start_action(st, id)["ok"]:
-			continue
-		if a.registry.actions[id]["type"] != "INSTANT":
-			a.advance(st, a.duration_ticks(a.registry.actions[id], st))
-			a.stop_action(st)
+	TestHelpers.climb_to(a, st)

@@ -902,12 +902,17 @@ func _validate_legacy_config() -> void:
 		errors.append("config.legacy.start_realm must be a known realm")
 	elif realms[start].get("story_promotion", false) or realms[start].get("mortal", false):
 		errors.append("config.legacy.start_realm must not be a story-promoted stage (the heir could never leave it)")
+	for f in c.get("reset_flags", []):
+		if typeof(f) != TYPE_STRING or f == "":
+			errors.append("config.legacy.reset_flags: entries must be non-empty strings")
 	for t in c.get("keep_technique_roles", []):
 		if not ["base", "main"].has(t):
 			errors.append("config.legacy.keep_technique_roles: unknown role %s" % t)
 	for b in c.get("bonuses", []):
 		if typeof(b) != TYPE_DICTIONARY or typeof(b.get("stat")) != TYPE_STRING or not GameState.is_number(b.get("per_dao_qua")) 				or not GameState.is_number(b.get("cap")) or float(b["per_dao_qua"]) < 0.0 or float(b["cap"]) < 0.0:
 			errors.append("config.legacy.bonuses: each needs stat, per_dao_qua >= 0, cap >= 0")
+		elif not _valid_stat(b["stat"]):
+			errors.append("config.legacy.bonuses: unknown stat '%s'" % b["stat"])
 
 
 func _validate_automation_config() -> void:

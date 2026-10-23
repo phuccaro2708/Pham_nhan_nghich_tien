@@ -78,6 +78,7 @@ func _ready() -> void:
 		var r: ContentRegistry = GameController.registry
 		_say(r.text("ui.dungeon.log_" + res) % r.text(r.dungeons[d]["name_key"]), UiTheme.ACCENT_JADE if res == "cleared" else UiTheme.ACCENT_CINNABAR))
 	EventBus.game_loaded.connect(func(_r: Dictionary) -> void: _pages.reset())
+	EventBus.succession_done.connect(func(_g: int, _d: int) -> void: _pages.reset())
 	_on_loaded(GameController.last_offline_report)
 	GameController.last_offline_report = {}  # shown once, not again on every return from the menu
 	_refresh()
@@ -511,7 +512,7 @@ func _refresh() -> void:
 		_age_label.text = reg.text("ui.realm_line") % [
 			reg.text(stage["name_key"]), s.age_years, life.limit(s),
 			reg.text("ui.deceased_suffix") if not life.is_alive(s) else (reg.text("ui.warning_suffix") if life.is_warning(s) else "")]
-	_new_life.visible = not life.is_alive(s)
+	_new_life.visible = GameController.actions.legacy.can_succeed(s)
 	var rs: ResourceSystem = GameController.actions.resources
 	for id in _res_rows:
 		var v: float = float(s.resources.get(id, 0.0))
