@@ -56,3 +56,7 @@ Khiếm khuyết cần chứng cứ; hướng nghiên cứu đóng đến khi th
 ## V5 — `tests/unit/test_story_echo.gd`
 
 Node chờ thông hang mới mở; văn bản khác nhau cho từng nguồn pháp môn; mỗi nhánh chỉ thấy lựa chọn riêng + lựa chọn miễn phí; 4 nhánh hội tụ ở một node với cờ/quan hệ/tài nguyên khác nhau; `walk_on` vẫn hội tụ; không mở lại và không trả thưởng hai lần qua save/load; mọi choice có hint và hiện trong sổ Nhân Quả; localization vi/en.
+
+## V6 — `tests/unit/test_breakthrough_chance.gd`, `tests/simulation/test_vertical_slice_sim.gd`
+
+Số hạng có dữ liệu, P trong [min, max ≤ 0,8]; P phản ánh mastery/thương tích/Đạo Tâm/công pháp; kẹp sàn trần; automation và offline không đột phá; pity ssau 3 lần hỏng; số hạng sai bị validate chặn. Sim: 3 công pháp chủ tu × 3 seed tới Trúc Cơ còn sống, cả khi thiếu mảnh công pháp.

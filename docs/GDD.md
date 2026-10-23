@@ -725,3 +725,7 @@ Lý do: Tàn Kinh phải đổi *con đường tu luyện*, không phải cộng
 
 Lý do: lựa chọn ở chương I chỉ có nghĩa nếu nhiều giờ chơi sau đó thế giới còn nhớ. Sau khi thông Hắc Thạch Động (`black_rock_cleared`), node `ch6_rock_echo` mở ra và **nhận ra nguồn pháp môn** (`qi_source`: guided, evidence, relic, rogue) bằng văn bản riêng. Mỗi nguồn có một lựa chọn riêng (đền đáp đạo sĩ, báo trưởng thôn, ghép tàn quyển, lục sạch), và ai cũng có lựa chọn miễn phí `walk_on`. Các nhánh gặp nhau ở cùng một node nhưng để lại `rock_echo` khác nhau cùng phần thưởng/quan hệ khác nhau. Không đổi cơ chế nào ngoài dữ liệu.
 - Tương tác: thám hiểm (trigger từ cờ thông hang), story (`qi_source`), quan hệ, tài nguyên (mảnh công pháp cho V4).
+
+### 6.6. Đột phá Trúc Cơ có số hạng thật (V6, GĐ1)
+
+Lý do: `chance.terms` để trống khiến P không phản ánh cách chơi. Nay P gồm nền tảng (mastery), thương tích (âm), Đạo Tâm (lựa chọn story) và `insight_modifier` công pháp; trần giảm 0,95 → 0,80 theo §6.5. Đột phá vẫn chỉ do người chơi ra lệnh (automation và offline không chạy), pity sau 3 lần hỏng giữ nguyên.

@@ -6,10 +6,12 @@ extends RefCounted
 signal breakthrough_resolved(success: bool, from_id: String, to_id: String)
 
 var registry: ContentRegistry
+var _conditions := ConditionEvaluator.new()
 
 
 func _init(p_registry: ContentRegistry) -> void:
 	registry = p_registry
+	_conditions.content = p_registry
 
 
 func stage(state: GameState) -> Dictionary:
@@ -32,14 +34,19 @@ func breakthrough_costs(state: GameState) -> Dictionary:
 	return breakthrough_def(state).get("costs", {})
 
 
-## GDD §6.5: P = clamp(base + sum(weight * clamp(resource/max, 0, 1)), min, max). 1.0 without a chance block.
+## GDD §6.5: P = clamp(base + sum(terms) + insight, min, max). 1.0 without a chance block.
+## A term is {resource, weight, max} (weight * clamp(resource/max, 0, 1)) or {when: condition, weight} (weight when it holds;
+## this is how wounds, mastery and story choices (Đạo Tâm) enter, V6).
 func success_chance(state: GameState) -> float:
 	var ch: Dictionary = breakthrough_def(state).get("chance", {})
 	if ch.is_empty():
 		return 1.0
 	var p: float = float(ch["base"])
 	for t in ch.get("terms", []):
-		p += float(t["weight"]) * clampf(float(state.resources.get(t["resource"], 0.0)) / float(t["max"]), 0.0, 1.0)
+		if t.has("when"):
+			p += float(t["weight"]) if _conditions.is_met(t["when"], state) else 0.0
+		else:
+			p += float(t["weight"]) * clampf(float(state.resources.get(t["resource"], 0.0)) / float(t["max"]), 0.0, 1.0)
 	p += registry.insight_total(state)  # techniques that help comprehension raise the odds (GDD 6.4 insight_modifier)
 	return clampf(p, float(ch["min"]), float(ch["max"]))
 

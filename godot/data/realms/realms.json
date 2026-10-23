@@ -160,9 +160,74 @@
    "chance": {
     "base": 0.45,
     "min": 0.3,
-    "max": 0.95,
+    "max": 0.8,
     "pity_failures": 3,
-    "terms": []
+    "terms": [
+      {
+       "when": {
+        "type": "mastery_level_at_least",
+        "action": "absorb_qi",
+        "level": 10
+       },
+       "weight": 0.08
+      },
+      {
+       "when": {
+        "type": "mastery_level_at_least",
+        "action": "absorb_qi",
+        "level": 20
+       },
+       "weight": 0.05
+      },
+      {
+       "when": {
+        "type": "wounds_at_least",
+        "value": 1
+       },
+       "weight": -0.05
+      },
+      {
+       "when": {
+        "type": "wounds_at_least",
+        "value": 3
+       },
+       "weight": -0.05
+      },
+      {
+       "when": {
+        "type": "wounds_at_least",
+        "value": 5
+       },
+       "weight": -0.1
+      },
+      {
+       "when": {
+        "any_of": [
+         {
+          "type": "choice_is",
+          "node": "ch6_rock_echo",
+          "choice": "echo_guided"
+         },
+         {
+          "type": "choice_is",
+          "node": "ch6_rock_echo",
+          "choice": "echo_evidence"
+         },
+         {
+          "type": "choice_is",
+          "node": "ch6_rock_echo",
+          "choice": "echo_relic"
+         },
+         {
+          "type": "choice_is",
+          "node": "ch6_rock_echo",
+          "choice": "echo_rogue"
+         }
+        ]
+       },
+       "weight": 0.06
+      }
+     ]
    },
    "on_fail_flag": "meridian_damaged",
    "on_fail_refund": {

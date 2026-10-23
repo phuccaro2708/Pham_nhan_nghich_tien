@@ -183,3 +183,7 @@ Sửa so với Phase 1: `MAX_AMOUNT` 1e7 → 1e15 (mục "Quy tắc bổ sung" �
 ## V5 — hệ quả story (không đổi schema)
 
 Không có trường mới: dùng `text_variants`, `later_hint_key`, `trigger` sẵn có. Node `ch6_rock_echo` mở bằng `flag_is black_rock_cleared`; lựa chọn riêng của từng nhánh khóa bằng `requirements: flag_is qi_source`.
+
+## V6 — số hạng đột phá (không đổi schema)
+
+`chance.terms[]` nhận thêm dạng `{"when": <condition>, "weight": n}`: cộng `weight` khi điều kiện đúng (dùng cho thương tích, mastery, lựa chọn story). Dạng cũ `{resource, weight, max}` giữ nguyên; không trộn hai dạng trong một số hạng.

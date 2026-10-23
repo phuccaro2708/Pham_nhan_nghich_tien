@@ -400,8 +400,12 @@ func _validate_breakthrough(b: Variant, p: String) -> void:
 	if not (GameState.is_number(ch.get("pity_failures", 0)) and int(ch.get("pity_failures", 0)) >= 0):
 		errors.append("%s: pity_failures must be >= 0" % p)
 	for term in ch.get("terms", []):
-		if typeof(term) != TYPE_DICTIONARY or not resources.has(term.get("resource", "")) or not GameState.is_number(term.get("weight")) or not (GameState.is_number(term.get("max")) and float(term["max"]) > 0.0):
-			errors.append("%s: chance term needs known 'resource', numeric 'weight' and 'max' > 0" % p)
+		if typeof(term) == TYPE_DICTIONARY and term.has("when"):
+			if not GameState.is_number(term.get("weight")) or term.has("resource"):
+				errors.append("%s: a 'when' term needs a numeric 'weight' and no 'resource'" % p)
+			errors.append_array(_conditions.validate(term["when"], self, p + ".chance.terms.when"))
+		elif typeof(term) != TYPE_DICTIONARY or not resources.has(term.get("resource", "")) or not GameState.is_number(term.get("weight")) or not (GameState.is_number(term.get("max")) and float(term["max"]) > 0.0):
+			errors.append("%s: chance term needs known 'resource', numeric 'weight' and 'max' > 0, or 'when' and 'weight'" % p)
 
 
 func _validate_migrations() -> void:
