@@ -488,12 +488,44 @@ func _on_auto_toggle() -> void:
 
 # ---------- cultivation ----------
 
+func _research_section(box: VBoxContainer, s: GameState) -> void:
+	var reg: ContentRegistry = GameController.registry
+	var rows: Array = reg.research.keys().filter(func(id: String) -> bool: return GameController.actions.conditions.is_met(reg.research[id].get("visible_when", {}), s))
+	if rows.is_empty():
+		return
+	_label(box, _t("ui.research.title"), UiTheme.SIZE_HEADER)
+	for id in rows:
+		var d: Dictionary = reg.research[id]
+		_label(box, _t(d["name_key"]))
+		_label(box, _t(d["desc_key"]), UiTheme.SIZE_SMALL, UiTheme.INK_SECONDARY)
+		if s.techniques.has(d["variant"]):
+			_label(box, _t("ui.research.done"), UiTheme.SIZE_SMALL, UiTheme.ACCENT_JADE)
+			continue
+		var parts: PackedStringArray = []
+		for rid in d["costs"]:
+			parts.append("%s %s" % [d["costs"][rid], _t(reg.resources[rid]["name_key"])])
+		_label(box, _t("ui.research.cost") % ", ".join(parts), UiTheme.SIZE_SMALL)
+		_label(box, _t("ui.research.chance") % int(round(float(d["chance"]) * 100.0)), UiTheme.SIZE_SMALL)
+		if int(d.get("pity_failures", 0)) > 0:
+			_label(box, _t("ui.research.pity") % [int(s.research_failures.get(id, 0)), int(d["pity_failures"])], UiTheme.SIZE_SMALL, UiTheme.INK_SECONDARY)
+		var b := Button.new()
+		b.text = _t("ui.research.try")
+		b.custom_minimum_size.y = 32
+		b.pressed.connect(func() -> void:
+			var r: Dictionary = GameController.research(str(id))
+			if not r["ok"]:
+				EventBus.log_message.emit(_reason(str(r["reason"]), r.get("detail")))
+		)
+		box.add_child(b)
+
+
 func _cultivation(s: GameState) -> void:
 	var reg: ContentRegistry = GameController.registry
 	var rs: RealmSystem = GameController.actions.realms
 	var costs: Dictionary = rs.breakthrough_costs(s)
 	var chk: Dictionary = GameController.actions.check_can_start(s, "breakthrough")
 	var sig: String = "%s|%s|%s|%s|%s|%s|%s|%d" % [s.realm_id, s.techniques, s.flags, snappedf(rs.success_chance(s), 0.001), chk["ok"], GameController.registry.language, s.main_technique, s.wounds]
+	sig += "|%s|%s" % [s.research_failures, int(s.resources.get("technique_fragment", 0.0))]
 	for rid in costs:
 		sig += "|%d" % int(float(s.resources.get(rid, 0.0)) / maxf(float(costs[rid]) / 50.0, 1.0))  # coarse: redraw per 2%
 	var box := _sync("cultivation", sig)
@@ -540,5 +572,6 @@ func _cultivation(s: GameState) -> void:
 			_label(box, _t("ui.cult.no_main"), UiTheme.SIZE_SMALL, UiTheme.ACCENT_CINNABAR)
 		else:
 			_label(box, _t("ui.cult.switch_cost") % snappedf(float(reg.config["technique"]["switch_age_years"]), 0.01), UiTheme.SIZE_SMALL, UiTheme.INK_SECONDARY)
+	_research_section(box, s)
 	if s.wounds > 0:
 		_label(box, _t("ui.cult.wounds") % [s.wounds, int(reg.config["combat"]["max_wounds"])], UiTheme.SIZE_SMALL, UiTheme.ACCENT_CINNABAR)

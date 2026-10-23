@@ -142,6 +142,8 @@ func migrate(data: Dictionary) -> Dictionary:
 				d["last_run"] = {}
 				if not (d.get("combat", {}) as Dictionary).is_empty():
 					d["combat"].merge({"tier": 0, "paused": false, "pills": 0})
+			8:  # v9 adds Tàn Kinh research: no attempt yet
+				d["research_failures"] = {}
 			_:
 				return {"error": "no migration from version %d" % v}
 		v += 1
@@ -160,7 +162,7 @@ func validate_state(d: Dictionary, registry: ContentRegistry) -> Array:
 	if not GameState.is_number(d.get("age_years")) or float(d["age_years"]) < 0.0:
 		errs.append("bad age_years")
 	for key in ["resources", "upgrades", "flags", "action_counts", "active_action", "save_metadata", "life", "orphans",
-			"mastery", "story", "relations", "automation", "combat", "dungeon_clears", "last_run"]:
+			"mastery", "story", "relations", "automation", "combat", "dungeon_clears", "last_run", "research_failures"]:
 		if typeof(d.get(key)) != TYPE_DICTIONARY:
 			errs.append("%s must be an object" % key)
 	if typeof(d.get("techniques")) != TYPE_ARRAY:
@@ -220,6 +222,9 @@ func _validate_combat(d: Dictionary, registry: ContentRegistry, errs: Array) -> 
 		if not registry.has_dungeon(id) or not GameState.is_int(d["dungeon_clears"][id]) or int(d["dungeon_clears"][id]) < 0:
 			errs.append("bad dungeon_clears %s" % id)
 	_validate_last_run(d["last_run"], registry, errs)
+	for id in d["research_failures"]:
+		if not registry.research.has(id) or not GameState.is_int(d["research_failures"][id]) or int(d["research_failures"][id]) < 0:
+			errs.append("bad research_failures %s" % id)
 	var c: Dictionary = d["combat"]
 	if c.is_empty():
 		return

@@ -47,3 +47,7 @@ OfflineSystem: ActionSystem.advance(ticks) với offline_mode = true (≤ 8 gi�
 ## V3 — Thám hiểm có chuẩn bị (schema 8)
 
 `CombatSystem` được mở rộng, không thay mới. `ContentRegistry.dungeon_tiers(id)` chuẩn hóa mọi bí cảnh thành danh sách tầng (danh sách `enemies` phẳng = 1 tầng, nên Rừng Trúc Ảnh không đổi) và `scaled_enemy` tính quái đã nhân `enemy_scale`/`loot_mult`; cả combat lẫn validate save đều dùng chung. `state.combat` thêm `tier`, `paused`, `pills`; `state.last_run` ghi kết thúc chuyến cuối. Vượt hết quái của một tầng thì `paused = true` (ghi trước khi trả thưởng tầng), `ActionSystem.advance` không trôi tick combat nữa, và chỉ `continue_run` / `leave_run` (lệnh qua `GameController`) mở lại. Offline và `abort` vẫn hủy chuyến kể cả khi đang dừng. Đan nhập qua `enter_dungeon(id, prep)`; chi phí chỉ trừ sau khi `check_enter` pass và được hoàn lại ở `_end`. Tín hiệu mới: `tier_cleared` → `EventBus.dungeon_tier_cleared`. Migration 7→8: `last_run = {}`, chuyến đang chạy nhận `tier 0, paused false, pills 0`.
+
+## V4 — Nghiên cứu Tàn Kinh (schema 9)
+
+`ContentRegistry.research` (dữ liệu `data/research/`) và `ActionSystem.research(state, route_id)` là lệnh duy nhất; UI gọi qua `GameController.research`. Trả giá và tuổi trước, roll bằng `SimRng` (bỏ qua khi pity), thất bại hoàn `on_fail_refund` và gây `on_fail_wounds`. `state.research_failures` (route → số lần hỏng) không nằm trong `WORLD_KEYS`. Tín hiệu `research_resolved` → `EventBus`. Migration 8→9: `research_failures = {}`.

@@ -713,3 +713,10 @@ Lý do: combat tự động chỉ có một quyết định (vào hay không). M
 - **Thua**: thêm 1 thương tích (V2), không mất vật phẩm bắt buộc. Game ghi `last_run` (bí cảnh, kết quả, số tầng, nguyên nhân: `wounded` khi đang mang ≥ 2 thương tích, `out_of_pills` khi không mang đan, `too_strong` còn lại) và gợi ý đổi cách chuẩn bị ở lần sau.
 - **Hắc Thạch Động**: 3 tầng (dơi và nhện đá → nhện và vượn đá, mạnh ×1,25, lợi ×1,5 → Thạch Thủ, mạnh ×1,5, lợi ×2,5), mở sau khi thông Rừng Trúc Ảnh, cần Luyện Khí 3. Mảnh công pháp là vật liệu cho V4 (Nghịch Mệnh Tàn Kinh).
 - Tương tác: công pháp chủ tu (build mạnh/yếu), thọ nguyên (tuổi mỗi tầng), tài nguyên (đan, thảo dược), tri thức (`mem_black_rock`), offline (hủy chuyến), cốt truyện (ký ức `mem_black_rock` để V5 nhận ra).
+
+### 8.2. Nghịch Mệnh Tàn Kinh: nghiên cứu công pháp (V4, GĐ1)
+
+Lý do: Tàn Kinh phải đổi *con đường tu luyện*, không phải cộng phần trăm. Vòng chơi: **thấy khiếm khuyết** (thông Hắc Thạch Động, rồi đối chiếu Tàn Kinh với Dẫn Khí, tốn 2 Mảnh Công Pháp) → **thu chứng cứ** (Mảnh Công Pháp rơi từ thám hiểm) → **thử một hướng sửa** → nhận **công pháp biến thể**.
+- 3 hướng, mỗi hướng ra một biến thể `role: main` nên tranh ô chủ tu với Thanh Mộc, Huyết Luyện, Ngũ Hành: Ổn Định (an toàn, 90%, bonus nhỏ, hồi thêm thương tích), Cấp Tốc (65%, hấp thu mạnh, +1 thương tích mỗi chuyến), Nghịch Kinh (40%, hấp thu/công kích/ngộ tính cao, +2 thương tích mỗi chuyến, hỏng thì bị thương).
+- Thất bại không mất Tàn Kinh: hoàn 40–50% vật liệu, tính vào pity (sau 2 lần hỏng, lần kế chắc chắn thành). Đã có biến thể thì hướng đó đóng, thưởng chỉ phát một lần. Đếm thất bại là ký ức của nhân vật, không bị luân hồi đảo ngược.
+- Tương tác: công pháp chủ tu (V2), loot thám hiểm (V3), tri thức, thương tích, thọ nguyên (mỗi lần thử tốn tuổi), RNG có seed.

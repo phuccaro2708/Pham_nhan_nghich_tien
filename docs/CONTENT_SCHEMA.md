@@ -173,3 +173,9 @@ Sửa so với Phase 1: `MAX_AMOUNT` 1e7 → 1e15 (mục "Quy tắc bổ sung" �
 - Resource `healing_pill` (id cố định, Combat dùng), `technique_fragment`.
 - `enter_dungeon(id, prep)` với `prep = {pills: n}`; lý do từ chối mới: `too_many_pills`, `no_pills`, `not_paused` (cho continue/leave).
 - Save v8: `combat.tier/paused/pills`; `last_run` = `{}` hoặc `{dungeon, result ∈ cleared|defeated|retreated|left, depth ∈ [0, số tầng], cause ∈ ""|wounded|out_of_pills|too_strong}`. Chuyến đang dừng phải có `index` = số quái của tầng, `enemy_hp` 0 và chưa phải tầng cuối.
+
+## V4 — research và biến thể (schema_version 9)
+
+- `data/research/*.json`: `{id, name_key, desc_key, technique, variant, costs{}, chance (0,1], pity_failures ≥ 0, on_fail_refund [0,1], on_fail_wounds ≥ 0, age_cost_years ≥ 0, visible_when, requirements}`. `variant` phải là công pháp `role: main` có `variant_of == technique`.
+- Technique thêm `variant_of` (id công pháp khác).
+- Save v9: `research_failures` = `{route_id: int ≥ 0}`. Lý do từ chối: `unknown_route`, `already_done`.

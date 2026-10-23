@@ -8,7 +8,7 @@ Nguồn: GDD §XIV.1. Mỗi version nhỏ: docs → test → GUT xanh → báo c
 | V1 | Tiên Lộ + phản hồi lựa chọn | GĐ1 | 6 | Xong (chờ duyệt) |
 | V2 | Công pháp chủ tu + thương tích | GĐ1 | 7 | Xong (chờ duyệt) |
 | V3 | Thám hiểm chuẩn bị (Hắc Thạch Động, không rút lui tự động) | GĐ1 | 8 | Xong (chờ duyệt) |
-| V4 | Nghịch Mệnh Tàn Kinh | GĐ1 | 9 | Chờ |
+| V4 | Nghịch Mệnh Tàn Kinh | GĐ1 | 9 | Xong (chờ duyệt) |
 | V5 | Story hệ quả về sau | GĐ1 | 9 | Chờ |
 | V6 | Đột phá Trúc Cơ + cổng lát cắt (3 hướng) | GĐ1 | 9 | Chờ |
 | V7 | Chống softlock chiến dịch dài | GĐ1 | 9 | Chờ |

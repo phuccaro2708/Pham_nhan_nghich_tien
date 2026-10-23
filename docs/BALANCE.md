@@ -92,3 +92,13 @@ Casual vượt mục tiêu 3–5 h ~0,3 h (đã lệch từ trước, không ph�
 | Luyện Khí 6 | 5 | 40/40 | 3,0 |
 
 Ý đồ: ở mức cảnh giới yêu cầu, đi tay không thì thua và phải biết rút ở tầng 1–2, mang đủ đan mới có cơ hội thông; vài tầng cảnh giới sau thì đủ đan là chắc. Số đan, `pill_threshold` 0,4, `pill_heal` 0,5, `tier_heal` 0,3, `enemy_scale` 0 / 0,25 / 0,5 là hệ số khởi điểm, sẽ chỉnh tiếp ở cổng cân bằng V6 cùng công pháp chủ tu.
+
+## Nghiên cứu Tàn Kinh (V4) — hệ số khởi điểm
+
+| Hướng | Mảnh | Bạc | Cơ hội | Pity | Hoàn khi hỏng | Thương tích khi hỏng |
+|---|---|---|---|---|---|---|
+| Ổn Định | 3 | 20 | 0,9 | 0 | 50% | 0 |
+| Cấp Tốc | 5 | 40 | 0,65 | 2 | 50% | 0 |
+| Nghịch Kinh | 8 | 60 | 0,4 | 2 | 40% | 1 |
+
+Chưa đo bằng simulation; sẽ chỉnh ở cổng cân bằng V6.

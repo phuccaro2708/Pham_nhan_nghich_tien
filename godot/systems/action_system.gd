@@ -6,6 +6,7 @@ extends RefCounted
 
 signal action_completed(action_id: String)
 signal action_stopped(action_id: String, reason: String)
+signal research_resolved(route_id: String, success: bool)
 
 const MIN_ACTION_SECONDS: float = 0.25  # GDD §5.2 T_min
 
@@ -156,6 +157,49 @@ func set_main_technique(state: GameState, technique_id: String) -> Dictionary:
 		lifespan.commit_age(state, float(registry.config["technique"]["switch_age_years"]))
 	state.main_technique = technique_id
 	return {"ok": true, "reason": ""}
+
+
+## Tries one data-defined route that mends a technique's flaw (V4). The price and the years are paid up front; a failure
+## returns `on_fail_refund` of the price, may wound, and counts toward pity (after `pity_failures` the next try is certain).
+## The counter moves before the technique is learned and a known variant ends the route, so the reward is paid once.
+func research(state: GameState, route_id: String) -> Dictionary:
+	if not registry.research.has(route_id):
+		return {"ok": false, "reason": "unknown_route"}
+	if not lifespan.is_alive(state):
+		return {"ok": false, "reason": "deceased"}
+	if combat.is_active(state):
+		return {"ok": false, "reason": "in_dungeon"}
+	var def: Dictionary = registry.research[route_id]
+	if state.techniques.has(def["variant"]):
+		return {"ok": false, "reason": "already_done"}
+	if not conditions.is_met(def.get("visible_when", {}), state):
+		return {"ok": false, "reason": "not_discovered"}
+	var fail: Dictionary = conditions.first_failure(def.get("requirements", {}), state)
+	if not fail.is_empty() or not state.techniques.has(def["technique"]):
+		return {"ok": false, "reason": "requirements_not_met", "detail": fail}
+	var costs: Dictionary = def["costs"]
+	var miss: Dictionary = resources.missing(state, costs)
+	if not miss.is_empty():
+		return {"ok": false, "reason": "insufficient_resources", "detail": miss}
+	resources.spend(state, costs)
+	if not lifespan.commit_age(state, float(def.get("age_cost_years", 0.0))):
+		resources.refund(state, costs)  # the years ran out before the work began: nothing was attempted
+		return {"ok": false, "reason": "deceased"}
+	var failures: int = int(state.research_failures.get(route_id, 0))
+	var pity: int = int(def.get("pity_failures", 0))
+	var success: bool = (pity > 0 and failures >= pity) or SimRng.next_float(state) < float(def["chance"])
+	if success:
+		state.research_failures.erase(route_id)
+		effects.apply(state, [{"type": "learn_technique", "technique": def["variant"]}])
+	else:
+		state.research_failures[route_id] = failures + 1
+		var back: Dictionary = {}
+		for rid in costs:
+			back[rid] = float(costs[rid]) * float(def.get("on_fail_refund", 0.0))
+		resources.refund(state, back)
+		combat.add_wounds(state, int(def.get("on_fail_wounds", 0)))
+	research_resolved.emit(route_id, success)
+	return {"ok": true, "reason": "", "success": success}
 
 
 ## prep = {pills: n}: pills are taken from the stock at the door and come back if unused.

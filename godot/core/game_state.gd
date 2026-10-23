@@ -2,7 +2,7 @@ class_name GameState
 extends RefCounted
 ## Pure runtime data. No Node references, no behaviour beyond (de)serialisation.
 
-const SCHEMA_VERSION: int = 8
+const SCHEMA_VERSION: int = 9
 const START_AGE_YEARS: float = 16.0
 ## Fixed precision so values survive a JSON round trip and never drift.
 const SNAP_SCALE: float = 1000000.0
@@ -56,6 +56,8 @@ var combat: Dictionary = {}
 var last_run: Dictionary = {}
 ## dungeon_id -> number of cleared runs.
 var dungeon_clears: Dictionary = {}
+## Nghịch Mệnh Tàn Kinh (V4): research route id -> failed attempts since the last success (drives pity). Character continuity, not rewound.
+var research_failures: Dictionary = {}
 ## Data the running content does not recognise. Preserved, never deleted: {resources, upgrades, action_counts, active_action}.
 var orphans: Dictionary = {}
 
@@ -116,6 +118,7 @@ func to_dict() -> Dictionary:
 		"combat": combat.duplicate(true),
 		"last_run": last_run.duplicate(true),
 		"dungeon_clears": dungeon_clears.duplicate(true),
+		"research_failures": research_failures.duplicate(true),
 	}
 
 
@@ -184,6 +187,8 @@ static func from_dict(d: Dictionary) -> GameState:
 		s.last_run = {"dungeon": str(lr["dungeon"]), "result": str(lr["result"]), "depth": int(lr["depth"]), "cause": str(lr.get("cause", ""))}
 	for k in d.get("dungeon_clears", {}):
 		s.dungeon_clears[str(k)] = int(d["dungeon_clears"][k])
+	for k in d.get("research_failures", {}):
+		s.research_failures[str(k)] = int(d["research_failures"][k])
 	var au: Dictionary = d.get("automation", {})
 	if not au.is_empty():
 		s.automation = {"slots": [], "cursor": int(au.get("cursor", 0)), "loop": bool(au.get("loop", false)),

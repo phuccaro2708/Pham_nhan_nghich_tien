@@ -250,7 +250,7 @@ func test_v7_save_migrates_to_v8() -> void:
 	old["schema_version"] = 7
 	old["combat"] = {"dungeon": "bamboo_forest", "index": 0, "player_hp": 50, "enemy_hp": 10, "player_cd": 5, "enemy_cd": 5}
 	var m: Dictionary = sm.migrate(old)
-	assert_eq(m["schema_version"], 8)
+	assert_eq(m["schema_version"], GameState.SCHEMA_VERSION)
 	assert_eq(m["last_run"], {})
 	assert_eq(m["combat"]["tier"], 0)
 	assert_eq(m["combat"]["paused"], false)

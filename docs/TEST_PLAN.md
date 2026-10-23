@@ -48,3 +48,7 @@ Chỉ chủ tu có bonus; 3 build khác biệt; luật + chi phí đổi chủ t
 ## V3 — `tests/unit/test_prepared_dungeon.gd`
 
 Tầng là dữ liệu (kể cả `enemies` phẳng); điều kiện vào; tầng sâu mạnh hơn và lợi hơn; chuyến dừng chờ người chơi, đợi không tốn tuổi, offline không quyết thay; `leave_run` giữ lợi và trả tuổi theo tầng; `continue/leave` chỉ khi đang dừng; thông hết trả thưởng đúng một lần và ghi `last_run`; đan trừ khi vào, từ chối không tốn gì; đan tự uống khi máu thấp; thua ghi nguyên nhân + thương tích; tái lập từ cùng seed; chuẩn bị đổi kết quả (20 seed, không đan vs 5 đan); luyện đan; save round-trip lúc đang dừng + validate (tier/pills/index/last_run sai); migration 7→8; validate content tầng sai.
+
+## V4 — `tests/unit/test_research.gd`
+
+Khiếm khuyết cần chứng cứ; hướng nghiên cứu đóng đến khi thấy khiếm khuyết; cần công pháp gốc; từ chối không mất gì; biến thể có cái giá; 3 hướng ra 3 biến thể khác nhau; thất bại hoàn một phần + pity; tất định theo seed; thưởng một lần và save round-trip + validate; không nghiên cứu khi ở bí cảnh/đã chết; migration 8→9; validate content; localization vi/en.

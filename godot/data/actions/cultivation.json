@@ -340,5 +340,40 @@
   "age_cost_years": 0.0,
   "offline_allowed": false,
   "group": "cultivation"
+ },
+ {
+  "id": "study_flaw",
+  "type": "INSTANT",
+  "name_key": "action.study_flaw",
+  "costs": {
+   "technique_fragment": 2
+  },
+  "effects": [
+   {
+    "type": "learn_knowledge",
+    "knowledge": "flaw_dan_khi"
+   }
+  ],
+  "requirements": {
+   "type": "technique_known",
+   "technique": "dan_khi_nhap_mon"
+  },
+  "visible_when": {
+   "all_of": [
+    {
+     "type": "knows",
+     "knowledge": "mem_black_rock"
+    },
+    {
+     "not": {
+      "type": "knows",
+      "knowledge": "flaw_dan_khi"
+     }
+    }
+   ]
+  },
+  "age_cost_years": 0.01,
+  "offline_allowed": false,
+  "group": "cultivation"
  }
 ]

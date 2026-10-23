@@ -148,5 +148,11 @@
   "name_key": "knowledge.mem_black_rock",
   "desc_key": "knowledge.mem_black_rock.desc",
   "group": "memory"
+ },
+ {
+  "id": "flaw_dan_khi",
+  "name_key": "knowledge.flaw_dan_khi",
+  "desc_key": "knowledge.flaw_dan_khi.desc",
+  "group": "cultivation"
  }
 ]

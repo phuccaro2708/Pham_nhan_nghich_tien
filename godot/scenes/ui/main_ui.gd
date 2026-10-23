@@ -68,6 +68,9 @@ func _ready() -> void:
 	EventBus.dungeon_enemy_defeated.connect(func(_d: String, e: String) -> void:
 		var r: ContentRegistry = GameController.registry
 		_say(r.text("ui.dungeon.log_kill") % r.text(r.enemies[e]["name_key"])))
+	EventBus.research_resolved.connect(func(id: String, ok: bool) -> void:
+		var r: ContentRegistry = GameController.registry
+		_say(r.text("ui.research.log_ok" if ok else "ui.research.log_fail") % r.text(r.research[id]["name_key"]), UiTheme.ACCENT_JADE if ok else UiTheme.ACCENT_CINNABAR))
 	EventBus.dungeon_tier_cleared.connect(func(d: String, t: int) -> void:
 		var r: ContentRegistry = GameController.registry
 		_say(r.text("ui.dungeon.log_tier") % [t + 1, r.text(r.dungeons[d]["name_key"])], UiTheme.ACCENT_JADE))

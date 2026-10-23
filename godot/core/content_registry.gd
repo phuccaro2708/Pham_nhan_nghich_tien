@@ -23,6 +23,8 @@ var relations: Dictionary = {}
 ## Combat content (GDD §VIII): enemies and dungeons (bí cảnh) by id.
 var enemies: Dictionary = {}
 var dungeons: Dictionary = {}
+## Nghịch Mệnh Tàn Kinh (V4): routes that mend a technique's flaw into a variant, by id.
+var research: Dictionary = {}
 ## Tiên Lộ (GDD §XIV.1, V1): path milestones by id, `path_order` is display order.
 var path_entries: Dictionary = {}
 var path_order: Array = []
@@ -112,6 +114,7 @@ func load_all(base: String = "res://data") -> bool:
 	_load_dir(base + "/enemies", enemies, "enemy")
 	_load_dir(base + "/dungeons", dungeons, "dungeon")
 	_load_dir(base + "/path", path_entries, "path")
+	_load_dir(base + "/research", research, "research")
 	_load_texts(base + "/localization/vi.json")
 	translations = {"vi": texts}
 	_load_translation(base + "/localization/en.json", "en")
@@ -169,6 +172,7 @@ func _register(kind: String, d: Variant, source: String) -> void:
 		"enemy": target = enemies
 		"dungeon": target = dungeons
 		"path": target = path_entries
+		"research": target = research
 		_: target = actions
 	if target.has(d["id"]):
 		errors.append("%s: duplicate %s id '%s'" % [source, kind, d["id"]])
@@ -228,6 +232,7 @@ func validate() -> void:
 	_validate_mastery()
 	_validate_story()
 	_validate_path()
+	_validate_research()
 	_validate_combat()
 	_validate_migrations()
 	_validate_automation_config()
@@ -459,6 +464,8 @@ func _validate_techniques() -> void:
 			errors.append("%s: insight_modifier must be in [0, 0.5]" % p)
 		if not ["base", "main"].has(d.get("role", "base")):
 			errors.append("%s: role must be 'base' or 'main'" % p)
+		if d.has("variant_of") and not (techniques.has(d["variant_of"]) and d["variant_of"] != id):
+			errors.append("%s: variant_of must name another technique" % p)
 		var traits: Variant = d.get("traits", {})
 		if typeof(traits) != TYPE_DICTIONARY:
 			errors.append("%s: traits must be an object" % p)
@@ -468,6 +475,38 @@ func _validate_techniques() -> void:
 					errors.append("%s: trait '%s' must be one of %s with an integer >= 0" % [p, k, TECHNIQUE_TRAITS])
 		if typeof(d.get("element", "")) != TYPE_STRING or typeof(d.get("grade", "")) != TYPE_STRING:
 			errors.append("%s: element and grade must be strings" % p)
+
+
+func _validate_research() -> void:
+	for id in research:
+		var d: Dictionary = research[id]
+		var p: String = "research '%s'" % id
+		_need_text(d, p, "name_key")
+		_need_text(d, p, "desc_key")
+		if not techniques.has(d.get("technique", "")):
+			errors.append("%s: unknown technique" % p)
+		var v: Dictionary = techniques.get(d.get("variant", ""), {})
+		if v.is_empty() or v.get("role", "base") != "main" or v.get("variant_of", "") != d.get("technique", ""):
+			errors.append("%s: variant must be a main technique with variant_of = technique" % p)
+		var costs: Variant = d.get("costs", {})
+		if typeof(costs) != TYPE_DICTIONARY or (costs as Dictionary).is_empty():
+			errors.append("%s: costs must be a non-empty object" % p)
+		else:
+			for rid in costs:
+				if not resources.has(rid) or not GameState.is_number(costs[rid]) or float(costs[rid]) <= 0.0:
+					errors.append("%s: bad cost '%s'" % [p, rid])
+		if not (GameState.is_number(d.get("chance")) and float(d["chance"]) > 0.0 and float(d["chance"]) <= 1.0):
+			errors.append("%s: chance must be in (0, 1]" % p)
+		if not (GameState.is_int(d.get("pity_failures", 0)) and int(d.get("pity_failures", 0)) >= 0):
+			errors.append("%s: pity_failures must be an integer >= 0" % p)
+		if not (GameState.is_number(d.get("on_fail_refund", 0.0)) and float(d.get("on_fail_refund", 0.0)) >= 0.0 and float(d.get("on_fail_refund", 0.0)) <= 1.0):
+			errors.append("%s: on_fail_refund must be in [0, 1]" % p)
+		if not (GameState.is_int(d.get("on_fail_wounds", 0)) and int(d.get("on_fail_wounds", 0)) >= 0):
+			errors.append("%s: on_fail_wounds must be an integer >= 0" % p)
+		if not (GameState.is_number(d.get("age_cost_years", 0.0)) and float(d.get("age_cost_years", 0.0)) >= 0.0):
+			errors.append("%s: age_cost_years must be >= 0" % p)
+		for k in ["visible_when", "requirements"]:
+			errors.append_array(_conditions.validate(d.get(k, {}), self, "%s %s" % [p, k]))
 
 
 func _validate_bonus_list(list: Variant, p: String) -> void:
