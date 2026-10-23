@@ -59,4 +59,4 @@ Node chờ thông hang mới mở; văn bản khác nhau cho từng nguồn phá
 
 ## V6 — `tests/unit/test_breakthrough_chance.gd`, `tests/simulation/test_vertical_slice_sim.gd`
 
-Số hạng có dữ liệu, P trong [min, max ≤ 0,8]; P phản ánh mastery/thương tích/Đạo Tâm/công pháp; kẹp sàn trần; automation và offline không đột phá; pity ssau 3 lần hỏng; số hạng sai bị validate chặn. Sim: 3 công pháp chủ tu × 3 seed tới Trúc Cơ còn sống, cả khi thiếu mảnh công pháp.
+Số hạng có dữ liệu, P trong [min, max ≤ 0,8]; P phản ánh mastery/thương tích/Đạo Tâm/công pháp; kẹp sàn trần; automation và offline không đột phá; pity sau 3 lần hỏng; số hạng sai bị validate chặn. Sim: 3 công pháp chủ tu × 3 seed tới Trúc Cơ còn sống, cả khi thiếu mảnh công pháp.
