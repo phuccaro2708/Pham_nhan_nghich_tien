@@ -271,7 +271,8 @@
       "knowledge": "mem_taoist_wound"
      }
     ],
-    "next": "ch1_mountain_incident"
+    "next": "ch1_mountain_incident",
+    "later_hint_key": "story.ch1_wounded_taoist.heal.later"
    },
    {
     "id": "loot",
@@ -298,7 +299,8 @@
       "knowledge": "mem_taoist_wound"
      }
     ],
-    "next": "ch1_mountain_incident"
+    "next": "ch1_mountain_incident",
+    "later_hint_key": "story.ch1_wounded_taoist.loot.later"
    },
    {
     "id": "ask_first",
@@ -315,7 +317,8 @@
       "knowledge": "mem_taoist_wound"
      }
     ],
-    "next": "ch1_mountain_incident"
+    "next": "ch1_mountain_incident",
+    "later_hint_key": "story.ch1_wounded_taoist.ask_first.later"
    }
   ],
   "trigger": {
@@ -391,7 +394,25 @@
     "next": "ch1_return"
    }
   ],
-  "chain_only": true
+  "chain_only": true,
+  "text_variants": [
+   {
+    "when": {
+     "type": "choice_is",
+     "node": "ch1_wounded_taoist",
+     "choice": "heal"
+    },
+    "text_key": "story.ch1_mountain_incident.text.healed"
+   },
+   {
+    "when": {
+     "type": "choice_is",
+     "node": "ch1_wounded_taoist",
+     "choice": "loot"
+    },
+    "text_key": "story.ch1_mountain_incident.text.robbed"
+   }
+  ]
  },
  {
   "id": "ch1_return",

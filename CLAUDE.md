@@ -10,7 +10,7 @@ Codex (QA/nghiên cứu), Figma (UI/UX), Pixelab (pixel art dự bị) — xem A
 
 ## Nguyên tắc bất biến
 
-- GDD là nguồn sự thật. **Không mở rộng scope ngoài MVP** (Phàm Nhân → Trúc Cơ). Đổi thiết kế → sửa GDD trước, ghi lý do.
+- GDD là nguồn sự thật. **Không mở rộng scope ngoài giai đoạn hiện tại** (3 giai đoạn, GDD §XIV.1: GĐ1 Phàm Nhân → Trúc Cơ, GĐ2 → Hóa Thần, GĐ3 → Phi Thăng; không code giai đoạn sau khi giai đoạn trước chưa qua cổng cân bằng). Đổi thiết kế → sửa GDD trước, ghi lý do.
 - Data-driven: nội dung (action, story, công pháp, resource) nằm trong `godot/data/` dạng JSON, ID cố định. Không hardcode nội dung trong UI hay logic.
 - UI không sửa GameState trực tiếp: UI → command → simulation validate → event.
 - Simulation deterministic: fixed-step 0,1 s, RNG có seed và lưu được, không phụ thuộc FPS.

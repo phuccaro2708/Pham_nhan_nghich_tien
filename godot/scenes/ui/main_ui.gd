@@ -22,6 +22,23 @@ var _group_heads: Dictionary = {}  # same key -> header button, hidden while the
 var _vis_sig: String = ""  # action button visibility last applied to the group headers
 var _since: float = 0.0
 var _pages: StoryPages
+var _dungeon_btns: Dictionary = {}  # dungeon_id -> Button
+var _dungeon_info: Dictionary = {}  # dungeon_id -> Label (clears, age cost)
+var _dungeon_none: Label  # shown while no dungeon is discovered
+var _run_box: VBoxContainer  # the run in progress; hidden otherwise
+var _run_enemy: Label
+var _run_enemy_bar: ProgressBar
+var _run_you: Label
+var _run_you_bar: ProgressBar
+var _prep_row: HBoxContainer  # V3: pills to bring along
+var _prep_label: Label
+var _pill_spin: SpinBox
+var _last_hint: Label  # why the last run failed and what to change
+var _run_tier: Label
+var _run_pause: Label
+var _run_continue: Button
+var _run_leave: Button
+var _run_retreat: Button
 
 
 func _ready() -> void:
@@ -48,6 +65,18 @@ func _ready() -> void:
 	EventBus.breakthrough_resolved.connect(func(ok: bool, f: String, t: String) -> void:
 		var r: ContentRegistry = GameController.registry
 		_say(r.text("ui.breakthrough_ok") % [r.text(r.stage_of(f)["name_key"]), r.text(r.stage_of(t)["name_key"])] if ok else r.text("ui.breakthrough_fail")))
+	EventBus.dungeon_enemy_defeated.connect(func(_d: String, e: String) -> void:
+		var r: ContentRegistry = GameController.registry
+		_say(r.text("ui.dungeon.log_kill") % r.text(r.enemies[e]["name_key"])))
+	EventBus.research_resolved.connect(func(id: String, ok: bool) -> void:
+		var r: ContentRegistry = GameController.registry
+		_say(r.text("ui.research.log_ok" if ok else "ui.research.log_fail") % r.text(r.research[id]["name_key"]), UiTheme.ACCENT_JADE if ok else UiTheme.ACCENT_CINNABAR))
+	EventBus.dungeon_tier_cleared.connect(func(d: String, t: int) -> void:
+		var r: ContentRegistry = GameController.registry
+		_say(r.text("ui.dungeon.log_tier") % [t + 1, r.text(r.dungeons[d]["name_key"])], UiTheme.ACCENT_JADE))
+	EventBus.dungeon_run_ended.connect(func(d: String, res: String) -> void:
+		var r: ContentRegistry = GameController.registry
+		_say(r.text("ui.dungeon.log_" + res) % r.text(r.dungeons[d]["name_key"]), UiTheme.ACCENT_JADE if res == "cleared" else UiTheme.ACCENT_CINNABAR))
 	EventBus.game_loaded.connect(func(_r: Dictionary) -> void: _pages.reset())
 	_on_loaded(GameController.last_offline_report)
 	GameController.last_offline_report = {}  # shown once, not again on every return from the menu
@@ -90,7 +119,7 @@ func _build() -> void:
 	var main_page := HBoxContainer.new()
 	_pages.setup(main_page)
 	body.add_child(_pages)
-	var area := _column(main_page, "", 100)
+	var area := _column(main_page, reg.text("ui.col_area"), 100)
 	var area_btn := Button.new()
 	area_btn.text = reg.text("area.village.name")
 	area_btn.disabled = true  # the MVP has a single area; this column is the slot for future ones
@@ -104,6 +133,11 @@ func _build() -> void:
 		var def: Dictionary = reg.actions[id]
 		var col: String = "upgrade" if def.has("upgrade") else ("instant" if def["type"] == "INSTANT" else "loop")
 		_add_action(_group_body("c|" + col, cols[col], str(def.get("group", ""))), id)
+
+	var next := _column(main_page, reg.text("ui.col_next"), 0)
+	_pages.attach_next(next)
+	var dungeon := _column(main_page, reg.text("ui.col_dungeon"), 0)
+	_build_dungeon(dungeon)
 
 	var res := _column(main_page, "", 230)
 	for id in reg.resources:
@@ -120,10 +154,137 @@ func _build() -> void:
 	log_panel.add_child(_log)
 
 
+func _build_dungeon(col: VBoxContainer) -> void:
+	var reg: ContentRegistry = GameController.registry
+	_dungeon_none = Label.new()
+	_dungeon_none.text = reg.text("ui.dungeon.locked")
+	_dungeon_none.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	col.add_child(_dungeon_none)
+	_prep_row = HBoxContainer.new()
+	_prep_label = Label.new()
+	_pill_spin = SpinBox.new()
+	_pill_spin.min_value = 0
+	_prep_row.add_child(_prep_label)
+	_prep_row.add_child(_pill_spin)
+	col.add_child(_prep_row)
+	_last_hint = Label.new()
+	_last_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_last_hint.add_theme_color_override("font_color", UiTheme.ACCENT_CINNABAR)
+	col.add_child(_last_hint)
+	for id in reg.dungeons:
+		var b := Button.new()
+		b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		b.custom_minimum_size.y = 44
+		b.pressed.connect(func() -> void:
+			var r: Dictionary = GameController.enter_dungeon(id, _prep())
+			if not r["ok"]:
+				_say(reg.text("ui.dungeon.cannot") % _explain(r)))
+		col.add_child(b)
+		_dungeon_btns[id] = b
+		var info := Label.new()
+		info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		info.add_theme_font_size_override("font_size", UiTheme.SIZE_SMALL)
+		col.add_child(info)
+		_dungeon_info[id] = info
+	_run_box = VBoxContainer.new()
+	_run_box.visible = false
+	col.add_child(_run_box)
+	_run_enemy = Label.new()
+	_run_enemy_bar = ProgressBar.new()
+	_run_you = Label.new()
+	_run_you_bar = ProgressBar.new()
+	for n in [_run_enemy_bar, _run_you_bar]:
+		n.show_percentage = false
+	_run_retreat = Button.new()
+	_run_retreat.text = reg.text("ui.dungeon.retreat")
+	_run_retreat.pressed.connect(func() -> void: GameController.actions.combat.retreat(GameController.state))
+	_run_tier = Label.new()
+	_run_pause = Label.new()
+	_run_pause.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_run_continue = Button.new()
+	_run_continue.text = reg.text("ui.dungeon.continue")
+	_run_continue.pressed.connect(func() -> void: GameController.continue_run())
+	_run_leave = Button.new()
+	_run_leave.text = reg.text("ui.dungeon.leave")
+	_run_leave.pressed.connect(func() -> void: GameController.leave_run())
+	for n in [_run_tier, _run_enemy, _run_enemy_bar, _run_you, _run_you_bar, _run_pause, _run_continue, _run_leave, _run_retreat]:
+		_run_box.add_child(n)
+
+
+func _prep() -> Dictionary:
+	return {"pills": int(_pill_spin.value)}
+
+
+func _refresh_dungeon(s: GameState) -> void:
+	var reg: ContentRegistry = GameController.registry
+	var combat: CombatSystem = GameController.actions.combat
+	var any: bool = false
+	for id in _dungeon_btns:
+		var def: Dictionary = reg.dungeons[id]
+		var shown: bool = GameController.actions.conditions.is_met(def.get("visible_when", {}), s)
+		var chk: Dictionary = combat.check_enter(s, id, _prep())
+		any = any or shown
+		_dungeon_btns[id].visible = shown
+		_dungeon_btns[id].text = "%s — %s" % [reg.text("ui.dungeon.enter"), reg.text(def["name_key"])]
+		UiTheme.set_locked(_dungeon_btns[id], not chk["ok"])
+		_dungeon_btns[id].tooltip_text = "" if chk["ok"] else _explain(chk)
+		_dungeon_info[id].visible = shown
+		var lines: Array = [reg.text(def["desc_key"]), reg.text("ui.dungeon.clears") % int(s.dungeon_clears.get(id, 0)),
+			reg.text("ui.dungeon.age_cost") % _fmt(float(def.get("age_cost_years", 0.0)))]
+		if def.has("danger"):
+			lines.append(reg.text("ui.dungeon.danger") % int(def["danger"]))
+		if def.has("tiers"):
+			lines.append(reg.text("ui.dungeon.tiers") % [(def["tiers"] as Array).size(), _fmt(float(def.get("tier_age_years", 0.0)))])
+		_dungeon_info[id].text = "\n".join(lines)
+	_dungeon_none.visible = not any
+	var active: bool = combat.is_active(s)
+	_run_box.visible = active
+	var pills: int = mini(int(floor(float(s.resources.get("healing_pill", 0.0)))), int(reg.config["combat"]["max_pills"]))
+	_pill_spin.max_value = pills
+	_prep_label.text = reg.text("ui.dungeon.prep_pills") % pills
+	_prep_row.visible = any and not active and pills > 0
+	_last_hint.visible = any and not active and s.last_run.get("result", "") == "defeated"
+	if _last_hint.visible:
+		_last_hint.text = reg.text("ui.dungeon.hint." + str(s.last_run["cause"]))
+	if not active:
+		return
+	var c: Dictionary = s.combat
+	var paused: bool = combat.is_paused(s)
+	var max_hp: int = combat.max_hp(s)
+	_run_tier.text = "%s   %s" % [reg.text("ui.dungeon.tier") % [int(c["tier"]) + 1, reg.dungeon_tiers(c["dungeon"]).size()],
+		reg.text("ui.dungeon.pills_left") % int(c["pills"])]
+	_run_you.text = reg.text("ui.dungeon.you") % [int(c["player_hp"]), max_hp]
+	_run_you_bar.max_value = float(max_hp)
+	_run_you_bar.value = float(c["player_hp"])
+	for n in [_run_pause, _run_continue, _run_leave]:
+		n.visible = paused
+	for n in [_run_enemy, _run_enemy_bar, _run_retreat]:
+		n.visible = not paused
+	if paused:
+		_run_pause.text = reg.text("ui.dungeon.paused") % (int(c["tier"]) + 1)
+		return
+	var enemy: Dictionary = combat.enemy_at(c["dungeon"], int(c["tier"]), int(c["index"]))
+	_run_enemy.text = reg.text("ui.dungeon.enemy") % [reg.text(enemy["name_key"]), int(c["enemy_hp"]), int(enemy["hp"])]
+	_run_enemy_bar.max_value = float(enemy["hp"])
+	_run_enemy_bar.value = float(c["enemy_hp"])
+
+
 ## Left tab-style column: game controls.
 func _build_nav(parent: Control) -> void:
 	var reg: ContentRegistry = GameController.registry
-	var nav := _column(parent, "", 130)
+	var nav := _column(parent, reg.text("ui.col_menu"), 130)
+	var help := Button.new()
+	help.text = "?"
+	help.pressed.connect(func() -> void:
+		var d := AcceptDialog.new()
+		d.title = reg.text("ui.col_menu")
+		d.dialog_text = reg.text("ui.help.text")
+		d.dialog_autowrap = true
+		d.confirmed.connect(d.queue_free)
+		d.canceled.connect(d.queue_free)
+		add_child(d)
+		d.popup_centered(Vector2i(480, 0)))
+	nav.add_child(help)
 	var stop := Button.new()
 	stop.text = reg.text("ui.stop_action")
 	stop.pressed.connect(func() -> void: GameController.stop_action())
@@ -388,7 +549,11 @@ func _refresh() -> void:
 		for k in _groups:
 			_group_heads[k].visible = _groups[k].get_children().any(func(c: Control) -> bool: return c.visible)
 	_pages.refresh()
-	_active_label.text = reg.text("ui.idle") if active == "" else reg.text("ui.doing") % reg.text(reg.actions[active]["name_key"])
+	_refresh_dungeon(s)
+	if GameController.actions.combat.is_active(s):
+		_active_label.text = reg.text("ui.doing") % reg.text(reg.dungeons[s.combat["dungeon"]]["name_key"])
+	else:
+		_active_label.text = reg.text("ui.idle") if active == "" else reg.text("ui.doing") % reg.text(reg.actions[active]["name_key"])
 
 
 func _fmt(v: float) -> String:

@@ -36,6 +36,10 @@ func _ready() -> void:
 	actions.mastery.level_up.connect(func(id: String, lv: int) -> void: EventBus.mastery_level_up.emit(id, lv))
 	actions.story.event_pending.connect(func(n: String) -> void: EventBus.story_pending.emit(n))
 	actions.story.choice_resolved.connect(func(n: String, c: String) -> void: EventBus.story_resolved.emit(n, c))
+	actions.combat.enemy_defeated.connect(func(d: String, e: String) -> void: EventBus.dungeon_enemy_defeated.emit(d, e))
+	actions.research_resolved.connect(func(r: String, ok: bool) -> void: EventBus.research_resolved.emit(r, ok))
+	actions.combat.tier_cleared.connect(func(d: String, t: int) -> void: EventBus.dungeon_tier_cleared.emit(d, t))
+	actions.combat.run_ended.connect(func(d: String, r: String) -> void: EventBus.dungeon_run_ended.emit(d, r))
 	actions.automation.status_changed.connect(func(s: String, r: String) -> void: EventBus.automation_changed.emit(s, r))
 	var cfg := ConfigFile.new()
 	if cfg.load(SETTINGS_PATH) == OK:
@@ -123,7 +127,29 @@ func set_language(lang: String, persist: bool = true) -> void:
 		cfg.save(SETTINGS_PATH)
 
 
+func set_main_technique(id: String) -> Dictionary:
+	return actions.set_main_technique(state, id)
+
+
+func research(route_id: String) -> Dictionary:
+	return actions.research(state, route_id)
+
+
+func enter_dungeon(id: String, prep: Dictionary = {}) -> Dictionary:
+	return actions.enter_dungeon(state, id, prep)
+
+
+func continue_run() -> Dictionary:
+	return actions.continue_run(state)
+
+
+func leave_run() -> Dictionary:
+	return actions.leave_run(state)
+
+
+## Stop leaves a dungeon run too (the time spent is still paid in age).
 func stop_action() -> void:
+	actions.combat.retreat(state)
 	actions.stop_action(state)
 
 

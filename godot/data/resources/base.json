@@ -1,6 +1,7 @@
 [
  {
   "id": "wood",
+  "required_for_main": true,
   "name_key": "resource.wood",
   "cap": 200,
   "initial": 0,
@@ -8,6 +9,7 @@
  },
  {
   "id": "silver",
+  "required_for_main": true,
   "name_key": "resource.silver",
   "cap": null,
   "initial": 0,
@@ -15,6 +17,7 @@
  },
  {
   "id": "body",
+  "required_for_main": true,
   "name_key": "resource.body",
   "cap": 1000,
   "initial": 0,
@@ -22,6 +25,7 @@
  },
  {
   "id": "spirit_qi",
+  "required_for_main": true,
   "name_key": "resource.spirit_qi",
   "cap": 100,
   "initial": 0,
@@ -33,6 +37,7 @@
  },
  {
   "id": "cultivation",
+  "required_for_main": true,
   "name_key": "resource.cultivation",
   "cap_from": "cultivation_cap",
   "initial": 0,
@@ -44,9 +49,34 @@
  },
  {
   "id": "herb",
+  "required_for_main": true,
   "name_key": "resource.herb",
   "cap": 100,
   "initial": 0,
   "group": "materials"
+ },
+ {
+  "id": "healing_pill",
+  "name_key": "resource.healing_pill",
+  "cap": 20,
+  "initial": 0,
+  "group": "materials",
+  "visible_when": {
+   "type": "flag_is",
+   "flag": "bamboo_forest_cleared",
+   "value": true
+  }
+ },
+ {
+  "id": "technique_fragment",
+  "name_key": "resource.technique_fragment",
+  "cap": 50,
+  "initial": 0,
+  "group": "materials",
+  "visible_when": {
+   "type": "flag_is",
+   "flag": "bamboo_forest_cleared",
+   "value": true
+  }
  }
 ]

@@ -177,6 +177,8 @@ static func _orphan_phase2b(d: Dictionary, registry: ContentRegistry) -> void:
 			d["orphans"].erase("techniques")
 		else:
 			d["orphans"]["techniques"] = lost_t
+	if d.get("main_technique", "") != "" and not (d["techniques"] as Array).has(d["main_technique"]):
+		d["main_technique"] = ""
 	var know: Variant = d.get("knowledge")
 	if typeof(know) == TYPE_ARRAY:  # same parking rule as techniques: unknown ids wait in orphans
 		var kkeep: Array = []

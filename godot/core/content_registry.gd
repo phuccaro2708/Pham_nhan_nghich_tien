@@ -4,6 +4,8 @@ extends RefCounted
 ## Each data file is a JSON array of definitions.
 
 const COST_TIMINGS: Array = ["start", "complete"]
+## Trade-off knobs of a technique (V2): wounds gained per dungeon run, extra wounds healed per rest.
+const TECHNIQUE_TRAITS: Array = ["injury_per_run", "heal_bonus"]
 const ACTION_TYPES: Array = ["INSTANT", "TIMED", "LOOP"]  # Phase 1 subset of GDD §5.1
 
 var resources: Dictionary = {}
@@ -18,6 +20,14 @@ var story_order: Array = []
 var techniques: Dictionary = {}
 var knowledge: Dictionary = {}
 var relations: Dictionary = {}
+## Combat content (GDD §VIII): enemies and dungeons (bí cảnh) by id.
+var enemies: Dictionary = {}
+var dungeons: Dictionary = {}
+## Nghịch Mệnh Tàn Kinh (V4): routes that mend a technique's flaw into a variant, by id.
+var research: Dictionary = {}
+## Tiên Lộ (GDD §XIV.1, V1): path milestones by id, `path_order` is display order.
+var path_entries: Dictionary = {}
+var path_order: Array = []
 ## `texts` is the primary language (vi) and the validation base; `texts_en` etc. live in `translations`.
 var texts: Dictionary = {}
 var translations: Dictionary = {}  # lang -> {key: text}
@@ -40,8 +50,43 @@ func has_upgrade(id: Variant) -> bool: return upgrades.has(id)
 func has_realm(id: Variant) -> bool: return realms.has(id)
 func has_story_node(id: Variant) -> bool: return story.has(id)
 func has_technique(id: Variant) -> bool: return techniques.has(id)
+
+
+## The one stage that forms the Kim Đan (its `core` block, V9): {grades:[{id,name_key,min_score,bonuses}], terms:[{when,weight}]}.
+func core_def() -> Dictionary:
+	for rid in realm_order:
+		if realms[rid].has("core"):
+			return realms[rid]["core"]
+	return {}
+
+
+## Rank of a grade id in the ladder (0 = lowest), -1 when unknown.
+func dan_grade_index(id: Variant) -> int:
+	var g: Array = core_def().get("grades", [])
+	for i in g.size():
+		if g[i]["id"] == id:
+			return i
+	return -1
+
+
+## Techniques whose bonuses count: every learned `base` technique plus the chosen main one.
+func active_techniques(state: GameState) -> Array:
+	var out: Array = []
+	for tid in state.techniques:
+		if techniques.get(tid, {}).get("role", "base") == "base" or tid == state.main_technique:
+			out.append(tid)
+	return out
+
+
+## Sum of `insight_modifier` over active techniques (GDD 6.4: raises the breakthrough chance).
+func insight_total(state: GameState) -> float:
+	var total: float = 0.0
+	for tid in active_techniques(state):
+		total += float(techniques[tid].get("insight_modifier", 0.0))
+	return total
 func has_relation(id: Variant) -> bool: return relations.has(id)
 func has_knowledge(id: Variant) -> bool: return knowledge.has(id)
+func has_dungeon(id: Variant) -> bool: return dungeons.has(id)
 
 
 ## Mastery definition of an action, {} when it has none.
@@ -83,6 +128,10 @@ func load_all(base: String = "res://data") -> bool:
 	_load_dir(base + "/knowledge", knowledge, "knowledge")
 	_load_dir(base + "/mastery", mastery, "mastery")
 	_load_dir(base + "/story", story, "story")
+	_load_dir(base + "/enemies", enemies, "enemy")
+	_load_dir(base + "/dungeons", dungeons, "dungeon")
+	_load_dir(base + "/path", path_entries, "path")
+	_load_dir(base + "/research", research, "research")
 	_load_texts(base + "/localization/vi.json")
 	translations = {"vi": texts}
 	_load_translation(base + "/localization/en.json", "en")
@@ -137,6 +186,10 @@ func _register(kind: String, d: Variant, source: String) -> void:
 		"knowledge": target = knowledge
 		"mastery": target = mastery
 		"story": target = story
+		"enemy": target = enemies
+		"dungeon": target = dungeons
+		"path": target = path_entries
+		"research": target = research
 		_: target = actions
 	if target.has(d["id"]):
 		errors.append("%s: duplicate %s id '%s'" % [source, kind, d["id"]])
@@ -146,6 +199,8 @@ func _register(kind: String, d: Variant, source: String) -> void:
 		realm_order.append(d["id"])
 	elif kind == "story":
 		story_order.append(d["id"])
+	elif kind == "path":
+		path_order.append(d["id"])
 
 
 func _load_texts(path: String) -> void:
@@ -193,6 +248,10 @@ func validate() -> void:
 	_validate_knowledge()
 	_validate_mastery()
 	_validate_story()
+	_validate_path()
+	_validate_research()
+	_validate_softlock()
+	_validate_combat()
 	_validate_migrations()
 	_validate_automation_config()
 	_validate_ui_config()
@@ -248,6 +307,8 @@ func _valid_stat(stat: String) -> bool:
 		return true
 	if stat.begins_with("speed."):
 		return actions.has(stat.substr(6))
+	if stat.begins_with("combat."):
+		return ["hp", "atk", "def", "spd"].has(stat.substr(7))
 	return stat.begins_with("yield.") and resources.has(stat.substr(6))
 
 
@@ -308,6 +369,7 @@ func _validate_action(d: Dictionary) -> void:
 
 func _validate_realms() -> void:
 	var prev_life: float = 0.0
+	var cores: int = 0
 	for i in realm_order.size():
 		var d: Dictionary = realms[realm_order[i]]
 		var p: String = "realm '%s'" % d["id"]
@@ -324,6 +386,37 @@ func _validate_realms() -> void:
 			errors.append("%s: only the last stage has no 'breakthrough'" % p)
 		elif not is_last:
 			_validate_breakthrough(d["breakthrough"], p + ".breakthrough")
+		if d.has("core"):
+			cores += 1
+			_validate_core(d["core"], p + ".core")
+	if cores > 1:
+		errors.append("realms: only one stage may have a 'core' block")
+
+
+func _validate_core(c: Variant, p: String) -> void:
+	if typeof(c) != TYPE_DICTIONARY or typeof(c.get("grades")) != TYPE_ARRAY or (c["grades"] as Array).is_empty():
+		errors.append("%s: needs a non-empty 'grades' array" % p)
+		return
+	var prev: float = -INF
+	var seen: Dictionary = {}
+	for g in c["grades"]:
+		if typeof(g) != TYPE_DICTIONARY or typeof(g.get("id")) != TYPE_STRING or seen.has(g["id"]) or not GameState.is_number(g.get("min_score")) or float(g["min_score"]) <= prev:
+			errors.append("%s: grades need unique ids and strictly rising numeric min_score" % p)
+			return
+		seen[g["id"]] = true
+		prev = float(g["min_score"])
+		if not texts.is_empty() and not texts.has(g.get("name_key", "")):
+			errors.append("%s: grade '%s' name_key missing in localization" % [p, g["id"]])
+		for b in g.get("bonuses", []):
+			if typeof(b) != TYPE_DICTIONARY or typeof(b.get("stat")) != TYPE_STRING or not GameState.is_number(b.get("value")):
+				errors.append("%s: grade '%s' bonus needs stat and numeric value" % [p, g["id"]])
+	if float((c["grades"] as Array)[0]["min_score"]) > 0.0:
+		errors.append("%s: the first grade must start at score 0 or below so every core gets a grade" % p)
+	for t in c.get("terms", []):
+		if typeof(t) != TYPE_DICTIONARY or not t.has("when") or not GameState.is_number(t.get("weight")):
+			errors.append("%s: a term needs 'when' and numeric 'weight'" % p)
+		else:
+			errors.append_array(_conditions.validate(t["when"], self, p + ".terms.when"))
 
 
 func _validate_breakthrough(b: Variant, p: String) -> void:
@@ -357,8 +450,12 @@ func _validate_breakthrough(b: Variant, p: String) -> void:
 	if not (GameState.is_number(ch.get("pity_failures", 0)) and int(ch.get("pity_failures", 0)) >= 0):
 		errors.append("%s: pity_failures must be >= 0" % p)
 	for term in ch.get("terms", []):
-		if typeof(term) != TYPE_DICTIONARY or not resources.has(term.get("resource", "")) or not GameState.is_number(term.get("weight")) or not (GameState.is_number(term.get("max")) and float(term["max"]) > 0.0):
-			errors.append("%s: chance term needs known 'resource', numeric 'weight' and 'max' > 0" % p)
+		if typeof(term) == TYPE_DICTIONARY and term.has("when"):
+			if not GameState.is_number(term.get("weight")) or term.has("resource"):
+				errors.append("%s: a 'when' term needs a numeric 'weight' and no 'resource'" % p)
+			errors.append_array(_conditions.validate(term["when"], self, p + ".chance.terms.when"))
+		elif typeof(term) != TYPE_DICTIONARY or not resources.has(term.get("resource", "")) or not GameState.is_number(term.get("weight")) or not (GameState.is_number(term.get("max")) and float(term["max"]) > 0.0):
+			errors.append("%s: chance term needs known 'resource', numeric 'weight' and 'max' > 0, or 'when' and 'weight'" % p)
 
 
 func _validate_migrations() -> void:
@@ -419,8 +516,96 @@ func _validate_techniques() -> void:
 		_validate_bonus_list(d.get("bonuses", []), p)
 		if d.has("insight_modifier") and not (GameState.is_number(d["insight_modifier"]) and float(d["insight_modifier"]) >= 0.0 and float(d["insight_modifier"]) <= 0.5):
 			errors.append("%s: insight_modifier must be in [0, 0.5]" % p)
+		if not ["base", "main"].has(d.get("role", "base")):
+			errors.append("%s: role must be 'base' or 'main'" % p)
+		if d.has("variant_of") and not (techniques.has(d["variant_of"]) and d["variant_of"] != id):
+			errors.append("%s: variant_of must name another technique" % p)
+		var traits: Variant = d.get("traits", {})
+		if typeof(traits) != TYPE_DICTIONARY:
+			errors.append("%s: traits must be an object" % p)
+		else:
+			for k in traits:
+				if not TECHNIQUE_TRAITS.has(k) or not GameState.is_int(traits[k]) or int(traits[k]) < 0:
+					errors.append("%s: trait '%s' must be one of %s with an integer >= 0" % [p, k, TECHNIQUE_TRAITS])
 		if typeof(d.get("element", "")) != TYPE_STRING or typeof(d.get("grade", "")) != TYPE_STRING:
 			errors.append("%s: element and grade must be strings" % p)
+
+
+## Softlock guard (GDD 11.4, V7): every `required_for_main` resource has a source that needs nothing but renewable resources,
+## and each failure state (damaged meridian, wounds) has a recovery action that needs only renewable resources.
+## Action requirements are not simulated: a source behind an unreachable condition is still the designer's call.
+func _validate_softlock() -> void:
+	var renewable: Dictionary = {}
+	var changed: bool = true
+	while changed:
+		changed = false
+		for aid in actions:
+			if not _all_renewable(actions[aid], renewable):
+				continue
+			for e in actions[aid].get("effects", []):
+				if e.get("type") == "add_resource" and not renewable.has(e.get("resource")):
+					renewable[e["resource"]] = true
+					changed = true
+	for rid in resources:
+		if resources[rid].get("required_for_main", false) and not renewable.has(rid):
+			errors.append("resource '%s': required_for_main but no action renews it without spending other non-renewable resources" % rid)
+	var cures: Array = []
+	for rid in realm_order:
+		var flag: Variant = realms[rid].get("breakthrough", {}).get("on_fail_flag")
+		if flag != null:
+			cures.append({"type": "set_flag", "flag": flag, "value": false})
+	if not dungeons.is_empty():
+		cures.append({"type": "heal_wounds"})
+	for cure in cures:
+		var found: bool = false
+		for aid in actions:
+			for e in actions[aid].get("effects", []):
+				if e.get("type") == cure["type"] and (cure["type"] == "heal_wounds" or (e.get("flag") == cure["flag"] and e.get("value") == false)) and _all_renewable(actions[aid], renewable):
+					found = true
+		if not found:
+			errors.append("softlock: no renewable action recovers from %s" % JSON.stringify(cure))
+
+
+func _all_renewable(action: Dictionary, renewable: Dictionary) -> bool:
+	var costs: Variant = action.get("costs", {})
+	if typeof(costs) != TYPE_DICTIONARY:
+		return false
+	for rid in costs:
+		if not renewable.has(rid):
+			return false
+	return true
+
+
+func _validate_research() -> void:
+	for id in research:
+		var d: Dictionary = research[id]
+		var p: String = "research '%s'" % id
+		_need_text(d, p, "name_key")
+		_need_text(d, p, "desc_key")
+		if not techniques.has(d.get("technique", "")):
+			errors.append("%s: unknown technique" % p)
+		var v: Dictionary = techniques.get(d.get("variant", ""), {})
+		if v.is_empty() or v.get("role", "base") != "main" or v.get("variant_of", "") != d.get("technique", ""):
+			errors.append("%s: variant must be a main technique with variant_of = technique" % p)
+		var costs: Variant = d.get("costs", {})
+		if typeof(costs) != TYPE_DICTIONARY or (costs as Dictionary).is_empty():
+			errors.append("%s: costs must be a non-empty object" % p)
+		else:
+			for rid in costs:
+				if not resources.has(rid) or not GameState.is_number(costs[rid]) or float(costs[rid]) <= 0.0:
+					errors.append("%s: bad cost '%s'" % [p, rid])
+		if not (GameState.is_number(d.get("chance")) and float(d["chance"]) > 0.0 and float(d["chance"]) <= 1.0):
+			errors.append("%s: chance must be in (0, 1]" % p)
+		if not (GameState.is_int(d.get("pity_failures", 0)) and int(d.get("pity_failures", 0)) >= 0):
+			errors.append("%s: pity_failures must be an integer >= 0" % p)
+		if not (GameState.is_number(d.get("on_fail_refund", 0.0)) and float(d.get("on_fail_refund", 0.0)) >= 0.0 and float(d.get("on_fail_refund", 0.0)) <= 1.0):
+			errors.append("%s: on_fail_refund must be in [0, 1]" % p)
+		if not (GameState.is_int(d.get("on_fail_wounds", 0)) and int(d.get("on_fail_wounds", 0)) >= 0):
+			errors.append("%s: on_fail_wounds must be an integer >= 0" % p)
+		if not (GameState.is_number(d.get("age_cost_years", 0.0)) and float(d.get("age_cost_years", 0.0)) >= 0.0):
+			errors.append("%s: age_cost_years must be >= 0" % p)
+		for k in ["visible_when", "requirements"]:
+			errors.append_array(_conditions.validate(d.get(k, {}), self, "%s %s" % [p, k]))
 
 
 func _validate_bonus_list(list: Variant, p: String) -> void:
@@ -472,6 +657,28 @@ func _validate_mastery() -> void:
 			_validate_effect_list(m.get("effects", []), "%s milestone %d" % [p, last])
 
 
+func _validate_path() -> void:
+	for id in path_order:
+		var d: Dictionary = path_entries[id]
+		var p: String = "path '%s'" % id
+		_need_text(d, p, "name_key")
+		_need_text(d, p, "goal_key")
+		for k in ["visible_when", "done_when"]:
+			if d.has(k):
+				errors.append_array(_conditions.validate(d[k], self, "%s.%s" % [p, k]))
+		for kid in d.get("clues", []):
+			if not knowledge.has(kid):
+				errors.append("%s: unknown clue knowledge '%s'" % [p, kid])
+		for b in d.get("blockers", []):
+			if typeof(b) != TYPE_DICTIONARY or not b.has("needs"):
+				errors.append("%s: blocker needs 'needs' and 'reason_key'" % p)
+				continue
+			errors.append_array(_conditions.validate(b["needs"], self, p + ".blockers.needs"))
+			if b.has("visible_when"):
+				errors.append_array(_conditions.validate(b["visible_when"], self, p + ".blockers.visible_when"))
+			_need_text(b, p + " blocker", "reason_key")
+
+
 func _validate_story() -> void:
 	for id in story_order:
 		var d: Dictionary = story[id]
@@ -482,6 +689,12 @@ func _validate_story() -> void:
 			errors.append("%s: chapter required" % p)
 		if d.has("trigger"):
 			errors.append_array(_conditions.validate(d["trigger"], self, p + ".trigger"))
+		for v in d.get("text_variants", []):  # later nodes recognise earlier choices
+			if typeof(v) != TYPE_DICTIONARY or not v.has("when"):
+				errors.append("%s: text_variants entries need 'when' and 'text_key'" % p)
+				continue
+			errors.append_array(_conditions.validate(v["when"], self, p + ".text_variants.when"))
+			_need_text(v, p + " text_variant", "text_key")
 		var choices: Variant = d.get("choices")
 		if typeof(choices) != TYPE_ARRAY or (choices as Array).is_empty():
 			errors.append("%s: needs at least one choice" % p)
@@ -497,6 +710,8 @@ func _validate_story() -> void:
 			_need_text(c, cp, "text_key")
 			if c.has("result_key"):
 				_need_text(c, cp, "result_key")
+			if c.has("later_hint_key"):
+				_need_text(c, cp, "later_hint_key")
 			errors.append_array(_conditions.validate(c.get("requirements", {}), self, cp + ".requirements"))
 			_validate_effect_list(c.get("effects", []), cp, true)
 			_validate_rewind_last(c.get("effects", []), cp)
@@ -547,6 +762,108 @@ func _story_cycle(id: String, state: Dictionary) -> bool:
 			return true
 	state[id] = 2
 	return false
+
+
+const COMBAT_STATS: Array = ["hp", "atk", "def", "spd", "hit", "crit"]
+
+
+func _validate_combat() -> void:
+	var cfg: Variant = config.get("combat")
+	if cfg == null:
+		if not dungeons.is_empty():
+			errors.append("config.combat is required when dungeons exist")
+		return
+	if typeof(cfg) != TYPE_DICTIONARY or typeof(cfg.get("player")) != TYPE_DICTIONARY:
+		errors.append("config.combat.player must be an object")
+		return
+	_validate_combatant(cfg["player"], "config.combat.player")
+	for k in ["stage_bonus", "crit_multiplier", "interval_base", "heal_after_kill", "max_pills", "pill_threshold", "pill_heal", "tier_heal"]:
+		if not (GameState.is_number(cfg.get(k)) and float(cfg[k]) >= 0.0):
+			errors.append("config.combat.%s must be a number >= 0" % k)
+	if GameState.is_number(cfg.get("interval_base")) and float(cfg["interval_base"]) < 1.0:
+		errors.append("config.combat.interval_base must be >= 1")
+	if GameState.is_number(cfg.get("heal_after_kill")) and float(cfg["heal_after_kill"]) > 1.0:
+		errors.append("config.combat.heal_after_kill must be <= 1")
+	for id in enemies:
+		var e: Dictionary = enemies[id]
+		var p: String = "enemy '%s'" % id
+		if not texts.is_empty() and not texts.has(e.get("name_key", "")):
+			errors.append("%s: name_key missing in localization" % p)
+		_validate_combatant(e, p)
+		_validate_effect_list(e.get("effects", []), p)
+	for id in dungeons:
+		var d: Dictionary = dungeons[id]
+		var p: String = "dungeon '%s'" % id
+		for k in ["name_key", "desc_key"]:
+			if not texts.is_empty() and not texts.has(d.get(k, "")):
+				errors.append("%s: %s missing in localization" % [p, k])
+		errors.append_array(_conditions.validate(d.get("visible_when", {}), self, p + " visible_when"))
+		errors.append_array(_conditions.validate(d.get("requirements", {}), self, p + ".requirements"))
+		if not (GameState.is_number(d.get("age_cost_years", 0.0)) and float(d.get("age_cost_years", 0.0)) >= 0.0):
+			errors.append("%s: age_cost_years must be >= 0" % p)
+		if d.has("tiers") == d.has("enemies"):
+			errors.append("%s: needs exactly one of enemies / tiers" % p)
+		elif typeof(d.get("tiers", d.get("enemies"))) != TYPE_ARRAY or (d.get("tiers", d.get("enemies")) as Array).is_empty():
+			errors.append("%s: enemies / tiers must be a non-empty array" % p)
+		else:
+			for t in dungeon_tiers(id):
+				_validate_tier(t, p)
+		for k in ["tier_age_years", "danger"]:
+			if d.has(k) and not (GameState.is_number(d[k]) and float(d[k]) >= 0.0):
+				errors.append("%s: %s must be >= 0" % [p, k])
+		_validate_effect_list(d.get("clear_effects", []), p)
+
+
+## A dungeon's tiers (V3). A flat `enemies` list is one tier with no scaling, so older dungeons need no change.
+## enemy_scale raises hp/atk/def of the tier's enemies, loot_mult multiplies their add_resource amounts.
+func dungeon_tiers(id: String) -> Array:
+	var d: Dictionary = dungeons[id]
+	if not d.has("tiers"):
+		return [{"enemies": d["enemies"], "enemy_scale": 0.0, "loot_mult": 1.0, "clear_effects": []}]
+	var out: Array = []
+	for t in d["tiers"]:
+		out.append({"enemies": t.get("enemies", []), "enemy_scale": float(t.get("enemy_scale", 0.0)),
+			"loot_mult": float(t.get("loot_mult", 1.0)), "clear_effects": t.get("clear_effects", [])})
+	return out
+
+
+## The enemy as met in `tier`: hp/atk/def grow with the tier's enemy_scale, its loot with loot_mult.
+func scaled_enemy(dungeon_id: String, tier: int, index: int) -> Dictionary:
+	var t: Dictionary = dungeon_tiers(dungeon_id)[tier]
+	var e: Dictionary = (enemies[t["enemies"][index]] as Dictionary).duplicate(true)
+	var k: float = 1.0 + float(t["enemy_scale"])
+	e["hp"] = maxi(int(round(float(e["hp"]) * k)), 1)
+	e["atk"] = float(e["atk"]) * k
+	e["def"] = float(e["def"]) * k
+	for fx in e.get("effects", []):
+		if fx["type"] == "add_resource":
+			fx["amount"] = float(fx["amount"]) * float(t["loot_mult"])
+	return e
+
+
+func _validate_tier(t: Dictionary, p: String) -> void:
+	if (t["enemies"] as Array).is_empty():
+		errors.append("%s: a tier needs enemies" % p)
+	for eid in t["enemies"]:
+		if not enemies.has(eid):
+			errors.append("%s: unknown enemy '%s'" % [p, eid])
+	for k in ["enemy_scale", "loot_mult"]:
+		if float(t[k]) < 0.0:
+			errors.append("%s: %s must be >= 0" % [p, k])
+	_validate_effect_list(t["clear_effects"], p)
+
+
+func _validate_combatant(c: Dictionary, p: String) -> void:
+	for k in COMBAT_STATS:
+		if not (GameState.is_number(c.get(k)) and float(c[k]) >= 0.0):
+			errors.append("%s: %s must be a number >= 0" % [p, k])
+	if GameState.is_number(c.get("hp")) and not (GameState.is_int(c["hp"]) and int(c["hp"]) >= 1):
+		errors.append("%s: hp must be an integer >= 1" % p)
+	if GameState.is_number(c.get("spd")) and float(c["spd"]) <= 0.0:
+		errors.append("%s: spd must be > 0" % p)
+	for k in ["hit", "crit"]:
+		if GameState.is_number(c.get(k)) and float(c[k]) > 1.0:
+			errors.append("%s: %s must be <= 1" % [p, k])
 
 
 const UI_TABS: Array = ["mastery", "automation", "cultivation"]  # pages of StoryPages

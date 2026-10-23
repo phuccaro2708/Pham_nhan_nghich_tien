@@ -75,3 +75,34 @@ Simulator 20 seed (`balance_sim --seeds=20`), 20/20 tới Trúc Cơ:
 | idle | 4,01 h | 4,01 h |
 
 Casual vượt mục tiêu 3–5 h ~0,3 h (đã lệch từ trước, không phải do thay đổi này). Chưa chỉnh số: để Phase 3 của kế hoạch.
+
+
+## Bí cảnh Rừng Trúc Ảnh (Phase B)
+`DMG = max(1, round(ATK − DEF×0.5))`, trượt = 0, chí mạng ×1,5; nhịp = `round(100 / SPD)` tick (0,1 s). Người chơi gốc: HP 60, ATK 7, DEF 1, SPD 10, HIT 0,9; +5%/tầng cảnh giới; hồi 20% HP sau mỗi kẻ địch. Kẻ địch: sói (18/5/0/12), heo rừng (30/6/1/8), rắn (40/8/1/10). Thua chỉ mất 0,02 tuổi (không mất tài nguyên) → không softlock. Mục tiêu: nhân vật gốc thắng khoảng 40–95% (test `test_base_character_can_clear_the_first_dungeon`, 20 seed). Chưa mô phỏng tinh chỉnh sâu hơn.
+
+## Hắc Thạch Động (V3) — đo bằng 40 seed, nhân vật không công pháp chủ tu, đi hết 3 tầng
+
+| Cảnh giới | Đan mang theo | Thông hết | Số tầng vượt trung bình |
+|---|---|---|---|
+| Luyện Khí 3 | 0 | 0/40 | 1,2 |
+| Luyện Khí 3 | 2 | 0/40 | 2,0 |
+| Luyện Khí 3 | 5 | 24/40 | 2,6 |
+| Luyện Khí 6 | 0 | 0/40 | 1,7 |
+| Luyện Khí 6 | 2 | 5/40 | 2,1 |
+| Luyện Khí 6 | 5 | 40/40 | 3,0 |
+
+Ý đồ: ở mức cảnh giới yêu cầu, đi tay không thì thua và phải biết rút ở tầng 1–2, mang đủ đan mới có cơ hội thông; vài tầng cảnh giới sau thì đủ đan là chắc. Số đan, `pill_threshold` 0,4, `pill_heal` 0,5, `tier_heal` 0,3, `enemy_scale` 0 / 0,25 / 0,5 là hệ số khởi điểm, sẽ chỉnh tiếp ở cổng cân bằng V6 cùng công pháp chủ tu.
+
+## Nghiên cứu Tàn Kinh (V4) — hệ số khởi điểm
+
+| Hướng | Mảnh | Bạc | Cơ hội | Pity | Hoàn khi hỏng | Thương tích khi hỏng |
+|---|---|---|---|---|---|---|
+| Ổn Định | 3 | 20 | 0,9 | 0 | 50% | 0 |
+| Cấp Tốc | 5 | 40 | 0,65 | 2 | 50% | 0 |
+| Nghịch Kinh | 8 | 60 | 0,4 | 2 | 40% | 1 |
+
+Chưa đo bằng simulation; sẽ chỉnh ở cổng cân bằng V6.
+
+## V9 — Phẩm Kim Đan (tạm thời)
+
+Điểm = tổng term: chủ tu thường +1, Cấp Tốc +1, Ổn Định +2, Nghịch Kinh +2, mastery hấp thu ≥10 / ≥20 mỗi mức +1, thương tích ≥1 / ≥3 mỗi mức −1, đã chọn nhánh tiếng vọng Hắc Thạch +1 (tối đa 5). Phẩm: Hạ ≥0, Trung ≥2, Thượng ≥4, Cực ≥5. Bonus phẩm: tốc độ hấp thu +0,10/+0,20/+0,30/+0,45, HP +10/25/45/70. Cả hai bộ số là giả định chờ simulation (V14).

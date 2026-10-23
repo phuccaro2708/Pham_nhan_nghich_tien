@@ -129,6 +129,25 @@ func migrate(data: Dictionary) -> Dictionary:
 			4:  # v5 adds luân hồi: no rewind has happened and no mốc is stored yet
 				d["loop"] = 0
 				d["checkpoint"] = {}
+			5:  # v6 adds dungeons: no run in progress, nothing cleared
+				d["combat"] = {}
+				d["dungeon_clears"] = {}
+			6:  # v7 adds công pháp chủ tu + thương tích; an old mốc gets the same two fields
+				d["main_technique"] = ""
+				d["wounds"] = 0
+				if not (d.get("checkpoint", {}) as Dictionary).is_empty():
+					d["checkpoint"]["main_technique"] = ""
+					d["checkpoint"]["wounds"] = 0
+			7:  # v8 adds prepared exploration: a run in progress gets tier 0 / not paused / no pills, nothing recorded yet
+				d["last_run"] = {}
+				if not (d.get("combat", {}) as Dictionary).is_empty():
+					d["combat"].merge({"tier": 0, "paused": false, "pills": 0})
+			8:  # v9 adds Tàn Kinh research: no attempt yet
+				d["research_failures"] = {}
+			9:  # v10 adds the Kim Đan grade: no core formed yet; an old mốc gets the same field
+				d["dan_grade"] = ""
+				if not (d.get("checkpoint", {}) as Dictionary).is_empty():
+					d["checkpoint"]["dan_grade"] = ""
 			_:
 				return {"error": "no migration from version %d" % v}
 		v += 1
@@ -147,7 +166,7 @@ func validate_state(d: Dictionary, registry: ContentRegistry) -> Array:
 	if not GameState.is_number(d.get("age_years")) or float(d["age_years"]) < 0.0:
 		errs.append("bad age_years")
 	for key in ["resources", "upgrades", "flags", "action_counts", "active_action", "save_metadata", "life", "orphans",
-			"mastery", "story", "relations", "automation"]:
+			"mastery", "story", "relations", "automation", "combat", "dungeon_clears", "last_run", "research_failures"]:
 		if typeof(d.get(key)) != TYPE_DICTIONARY:
 			errs.append("%s must be an object" % key)
 	if typeof(d.get("techniques")) != TYPE_ARRAY:
@@ -178,6 +197,7 @@ func validate_state(d: Dictionary, registry: ContentRegistry) -> Array:
 			errs.append("bad action_counts %s" % id)
 	_validate_progression(d, registry, errs)
 	_validate_phase2b(d, registry, errs)
+	_validate_combat(d, registry, errs)
 	if not (d["checkpoint"] as Dictionary).is_empty():
 		errs.append_array(_validate_checkpoint(d, registry))
 	var a: Dictionary = d["active_action"]
@@ -195,6 +215,65 @@ func validate_state(d: Dictionary, registry: ContentRegistry) -> Array:
 				if not registry.has_resource(id) or not GameState.is_number(a["costs_paid"][id]) or float(a["costs_paid"][id]) < 0.0:
 					errs.append("bad costs_paid entry %s" % id)
 	return errs
+
+
+const RUN_RESULTS: Array = ["cleared", "defeated", "retreated", "left"]
+const RUN_CAUSES: Array = ["", "wounded", "out_of_pills", "too_strong"]
+
+
+func _validate_combat(d: Dictionary, registry: ContentRegistry, errs: Array) -> void:
+	for id in d["dungeon_clears"]:
+		if not registry.has_dungeon(id) or not GameState.is_int(d["dungeon_clears"][id]) or int(d["dungeon_clears"][id]) < 0:
+			errs.append("bad dungeon_clears %s" % id)
+	_validate_last_run(d["last_run"], registry, errs)
+	for id in d["research_failures"]:
+		if not registry.research.has(id) or not GameState.is_int(d["research_failures"][id]) or int(d["research_failures"][id]) < 0:
+			errs.append("bad research_failures %s" % id)
+	var c: Dictionary = d["combat"]
+	if c.is_empty():
+		return
+	if not registry.has_dungeon(c.get("dungeon", "")):
+		errs.append("unknown dungeon in combat")
+		return
+	for k in ["tier", "pills", "index", "player_hp", "enemy_hp", "player_cd", "enemy_cd"]:
+		if not GameState.is_int(c.get(k)):
+			errs.append("bad combat %s" % k)
+			return
+	if typeof(c.get("paused")) != TYPE_BOOL:
+		errs.append("bad combat paused")
+		return
+	var tiers: Array = registry.dungeon_tiers(c["dungeon"])
+	var tier: int = int(c["tier"])
+	var cfg: Dictionary = registry.config.get("combat", {})
+	if tier < 0 or tier >= tiers.size() or int(c["pills"]) < 0 or int(c["pills"]) > int(cfg.get("max_pills", 0)):
+		errs.append("impossible combat progress")
+		return
+	var n: int = (tiers[tier]["enemies"] as Array).size()
+	var idx: int = int(c["index"])
+	var ok: bool = int(c["player_hp"]) >= 1 and int(c["player_cd"]) >= 1 and int(c["enemy_cd"]) >= 1
+	if c["paused"]:  # between tiers: the tier is done, nobody is fighting
+		ok = ok and tier < tiers.size() - 1 and idx == n and int(c["enemy_hp"]) == 0
+	else:
+		ok = ok and idx >= 0 and idx < n and int(c["enemy_hp"]) >= 1
+	if not ok:
+		errs.append("impossible combat progress")
+	elif not c["paused"] and int(c["enemy_hp"]) > int(registry.scaled_enemy(c["dungeon"], tier, idx)["hp"]):
+		errs.append("enemy_hp above the enemy's maximum")
+	elif not (d["active_action"] as Dictionary).is_empty():
+		errs.append("action running during a dungeon run")
+	elif (d["life"] as Dictionary).get("status") != "alive":
+		errs.append("deceased character in a dungeon")
+
+
+func _validate_last_run(lr: Dictionary, registry: ContentRegistry, errs: Array) -> void:
+	if lr.is_empty():
+		return
+	if not registry.has_dungeon(lr.get("dungeon", "")):
+		errs.append("unknown dungeon in last_run")
+	elif not (RUN_RESULTS.has(lr.get("result")) and RUN_CAUSES.has(lr.get("cause"))
+			and GameState.is_int(lr.get("depth")) and int(lr["depth"]) >= 0
+			and int(lr["depth"]) <= registry.dungeon_tiers(lr["dungeon"]).size()):
+		errs.append("bad last_run")
 
 
 ## A checkpoint is a world snapshot: validate it by swapping it into a copy of the state and running the same checks.
@@ -266,6 +345,15 @@ func _validate_phase2b(d: Dictionary, registry: ContentRegistry, errs: Array) ->
 	for tid in d["techniques"]:
 		if typeof(tid) != TYPE_STRING or not registry.has_technique(tid):
 			errs.append("unknown technique %s" % tid)
+	var mt: Variant = d.get("main_technique")
+	if typeof(mt) != TYPE_STRING or (mt != "" and (not d["techniques"].has(mt) or registry.techniques[mt].get("role", "base") != "main")):
+		errs.append("bad main_technique")
+	var max_w: int = int(registry.config.get("combat", {}).get("max_wounds", 0))
+	if not GameState.is_int(d.get("wounds")) or int(d["wounds"]) < 0 or int(d["wounds"]) > max_w:
+		errs.append("bad wounds")
+	var dg: Variant = d.get("dan_grade")
+	if typeof(dg) != TYPE_STRING or (dg != "" and registry.dan_grade_index(dg) < 0):
+		errs.append("bad dan_grade")
 	for kid in d["knowledge"]:
 		if typeof(kid) != TYPE_STRING or not registry.has_knowledge(kid):
 			errs.append("unknown knowledge %s" % kid)

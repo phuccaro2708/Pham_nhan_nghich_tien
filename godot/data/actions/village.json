@@ -108,5 +108,58 @@
   "age_cost_years": 0.003,
   "offline_allowed": true,
   "group": "village"
+ },
+ {
+  "id": "rest_heal",
+  "type": "TIMED",
+  "name_key": "action.rest_heal",
+  "duration": 10.0,
+  "costs": {},
+  "effects": [
+   {
+    "type": "heal_wounds",
+    "amount": 1
+   }
+  ],
+  "requirements": {
+   "all_of": [
+    {
+     "type": "wounds_at_least",
+     "value": 1
+    }
+   ]
+  },
+  "visible_when": {
+   "type": "wounds_at_least",
+   "value": 1
+  },
+  "age_cost_years": 0.01,
+  "offline_allowed": false,
+  "group": "village"
+ },
+ {
+  "id": "brew_pill",
+  "type": "TIMED",
+  "name_key": "action.brew_pill",
+  "duration": 8.0,
+  "costs": {
+   "herb": 2
+  },
+  "effects": [
+   {
+    "type": "add_resource",
+    "resource": "healing_pill",
+    "amount": 1
+   }
+  ],
+  "requirements": {},
+  "visible_when": {
+   "type": "flag_is",
+   "flag": "bamboo_forest_cleared",
+   "value": true
+  },
+  "age_cost_years": 0.004,
+  "offline_allowed": true,
+  "group": "village"
  }
 ]

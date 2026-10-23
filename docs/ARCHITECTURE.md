@@ -32,3 +32,22 @@ OfflineSystem: ActionSystem.advance(ticks) với offline_mode = true (≤ 8 gi�
 ## Tool
 
 `godot/tools/balance_simulator.gd` + `balance_sim.gd` (CLI headless), `tools/ui_shot.gd` (chụp UI, cần cửa sổ thật), `tools/gen_phase2b_data.py` (sinh dữ liệu).
+
+## Combat / Bí cảnh (schema 6)
+`CombatSystem` (domain thuần) giữ `state.combat` (dungeon, index, HP hai bên, cooldown). Tiến theo tick cố định qua `ActionSystem.advance`; mọi đòn dùng `SimRng` đã lưu nên tái lập được từ save. Thưởng (loot, clear_effects, tuổi) chỉ áp trong `_kill_enemy`/`_end` sau khi bộ đếm tiến, nên save/load không trả hai lần. Vào bí cảnh dừng action đang chạy và chặn `start_action` (`in_dungeon`). Offline/chết/luân hồi → `abort` (không phí). Tương tác: Lifespan (tuổi mỗi lượt), Resource (loot/thưởng qua EffectResolver), Realm (chỉ số theo tầng) + stat `combat.*` từ nâng cấp.
+
+## V1 — Tiên Lộ (PathSystem)
+
+`systems/path_system.gd` (`act.path`) là lớp đọc thuần từ `GameState`, không lưu gì nên không nâng schema. `entries` chỉ trả mục có `visible_when` đúng, manh mối nhân vật đã biết và blocker có `visible_when` đúng mà `needs` chưa thỏa; `current` là mục mở đầu tiên; `choice_preview` chỉ liệt kê chi phí, tài nguyên chắc chắn và quan hệ (không lộ knowledge/flag); `ledger` liệt kê lựa chọn đã chọn kèm `later_hint_key`. `StorySystem.node_text_key` chọn `text_variants` theo lựa chọn trước đó. UI: tab Tiên Lộ, cột Next Action dùng `path.current`, dòng xem trước dưới mỗi nút lựa chọn.
+
+## V2 — Công pháp chủ tu và thương tích (schema 7)
+
+`GameState.main_technique` và `wounds` (thuộc `WORLD_KEYS`, nên mốc/luân hồi mang theo). `ContentRegistry.active_techniques` = công pháp `base` đã học + công pháp chủ tu; `EffectResolver.group_bonus`, `trait_total` và `RealmSystem.success_chance` (qua `insight_total`) chỉ dùng tập này. Lệnh `ActionSystem.set_main_technique` (UI → `GameController.set_main_technique`). `CombatSystem.add_wounds` giới hạn ở `combat.max_wounds`; hp người chơi giảm `wound_hp_penalty` mỗi điểm. Effect mới `heal_wounds` (cộng `heal_bonus`), condition mới `wounds_at_least`. Tương tác: combat, breakthrough, lifespan, knowledge, mốc/luân hồi.
+
+## V3 — Thám hiểm có chuẩn bị (schema 8)
+
+`CombatSystem` được mở rộng, không thay mới. `ContentRegistry.dungeon_tiers(id)` chuẩn hóa mọi bí cảnh thành danh sách tầng (danh sách `enemies` phẳng = 1 tầng, nên Rừng Trúc Ảnh không đổi) và `scaled_enemy` tính quái đã nhân `enemy_scale`/`loot_mult`; cả combat lẫn validate save đều dùng chung. `state.combat` thêm `tier`, `paused`, `pills`; `state.last_run` ghi kết thúc chuyến cuối. Vượt hết quái của một tầng thì `paused = true` (ghi trước khi trả thưởng tầng), `ActionSystem.advance` không trôi tick combat nữa, và chỉ `continue_run` / `leave_run` (lệnh qua `GameController`) mở lại. Offline và `abort` vẫn hủy chuyến kể cả khi đang dừng. Đan nhập qua `enter_dungeon(id, prep)`; chi phí chỉ trừ sau khi `check_enter` pass và được hoàn lại ở `_end`. Tín hiệu mới: `tier_cleared` → `EventBus.dungeon_tier_cleared`. Migration 7→8: `last_run = {}`, chuyến đang chạy nhận `tier 0, paused false, pills 0`.
+
+## V4 — Nghiên cứu Tàn Kinh (schema 9)
+
+`ContentRegistry.research` (dữ liệu `data/research/`) và `ActionSystem.research(state, route_id)` là lệnh duy nhất; UI gọi qua `GameController.research`. Trả giá và tuổi trước, roll bằng `SimRng` (bỏ qua khi pity), thất bại hoàn `on_fail_refund` và gây `on_fail_wounds`. `state.research_failures` (route → số lần hỏng) không nằm trong `WORLD_KEYS`. Tín hiệu `research_resolved` → `EventBus`. Migration 8→9: `research_failures = {}`.

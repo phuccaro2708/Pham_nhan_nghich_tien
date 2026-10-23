@@ -17,7 +17,7 @@ func before_each() -> void:
 
 func test_real_content_has_no_errors() -> void:
 	assert_eq(reg.errors, [])
-	assert_eq(reg.realm_order.size(), 13)
+	assert_eq(reg.realm_order.size(), 28)  # V8: tới Hóa Thần Viên Mãn
 
 
 func test_bad_references_are_reported() -> void:
@@ -144,7 +144,7 @@ func test_failed_ritual_damages_meridians_and_pity_guarantees() -> void:
 
 
 func test_last_stage_cannot_advance() -> void:
-	s.realm_id = "truc_co_so"
+	s.realm_id = "hoa_than_vien_man"
 	assert_eq(act.start_action(s, "breakthrough")["reason"], "max_realm")
 
 

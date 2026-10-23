@@ -1,7 +1,7 @@
 # GDD v1.0 — Phàm Nhân Nghịch Tiên
 
 > Hybrid Story-driven + Deep Incremental RPG · Godot 4.x · Windows PC · Single-player · Text-based · Data-driven · Offline-first
-> Phạm vi: định nghĩa toàn bộ định hướng; **chỉ triển khai MVP từ Phàm Nhân đến Trúc Cơ**.
+> Phạm vi: định nghĩa toàn bộ định hướng; **triển khai theo 3 giai đoạn: GĐ1 Phàm Nhân → Trúc Cơ (MVP), GĐ2 → Hóa Thần, GĐ3 → Phi Thăng** (xem §XIV.1).
 > Mọi con số trong tài liệu này là **giả định cân bằng ban đầu**, chưa phải số liệu playtest.
 
 ---
@@ -371,6 +371,7 @@ Một chu kỳ: (1) kiểm tra trạng thái action hiện tại → (2) kiểm 
 - Story choice chưa chọn **tạm dừng chuỗi liên quan**, AI không tự quyết.
 - Có báo cáo: tài nguyên nhận, tu vi tích lũy, nguyên nhân action bị dừng.
 - Không tự Trúc Cơ hay quyết định không đảo ngược.
+- **Không chạy combat offline**: lượt bí cảnh đang diễn ra bị hủy (không thưởng, không tốn tuổi) trước khi tính offline, để không tự quyết trong lúc vắng mặt.
 - Tối ưu được bằng bước nhảy theo lần hoàn thành action, miễn kết quả tương đương mô phỏng online.
 
 ---
@@ -442,7 +443,10 @@ Wireframe 1280×720, **dạng cột theo loại hành động** (đổi từ 3 c
 - Cột hành động: action vào cột theo dữ liệu — có `upgrade` → *Nâng cấp*, `INSTANT` → *Tức thì*, còn lại (`TIMED`/`LOOP`) → *Lặp*. Trong cột gom thành nhóm thu gọn được theo `group`. Hành động đang chạy hiện thanh tiến độ hồng ngay trên nút; hành động bị khóa hiện xám, tooltip nêu lý do.
 - Cột tài nguyên: gom nhóm theo `group`, mỗi dòng `giá trị/trần` + thanh hồng theo tỉ lệ.
 - Giao diện Godot: `godot/scenes/ui/ui_theme.gd` dựng Theme từ tokens trùng tên biến Figma (file `pham_nhan_nghich_tien`: surface/page, surface/panel, ink/*, accent/jade, accent/cinnabar, fill/progress, state/disabled). Phông duy nhất Noto Serif (bản variable, giấy phép OFL, `godot/assets/fonts/`). Đổi màu/phông phải sửa Figma và `ui_theme.gd` cùng lúc. Lý do: một nguồn token cho mọi màn hình, hỗ trợ đầy đủ dấu tiếng Việt.
-- Chưa làm (ngoài MVP): cột *Next Action*, *Dungeon*, các tab Party/Ritual/Shop/Achievements; **Auto Queue** chờ phase automation.
+- Khung cột mới (yêu cầu chủ dự án 2026-10-22, theo ảnh mẫu): mỗi cột có tiêu đề riêng ở đầu: Menu chính (kèm nút `?` mở trợ giúp) · Khu vực · Tức thì · Lặp · Nâng cấp · **Hành động kế tiếp** · **Bí cảnh** · Tài nguyên.
+- Cột *Hành động kế tiếp*: thẻ sự kiện cốt truyện đang chờ chọn (dời từ trên cột chính xuống đây) + "Mục tiêu kế tiếp" (node story chưa tới; chỉ hiện tiến độ trigger `action_count_at_least`, không lộ tiêu đề để tránh spoil).
+- Cột *Bí cảnh*: danh sách bí cảnh (khóa/mở theo `visible_when`), nút vào/rút lui, thanh Sinh Lực hai bên, số lần thanh tẩy. Bí cảnh đầu tiên: Rừng Trúc Ảnh (hiện sau khi biết `martial_basics`).
+- Chưa làm (ngoài MVP): các tab Party/Ritual/Shop/Achievements.
 - Menu chính: scene riêng `scenes/main_menu.tscn` (Tiếp tục / Game mới / Ngôn ngữ / Thoát); ở menu, simulation và autosave dừng. Ngôn ngữ chính thức: Tiếng Việt + English (`data/localization/vi.json`, `en.json`), lưu ở `user://settings.cfg`.
 
 Quy tắc:
@@ -564,7 +568,48 @@ GameState
 | Automation | Cấp 0–3 |
 | Ngôn ngữ đầu tiên | Tiếng Việt |
 
-### Ngoài MVP
+### XIV.1. Ba giai đoạn phát triển (đổi scope — v1.2)
+
+> **Lý do đổi (v1.2):** chủ dự án quyết định mở rộng đích từ Trúc Cơ ra Phi Thăng nhưng làm tuần tự, từng version nhỏ, mỗi version qua test và duyệt riêng. Giữ nguyên nguyên tắc: không code giai đoạn sau khi giai đoạn trước chưa qua cổng cân bằng (3 hướng công pháp đều tới đích, kể cả khi thiếu một tài nguyên hiếm).
+
+| Giai đoạn | Đích | Bài toán riêng của đại cảnh giới | Trạng thái |
+|---|---|---|---|
+| GĐ1 (MVP) | Trúc Cơ | Nền tảng + Đạo Tâm; công pháp chủ tu, thám hiểm chuẩn bị, Tàn Kinh, hậu quả story | Đang làm |
+| GĐ2 | Hóa Thần | Kim Đan: ổn định công pháp; Nguyên Anh/Hóa Thần: tri thức, quan hệ, vượt giới; truyền thừa hậu duệ | Backlog |
+| GĐ3 | Phi Thăng | Độ Kiếp: tổng hợp quyết định cả đời; Phi Thăng | Backlog |
+
+Quy tắc chung mọi giai đoạn:
+- **Bước không thể đảo ngược** (đột phá lớn, chọn đạo, vượt kiếp) do người chơi ra lệnh; automation chỉ chuẩn bị, không tự thực hiện.
+- **Chống softlock chiến dịch dài:** thất bại luôn để lại hành động phục hồi; tài nguyên bắt buộc cho tuyến chính phải có nguồn tái tạo; lựa chọn lớn có đường thay thế.
+- **Hết thọ nguyên:** giữ tiến trình truyện và tri thức (`story`, `knowledge`); truyền thừa hậu duệ và Đạo Quả (§X) bắt đầu ở GĐ2.
+- **Thám hiểm:** có chuẩn bị (công pháp + vật tư), người chơi quyết định đi sâu hay quay về sau mỗi tầng; **không có ngưỡng rút lui tự động** (nút rút lui thủ công giữ nguyên).
+- Chi tiết backlog theo tính năng: `docs/MVP_BACKLOG.md`.
+
+### XIV.2. Giai đoạn 2 — Kim Đan → Hóa Thần (đề xuất, chờ duyệt)
+
+> **Lý do:** GĐ1 chỉ chứng minh vòng "chuẩn bị → thử → hậu quả" ở một đại cảnh giới. GĐ2 phải đổi *bài toán* ở mỗi đại cảnh giới (không chỉ nhân số liệu), và thêm vòng đời nhiều kiếp (truyền thừa) vì thọ nguyên 500–2.000 năm khiến một đời không đủ cho cả chặng. Mọi hệ thống mới phải chạm ≥ 2 hệ thống đã có (nguyên tắc 4).
+
+**Bài toán riêng từng cảnh giới**
+
+| Cảnh giới | Bài toán | Hệ thống chạm tới |
+|---|---|---|
+| Kim Đan | Ổn định công pháp: Kim Đan kết từ công pháp chủ tu, phẩm chất (`dan_grade`) phụ thuộc độ thuần của công pháp (biến thể Tàn Kinh đã sửa, mastery) và thương tích | công pháp chủ tu, Tàn Kinh, thương tích, đột phá |
+| Nguyên Anh | Tri thức + quan hệ: nguyên thần chỉ thành khi đủ `knowledge` nhóm đạo lý và các quan hệ then chốt không đứt; phân thân là slot hành động thứ hai (hậu MVP, chỉ mở ở GĐ2 cuối) | knowledge, relations, automation |
+| Hóa Thần | Vượt giới: chọn một đạo tắc (3 hướng), cái giá là đóng các hướng còn lại trong kiếp này | story, công pháp, truyền thừa |
+
+**Kết Đan (V9, đã triển khai):** đột phá khỏi Trúc Cơ Viên Mãn tính *phẩm Kim Đan* (Hạ/Trung/Thượng/Cực) từ độ thuần công pháp chủ tu (biến thể Tàn Kinh đã sửa thuần hơn), mastery, thương tích và Đạo Tâm; phẩm cộng chỉ số và nâng nhẹ xác suất đột phá ở Kim Đan Sơ–Hậu. Lý do: biến "ổn định công pháp" thành quyết định đã đầu tư từ GĐ1 chứ không phải số mới. Số liệu tạm, chốt ở V14.
+
+**Truyền thừa hậu duệ (GDD §X được kích hoạt ở GĐ2)**
+
+- Tọa hóa khi hết thọ nguyên không còn là `deceased` cụt: người chơi chọn *hậu duệ* (nếu có) hoặc kết thúc kiếp. Hậu duệ kế thừa `story.done`, `knowledge`, một phần `technique` (ký ức công pháp) và Đạo Quả; tài nguyên thường, quan hệ trong kiếp, tu vi, tiến độ luyện thể làm mới (đúng bảng §X).
+- Đạo Quả dùng công thức §X, hệ số lấy từ simulation, không đoán.
+- Không softlock: kiếp mới luôn có đường về cảnh giới đã đạt trong thời gian chơi hợp lý (tính bằng simulation).
+
+**Quy tắc giữ từ GĐ1:** bước đột phá lớn do người chơi ra lệnh; chỉ chuẩn bị mới tự động; thám hiểm không rút lui tự động; mọi chuỗi qua `name_key` vi + en; mỗi version tự nâng `schema_version` nếu đụng state, kèm migration.
+
+**Cổng GĐ2 → GĐ3:** bot 3 hướng đạo tắc tới `hoa_than_so` (kể cả qua một lần truyền thừa), báo cáo cân bằng, Codex review độc lập.
+
+### Ngoài MVP (GĐ1)
 
 Tông môn toàn diện, đa nhân vật, PvP, cloud sync, đấu giá, hàng trăm công pháp, tự sáng tạo công pháp phức tạp, luân hồi hoàn chỉnh, cảnh giới từ Kim Đan trở lên.
 
@@ -671,3 +716,44 @@ Casual · Optimizer · Idle (rời game nhiều giờ) · Explorer · Risk Playe
 - **Tuyến mở đầu**: Phàm Nhân → học nghề → võ học nhập môn (Đoán Thể) → phát hiện tiên duyên → cảm ứng linh khí → Luyện Khí. Phase 1 làm tới Đoán Thể + bước đệm tới Cảm Khí; Chương 4–5 thuộc Phase 2.
 - **Ba đường tới võ học nhập môn**: học hỏi, giúp người, thám hiểm; đều có lựa chọn miễn phí, không softlock.
 - **Tuổi**: hiển thị "16 tuổi" không giới hạn thọ nguyên tới khi nhập đạo (`dao_entry`, từ chuỗi đạo sĩ); tin đồn Ch2 chỉ cho `heard_of_cultivators`. Trước đó header luôn hiện thân phận Phàm Nhân (không lộ cảnh giới thật như Đoán Thể) và log không báo sắp hết thọ.
+
+### 6.4.1. Công pháp chủ tu và thương tích (V2, GĐ1)
+
+Lý do: trước V2 mọi công pháp đã học đều cộng thưởng cùng lúc nên không có lựa chọn. Nay công pháp có `role`: `base` (Dẫn Khí Nhập Môn, luôn có tác dụng) và `main` (Thanh Mộc, Huyết Luyện, Ngũ Hành). Chỉ **một** công pháp `main` được chọn làm chủ tu; lần chọn đầu miễn phí, đổi tốn 0,1 năm tuổi thọ (`technique.switch_age_years`), không đổi được khi đang trong bí cảnh.
+
+- Thanh Mộc: +hấp thu, +10 sinh lực, nghỉ ngơi hồi thêm 1 thương tích; không tăng sát thương.
+- Huyết Luyện: +3 công, +30% tốc độ rèn thể; **mỗi lần vào bí cảnh** (thắng, thua hay rút lui) thêm 1 thương tích.
+- Ngũ Hành: bonus nhỏ, `insight_modifier` +8% khi đột phá; cần manh mối `mem_cave_site` và 6 Thảo Dược để học.
+- Thương tích (`wounds`, tối đa 5): mỗi điểm giảm 8% sinh lực trong bí cảnh; thua thêm 1; hồi bằng hành động `rest_heal` (miễn phí tài nguyên, tốn 0,01 năm). Run bị hủy (offline) không gây thương. Thương tích không bao giờ chặn hành động nào.
+
+### 8.1. Thám hiểm có chuẩn bị (V3, GĐ1)
+
+Lý do: combat tự động chỉ có một quyết định (vào hay không). Muốn thám hiểm có chuyện để cân nhắc mà không thêm combat thủ công, V3 đặt quyết định ở **trước** và **giữa** chuyến đi, không phải trong từng đòn.
+
+- **Chuẩn bị**: trước khi vào, người chơi thấy mức nguy hiểm (`danger` 1–5), số tầng, chi phí tuổi mỗi tầng, rồi chọn công pháp chủ tu (V2) và số **Hồi Khí Đan** mang theo (tối đa 5; luyện từ 2 Thảo Dược, tốn 8 giây). Đan chưa dùng hết được trả lại kho khi chuyến kết thúc.
+- **Tầng**: một bí cảnh có nhiều tầng; đi sâu thì quái mạnh hơn (`enemy_scale`), chiến lợi phẩm nhiều hơn (`loot_mult`), mảnh công pháp rơi nhiều hơn, và mỗi tầng đã vượt tốn thêm `tier_age_years`.
+- **Tạm dừng, không tự rút lui**: vượt xong mỗi tầng (trừ tầng cuối) chuyến đi dừng hẳn, chờ người chơi chọn *Đi sâu hơn* hoặc *Thu tay, ra về* (giữ chiến lợi phẩm, trả tuổi theo số tầng đã vượt, không nhận thưởng thông). Không có ngưỡng rút lui tự động; nút Rút lui thủ công giữa trận vẫn có. Trong lúc chờ không tốn tuổi, và offline không bao giờ quyết thay: chuyến bị hủy như cũ (không phạt, giữ lại những gì đã nhận).
+- **Đan tự uống**: khi HP ≤ 40% tối đa, mỗi viên đã mang hồi 50% HP, không dùng RNG nên chuyến vẫn tái lập được từ save.
+- **Thua**: thêm 1 thương tích (V2), không mất vật phẩm bắt buộc. Game ghi `last_run` (bí cảnh, kết quả, số tầng, nguyên nhân: `wounded` khi đang mang ≥ 2 thương tích, `out_of_pills` khi không mang đan, `too_strong` còn lại) và gợi ý đổi cách chuẩn bị ở lần sau.
+- **Hắc Thạch Động**: 3 tầng (dơi và nhện đá → nhện và vượn đá, mạnh ×1,25, lợi ×1,5 → Thạch Thủ, mạnh ×1,5, lợi ×2,5), mở sau khi thông Rừng Trúc Ảnh, cần Luyện Khí 3. Mảnh công pháp là vật liệu cho V4 (Nghịch Mệnh Tàn Kinh).
+- Tương tác: công pháp chủ tu (build mạnh/yếu), thọ nguyên (tuổi mỗi tầng), tài nguyên (đan, thảo dược), tri thức (`mem_black_rock`), offline (hủy chuyến), cốt truyện (ký ức `mem_black_rock` để V5 nhận ra).
+
+### 8.2. Nghịch Mệnh Tàn Kinh: nghiên cứu công pháp (V4, GĐ1)
+
+Lý do: Tàn Kinh phải đổi *con đường tu luyện*, không phải cộng phần trăm. Vòng chơi: **thấy khiếm khuyết** (thông Hắc Thạch Động, rồi đối chiếu Tàn Kinh với Dẫn Khí, tốn 2 Mảnh Công Pháp) → **thu chứng cứ** (Mảnh Công Pháp rơi từ thám hiểm) → **thử một hướng sửa** → nhận **công pháp biến thể**.
+- 3 hướng, mỗi hướng ra một biến thể `role: main` nên tranh ô chủ tu với Thanh Mộc, Huyết Luyện, Ngũ Hành: Ổn Định (an toàn, 90%, bonus nhỏ, hồi thêm thương tích), Cấp Tốc (65%, hấp thu mạnh, +1 thương tích mỗi chuyến), Nghịch Kinh (40%, hấp thu/công kích/ngộ tính cao, +2 thương tích mỗi chuyến, hỏng thì bị thương).
+- Thất bại không mất Tàn Kinh: hoàn 40–50% vật liệu, tính vào pity (sau 2 lần hỏng, lần kế chắc chắn thành). Đã có biến thể thì hướng đó đóng, thưởng chỉ phát một lần. Đếm thất bại là ký ức của nhân vật, không bị luân hồi đảo ngược.
+- Tương tác: công pháp chủ tu (V2), loot thám hiểm (V3), tri thức, thương tích, thọ nguyên (mỗi lần thử tốn tuổi), RNG có seed.
+
+### 8.3. Hệ quả về sau của lựa chọn (V5, GĐ1)
+
+Lý do: lựa chọn ở chương I chỉ có nghĩa nếu nhiều giờ chơi sau đó thế giới còn nhớ. Sau khi thông Hắc Thạch Động (`black_rock_cleared`), node `ch6_rock_echo` mở ra và **nhận ra nguồn pháp môn** (`qi_source`: guided, evidence, relic, rogue) bằng văn bản riêng. Mỗi nguồn có một lựa chọn riêng (đền đáp đạo sĩ, báo trưởng thôn, ghép tàn quyển, lục sạch), và ai cũng có lựa chọn miễn phí `walk_on`. Các nhánh gặp nhau ở cùng một node nhưng để lại `rock_echo` khác nhau cùng phần thưởng/quan hệ khác nhau. Không đổi cơ chế nào ngoài dữ liệu.
+- Tương tác: thám hiểm (trigger từ cờ thông hang), story (`qi_source`), quan hệ, tài nguyên (mảnh công pháp cho V4).
+
+### 6.6. Đột phá Trúc Cơ có số hạng thật (V6, GĐ1)
+
+Lý do: `chance.terms` để trống khiến P không phản ánh cách chơi. Nay P gồm nền tảng (mastery), thương tích (âm), Đạo Tâm (lựa chọn story) và `insight_modifier` công pháp; trần giảm 0,95 → 0,80 theo §6.5. Đột phá vẫn chỉ do người chơi ra lệnh (automation và offline không chạy), pity sau 3 lần hỏng giữ nguyên.
+
+### 11.5. Kiểm tĩnh chống softlock chiến dịch dài (V7, GĐ1)
+
+Lý do: §11.4 mới bảo vệ từng node story; chiến dịch dài còn cần bảo đảm tài nguyên bắt buộc không cạn vĩnh viễn. Resource đánh dấu `required_for_main` phải có ít nhất một action sinh ra nó mà chi phí chỉ gồm tài nguyên tái tạo được; mỗi trạng thái thất bại (`on_fail_flag` của đột phá, thương tích khi có hang) phải có action phục hồi cũng chỉ tốn tài nguyên tái tạo được. ContentRegistry báo lỗi khi vi phạm. Hết thọ nguyên giữ nguyên story và tri thức (truyền thừa dời sang GĐ2).

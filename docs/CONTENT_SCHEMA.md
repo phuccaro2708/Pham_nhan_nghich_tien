@@ -144,3 +144,58 @@ Sửa so với Phase 1: `MAX_AMOUNT` 1e7 → 1e15 (mục "Quy tắc bổ sung" �
 - **Action** `visible_when` nay là *cổng khám phá thật*: `check_can_start` trả `not_discovered`; `AutomationQueue.set_slots` từ chối ô đó.
 - **Config** `ui.lifespan_visible_when`: điều kiện hiện giới hạn thọ nguyên trong header; `ui.tab_visible_when` không còn trang `story`.
 - **Save v4** thêm `knowledge`; migration v3→v4 suy ra qua điều kiện `legacy_when` khai báo trong từng kiến thức (`ContentMigration`); id lạ vào `orphans["knowledge"]`.
+
+## Phase B — Bí cảnh (schema_version 6)
+- `data/enemies/*.json`: `{id, name_key, hp, atk, def, spd, hit, crit, effects[]}` (effects = loot, qua EffectResolver, hỗ trợ `chance`).
+- `data/dungeons/*.json`: `{id, name_key, desc_key, visible_when, requirements, age_cost_years, enemies[], clear_effects[]}`.
+- `config/progression.json.combat`: `player{hp,atk,def,spd,hit,crit}`, `stage_bonus`, `crit_multiplier`, `interval_base`, `heal_after_kill`.
+- Stat mới cho effect `modify_stat`: `combat.hp|atk|def|spd`.
+- Save: `combat` (object, rỗng khi không ở bí cảnh), `dungeon_clears` (id → số lần). Migration 5→6 thêm hai trường rỗng.
+
+## V1 — `data/path/*.json`, `later_hint_key`, `text_variants`
+
+- Path entry: `{id, name_key, goal_key, visible_when?, done_when?, clues?: [knowledge id], blockers?: [{needs, reason_key, visible_when?}]}`. Thứ tự file = thứ tự hiển thị. Validator kiểm key vi, condition, clue là knowledge có thật.
+- Story choice: `later_hint_key?` (gợi ý hệ quả về sau, hiện ở sổ Nhân Quả).
+- Story node: `text_variants?: [{when: condition, text_key}]`, lấy mục đầu tiên đúng, không có thì dùng `text_key`.
+
+## V2 — technique `role`/`traits`, `heal_wounds`, `wounds_at_least`, config
+
+- Technique: `role: "base"|"main"` (mặc định `base`), `traits: {injury_per_run?, heal_bonus?}` (số nguyên ≥ 0), bonuses vẫn ≥ 0.
+- Effect `heal_wounds {amount ≥ 1}`; condition `wounds_at_least {value}`.
+- `config/progression.json`: `combat.max_wounds`, `combat.wound_hp_penalty`, `technique.switch_age_years`.
+- Save v7: `main_technique` ("" hoặc công pháp `main` đã học), `wounds` ∈ [0, max_wounds]; mốc cũ được migration bổ sung 2 trường.
+
+## V3 — dungeon tiers, `prep`, resource mới (schema_version 8)
+
+- Dungeon: đúng một trong `enemies[]` (1 tầng) hoặc `tiers[]` = `{enemies[], enemy_scale ≥ 0 (mặc định 0), loot_mult ≥ 0 (mặc định 1), clear_effects?[]}`; thêm `danger ≥ 0` (hiển thị 1–5) và `tier_age_years ≥ 0` (tuổi tốn thêm cho mỗi tầng đã vượt). `clear_effects` của tầng chạy khi vượt tầng đó; `clear_effects` của bí cảnh chạy khi thông tầng cuối.
+- `enemy_scale` nhân hp/atk/def; `loot_mult` nhân `amount` của effect `add_resource` trong `effects` của quái (xác suất `chance` giữ nguyên).
+- `config/progression.json.combat`: `max_pills`, `pill_threshold`, `pill_heal`, `tier_heal`.
+- Resource `healing_pill` (id cố định, Combat dùng), `technique_fragment`.
+- `enter_dungeon(id, prep)` với `prep = {pills: n}`; lý do từ chối mới: `too_many_pills`, `no_pills`, `not_paused` (cho continue/leave).
+- Save v8: `combat.tier/paused/pills`; `last_run` = `{}` hoặc `{dungeon, result ∈ cleared|defeated|retreated|left, depth ∈ [0, số tầng], cause ∈ ""|wounded|out_of_pills|too_strong}`. Chuyến đang dừng phải có `index` = số quái của tầng, `enemy_hp` 0 và chưa phải tầng cuối.
+
+## V4 — research và biến thể (schema_version 9)
+
+- `data/research/*.json`: `{id, name_key, desc_key, technique, variant, costs{}, chance (0,1], pity_failures ≥ 0, on_fail_refund [0,1], on_fail_wounds ≥ 0, age_cost_years ≥ 0, visible_when, requirements}`. `variant` phải là công pháp `role: main` có `variant_of == technique`.
+- Technique thêm `variant_of` (id công pháp khác).
+- Save v9: `research_failures` = `{route_id: int ≥ 0}`. Lý do từ chối: `unknown_route`, `already_done`.
+
+## V5 — hệ quả story (không đổi schema)
+
+Không có trường mới: dùng `text_variants`, `later_hint_key`, `trigger` sẵn có. Node `ch6_rock_echo` mở bằng `flag_is black_rock_cleared`; lựa chọn riêng của từng nhánh khóa bằng `requirements: flag_is qi_source`.
+
+## V6 — số hạng đột phá (không đổi schema)
+
+`chance.terms[]` nhận thêm dạng `{"when": <condition>, "weight": n}`: cộng `weight` khi điều kiện đúng (dùng cho thương tích, mastery, lựa chọn story). Dạng cũ `{resource, weight, max}` giữ nguyên; không trộn hai dạng trong một số hạng.
+
+## V7 — `required_for_main` (không đổi schema)
+
+Resource có thể khai `"required_for_main": true`. Validator kiểm tĩnh: có action sinh ra nó mà mọi chi phí đều tái tạo được, và mỗi `on_fail_flag`/thương tích có action phục hồi tương tự. Điều kiện (`requirements`) của action không được mô phỏng.
+
+## V8 — thang cảnh giới GĐ2 (không đổi schema)
+
+`realms.json` kéo dài từ `truc_co_so` tới `hoa_than_vien_man` (28 bậc; id `truc_co_{so,trung,hau,vien_man}`, `kim_dan_*`, `nguyen_anh_*`, `hoa_than_*`). `lifespan_years` theo GDD §3.2 (200/500/1.000/2.000). `cultivation_cap` tăng ×1,8 mỗi bậc, chi phí đột phá = cap/2, `chance` {base 0,6, min 0,4, max 0,8, pity 3, chưa có số hạng}: **tạm thời, sẽ thay bằng số từ simulation** (BALANCE.md). Bậc `truc_co_so` có `breakthrough.requirements` đòi cờ `phase2_open` mà chưa nội dung nào đặt, nên người chơi vẫn dừng ở Trúc Cơ Sơ; V9 mở cờ này. Không thêm state nên không nâng schema (backlog ghi 10 ở V9, khi có `dan_grade`).
+
+## V9 — Kết Đan (schema 10)
+
+State mới `dan_grade: String` ("" tới khi kết đan); nằm trong `WORLD_KEYS` (rewind khôi phục); migration 9→10 thêm `""` cho save và mốc cũ; `validate_state` chặn id lạ. Một stage (hiện `kim_dan_so`) có khối `core`: `grades:[{id, name_key, min_score, bonuses:[{stat,value}]}]` (min_score tăng dần, bậc đầu ≤ 0) và `terms:[{when, weight}]`. Khi đột phá vào stage có `core`, `RealmSystem.core_grade` cộng weight các term đang đúng và chọn phẩm cao nhất đạt min_score. Phẩm cho `bonuses` qua nhóm `core` của `EffectResolver` (cộng vào `stat_bonus`, nhân trong `yield_multiplier`). Condition mới: `main_technique_is {technique}`, `dan_grade_at_least {grade}` (dùng làm số hạng `chance.terms` của `kim_dan_so/trung/hau`). `truc_co_so` mất cổng `phase2_open`; `truc_co_vien_man` (Kết Đan) có `on_fail_flag meridian_damaged` + `treat_meridian` như Trúc Cơ. Path thêm mục `core`.

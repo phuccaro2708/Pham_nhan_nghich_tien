@@ -1,0 +1,74 @@
+[
+ {
+  "id": "fix_stable",
+  "name_key": "research.fix_stable",
+  "desc_key": "research.fix_stable.desc",
+  "technique": "dan_khi_nhap_mon",
+  "variant": "dan_khi_on_dinh",
+  "costs": {
+   "technique_fragment": 3,
+   "silver": 20
+  },
+  "chance": 0.9,
+  "pity_failures": 0,
+  "on_fail_refund": 0.5,
+  "on_fail_wounds": 0,
+  "age_cost_years": 0.05,
+  "visible_when": {
+   "type": "knows",
+   "knowledge": "flaw_dan_khi"
+  },
+  "requirements": {
+   "type": "technique_known",
+   "technique": "dan_khi_nhap_mon"
+  }
+ },
+ {
+  "id": "fix_swift",
+  "name_key": "research.fix_swift",
+  "desc_key": "research.fix_swift.desc",
+  "technique": "dan_khi_nhap_mon",
+  "variant": "dan_khi_cap_toc",
+  "costs": {
+   "technique_fragment": 5,
+   "silver": 40
+  },
+  "chance": 0.65,
+  "pity_failures": 2,
+  "on_fail_refund": 0.5,
+  "on_fail_wounds": 0,
+  "age_cost_years": 0.08,
+  "visible_when": {
+   "type": "knows",
+   "knowledge": "flaw_dan_khi"
+  },
+  "requirements": {
+   "type": "technique_known",
+   "technique": "dan_khi_nhap_mon"
+  }
+ },
+ {
+  "id": "fix_reverse",
+  "name_key": "research.fix_reverse",
+  "desc_key": "research.fix_reverse.desc",
+  "technique": "dan_khi_nhap_mon",
+  "variant": "dan_khi_nghich_kinh",
+  "costs": {
+   "technique_fragment": 8,
+   "silver": 60
+  },
+  "chance": 0.4,
+  "pity_failures": 2,
+  "on_fail_refund": 0.4,
+  "on_fail_wounds": 1,
+  "age_cost_years": 0.12,
+  "visible_when": {
+   "type": "knows",
+   "knowledge": "flaw_dan_khi"
+  },
+  "requirements": {
+   "type": "technique_known",
+   "technique": "dan_khi_nhap_mon"
+  }
+ }
+]

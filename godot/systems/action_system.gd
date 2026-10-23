@@ -6,6 +6,7 @@ extends RefCounted
 
 signal action_completed(action_id: String)
 signal action_stopped(action_id: String, reason: String)
+signal research_resolved(route_id: String, success: bool)
 
 const MIN_ACTION_SECONDS: float = 0.25  # GDD §5.2 T_min
 
@@ -18,6 +19,8 @@ var lifespan: LifespanSystem
 var mastery: MasterySystem
 var story: StorySystem
 var automation: AutomationQueue
+var combat: CombatSystem
+var path: PathSystem
 ## Set by OfflineSystem while it simulates: the queue then refuses actions that are not offline_allowed.
 var offline_mode: bool = false
 
@@ -33,6 +36,8 @@ func _init(p_registry: ContentRegistry) -> void:
 	mastery = MasterySystem.new(registry, effects)
 	story = StorySystem.new(registry, conditions, effects, resources)
 	automation = AutomationQueue.new(self)
+	combat = CombatSystem.new(registry, conditions, effects, lifespan)
+	path = PathSystem.new(registry, conditions)
 
 
 # ---------- queries ----------
@@ -54,6 +59,8 @@ func check_can_start(state: GameState, action_id: String) -> Dictionary:
 		return {"ok": false, "reason": "unknown_action", "detail": action_id}
 	if not lifespan.is_alive(state):
 		return {"ok": false, "reason": "deceased", "detail": null}
+	if combat.is_active(state):
+		return {"ok": false, "reason": "in_dungeon", "detail": null}
 	var def: Dictionary = registry.actions[action_id]
 	if def.has("upgrade"):
 		var up: Dictionary = registry.upgrades[def["upgrade"]]
@@ -131,6 +138,93 @@ func start_action(state: GameState, action_id: String, from_queue: bool = false)
 	return check
 
 
+## Enters a dungeon: whatever is running stops (costs refunded) and fighting takes over the clock.
+## Chooses the main technique. The first choice is free; changing it costs `technique.switch_age_years` of life.
+func set_main_technique(state: GameState, technique_id: String) -> Dictionary:
+	if not registry.has_technique(technique_id):
+		return {"ok": false, "reason": "unknown_technique"}
+	if not state.techniques.has(technique_id):
+		return {"ok": false, "reason": "not_known"}
+	if registry.techniques[technique_id].get("role", "base") != "main":
+		return {"ok": false, "reason": "not_main_technique"}
+	if state.main_technique == technique_id:
+		return {"ok": false, "reason": "already_main"}
+	if combat.is_active(state):
+		return {"ok": false, "reason": "in_dungeon"}
+	if not lifespan.is_alive(state):
+		return {"ok": false, "reason": "deceased"}
+	if state.main_technique != "":
+		lifespan.commit_age(state, float(registry.config["technique"]["switch_age_years"]))
+	state.main_technique = technique_id
+	return {"ok": true, "reason": ""}
+
+
+## Tries one data-defined route that mends a technique's flaw (V4). The price and the years are paid up front; a failure
+## returns `on_fail_refund` of the price, may wound, and counts toward pity (after `pity_failures` the next try is certain).
+## The counter moves before the technique is learned and a known variant ends the route, so the reward is paid once.
+func research(state: GameState, route_id: String) -> Dictionary:
+	if not registry.research.has(route_id):
+		return {"ok": false, "reason": "unknown_route"}
+	if not lifespan.is_alive(state):
+		return {"ok": false, "reason": "deceased"}
+	if combat.is_active(state):
+		return {"ok": false, "reason": "in_dungeon"}
+	var def: Dictionary = registry.research[route_id]
+	if state.techniques.has(def["variant"]):
+		return {"ok": false, "reason": "already_done"}
+	if not conditions.is_met(def.get("visible_when", {}), state):
+		return {"ok": false, "reason": "not_discovered"}
+	var fail: Dictionary = conditions.first_failure(def.get("requirements", {}), state)
+	if not fail.is_empty() or not state.techniques.has(def["technique"]):
+		return {"ok": false, "reason": "requirements_not_met", "detail": fail}
+	var costs: Dictionary = def["costs"]
+	var miss: Dictionary = resources.missing(state, costs)
+	if not miss.is_empty():
+		return {"ok": false, "reason": "insufficient_resources", "detail": miss}
+	resources.spend(state, costs)
+	if not lifespan.commit_age(state, float(def.get("age_cost_years", 0.0))):
+		resources.refund(state, costs)  # the years ran out before the work began: nothing was attempted
+		return {"ok": false, "reason": "deceased"}
+	var failures: int = int(state.research_failures.get(route_id, 0))
+	var pity: int = int(def.get("pity_failures", 0))
+	var success: bool = (pity > 0 and failures >= pity) or SimRng.next_float(state) < float(def["chance"])
+	if success:
+		state.research_failures.erase(route_id)
+		effects.apply(state, [{"type": "learn_technique", "technique": def["variant"]}])
+	else:
+		state.research_failures[route_id] = failures + 1
+		var back: Dictionary = {}
+		for rid in costs:
+			back[rid] = float(costs[rid]) * float(def.get("on_fail_refund", 0.0))
+		resources.refund(state, back)
+		combat.add_wounds(state, int(def.get("on_fail_wounds", 0)))
+	research_resolved.emit(route_id, success)
+	return {"ok": true, "reason": "", "success": success}
+
+
+## prep = {pills: n}: pills are taken from the stock at the door and come back if unused.
+func enter_dungeon(state: GameState, dungeon_id: String, prep: Dictionary = {}) -> Dictionary:
+	var check: Dictionary = combat.check_enter(state, dungeon_id, prep)
+	if not check["ok"]:
+		return check
+	stop_action(state, "entered_dungeon")
+	automation.stop(state, "entered_dungeon")
+	combat.begin(state, dungeon_id, prep)
+	return check
+
+
+## Answers to the pause after a tier. Only the player calls these; the clock and the automation queue never do.
+func continue_run(state: GameState) -> Dictionary:
+	return combat.continue_run(state)
+
+
+func leave_run(state: GameState) -> Dictionary:
+	var r: Dictionary = combat.leave_run(state)
+	if r["ok"]:
+		story.scan(state)
+	return r
+
+
 ## Cancels the active action. Costs paid at start are refunded; nothing is rewarded.
 func stop_action(state: GameState, reason: String = "stopped_by_player") -> void:
 	if state.active_action.is_empty():
@@ -147,10 +241,23 @@ func stop_action(state: GameState, reason: String = "stopped_by_player") -> void
 func advance(state: GameState, ticks: int) -> void:
 	if not lifespan.is_alive(state):
 		stop_action(state, "deceased")  # a deceased character never completes anything, whatever the save said
+		combat.abort(state)
 		state.game_time_ticks += maxi(ticks, 0)
 		return
 	var remaining: int = ticks
 	while remaining > 0:
+		if combat.is_active(state):
+			if offline_mode:  # nobody is there to fight; the run is dropped, not decided for the player
+				combat.abort(state)
+				continue
+			if combat.is_paused(state):  # waiting for the player costs nothing and changes nothing
+				state.game_time_ticks += remaining
+				return
+			if combat.step(state):
+				story.scan(state)
+			state.game_time_ticks += 1
+			remaining -= 1
+			continue
 		if state.active_action.is_empty():
 			automation.pump(state)
 		if state.active_action.is_empty():

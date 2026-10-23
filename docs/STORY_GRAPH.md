@@ -81,3 +81,20 @@ ch3_crossroads ─ study (5 bạc, +literacy) ─▶ ch3_study   ─ careful | s
 Mọi lựa chọn cuối cùng: `learn martial_basics` + `promote_realm cuong_than` (Đoán Thể). Lựa chọn "đầy đủ" thêm `body_lore`/`breathing`/…; lựa chọn "nhanh" cho bạc/gỗ thay thế. Chuỗi đạo sĩ (Ch1) giờ chạy sau Đoán Thể và cấp `dao_entry`, `qi_awareness`, `meridian_lore`, `heard_of_cultivators`.
 
 Test: `tests/unit/test_knowledge.gd` — `test_three_routes_reach_martial_basics_and_dan_the`, `test_every_route_has_a_free_fallback_that_still_promotes`, `test_poor_player_can_still_take_a_route`.
+
+## V1 — Nhận ra lựa chọn trước
+
+`ch1_mountain_incident` có 2 biến thể văn bản theo `ch1_wounded_taoist`: `heal` và `loot` (`ask_first` dùng văn bản gốc). Ba lựa chọn của `ch1_wounded_taoist` có `later_hint_key`.
+
+## V5 — Hệ quả về sau (`chapter6.json`)
+
+`ch6_rock_echo` (chapter `ch6`, trigger `flag_is black_rock_cleared`) — 4 biến thể văn bản theo `qi_source`, mỗi nguồn một lựa chọn riêng, cộng `walk_on` miễn phí:
+
+```
+black_rock_cleared ─▶ ch6_rock_echo ─ echo_guided   (qi_source=guided)   ─ dao_si +1, 2 mảnh   ┐
+                                    ├ echo_evidence (qi_source=evidence) ─ truong_thon +1, 20 bạc │ rock_echo = nguồn
+                                    ├ echo_relic    (qi_source=relic)    ─ 3 mảnh               │
+                                    ├ echo_rogue    (qi_source=rogue)    ─ 40 bạc, dao_si -1    ┘
+                                    └ walk_on       (miễn phí)           ─ 1 mảnh, rock_echo = none
+```
+Mọi choice có `result_key` và `later_hint_key`; ledger Nhân Quả hiển thị. Ba nhánh `ch1_wounded_taoist` đã có hệ quả tức thì (V1) và về sau (`ch1_mountain_incident` biến thể, `ch6_rock_echo`).

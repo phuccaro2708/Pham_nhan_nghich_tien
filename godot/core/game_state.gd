@@ -2,7 +2,7 @@ class_name GameState
 extends RefCounted
 ## Pure runtime data. No Node references, no behaviour beyond (de)serialisation.
 
-const SCHEMA_VERSION: int = 5
+const SCHEMA_VERSION: int = 10
 const START_AGE_YEARS: float = 16.0
 ## Fixed precision so values survive a JSON round trip and never drift.
 const SNAP_SCALE: float = 1000000.0
@@ -37,6 +37,12 @@ var story: Dictionary = {"done": {}, "pending": ""}
 var relations: Dictionary = {}
 ## Learned technique ids (công pháp), sorted.
 var techniques: Array = []
+## Công pháp chủ tu (V2): the one learned `main` technique whose bonuses apply ("" = none). Base techniques always apply.
+var main_technique: String = ""
+## Thương tích (V2): 0..combat.max_wounds. Cut max HP in dungeons, healed by resting; never blocks an action.
+var wounds: int = 0
+## Phẩm Kim Đan (V9): "" until the core forms, then an id from the `core.grades` of the stage that forms it. Part of the world a rewind restores.
+var dan_grade: String = ""
 ## Learned knowledge ids (Phase 3): what the character knows decides which actions, stats and concepts the UI may show.
 var knowledge: Array = []
 ## Luân hồi (GDD X): `checkpoint` is the world as it stood at a mốc the character lived through ({} = none);
@@ -45,6 +51,15 @@ var loop: int = 0
 var checkpoint: Dictionary = {}
 ## Automation queue (see AutomationQueue). Never holds a story choice or a breakthrough.
 var automation: Dictionary = {"slots": [], "cursor": 0, "loop": false, "status": "idle", "reason": "", "instant_streak": 0}
+## Dungeon run in progress ({} = none): {dungeon, tier, paused (waiting for the player after a tier), pills (prepared, left),
+## index (enemy being fought in the tier), player_hp, enemy_hp, player_cd, enemy_cd} (see CombatSystem).
+var combat: Dictionary = {}
+## How the last finished run ended ({} = none yet): {dungeon, result, depth (tiers cleared), cause}. Drives the "change your preparation" hint.
+var last_run: Dictionary = {}
+## dungeon_id -> number of cleared runs.
+var dungeon_clears: Dictionary = {}
+## Nghịch Mệnh Tàn Kinh (V4): research route id -> failed attempts since the last success (drives pity). Character continuity, not rewound.
+var research_failures: Dictionary = {}
 ## Data the running content does not recognise. Preserved, never deleted: {resources, upgrades, action_counts, active_action}.
 var orphans: Dictionary = {}
 
@@ -96,10 +111,17 @@ func to_dict() -> Dictionary:
 		"story": story.duplicate(true),
 		"relations": relations.duplicate(true),
 		"techniques": techniques.duplicate(),
+		"main_technique": main_technique,
+		"wounds": wounds,
+		"dan_grade": dan_grade,
 		"knowledge": knowledge.duplicate(),
 		"loop": loop,
 		"checkpoint": checkpoint.duplicate(true),
 		"automation": automation.duplicate(true),
+		"combat": combat.duplicate(true),
+		"last_run": last_run.duplicate(true),
+		"dungeon_clears": dungeon_clears.duplicate(true),
+		"research_failures": research_failures.duplicate(true),
 	}
 
 
@@ -148,6 +170,9 @@ static func from_dict(d: Dictionary) -> GameState:
 		s.relations[str(k)] = int(d["relations"][k])
 	for tid in d.get("techniques", []):
 		s.techniques.append(str(tid))
+	s.main_technique = str(d.get("main_technique", ""))
+	s.wounds = int(d.get("wounds", 0))
+	s.dan_grade = str(d.get("dan_grade", ""))
 	for kid in d.get("knowledge", []):
 		s.knowledge.append(str(kid))
 	s.loop = int(d.get("loop", 0))
@@ -156,6 +181,18 @@ static func from_dict(d: Dictionary) -> GameState:
 		# JSON gives back floats for ints; run the snapshot through the same normalisation as the live fields.
 		var w := from_dict(cp.merged({"life": {"warned": cp.get("life_warned", false)}}))
 		s.checkpoint = w.world_snapshot()
+	var cb: Dictionary = d.get("combat", {})
+	if not cb.is_empty():
+		s.combat = {"dungeon": str(cb["dungeon"]), "paused": bool(cb.get("paused", false))}
+		for k in ["tier", "pills", "index", "player_hp", "enemy_hp", "player_cd", "enemy_cd"]:
+			s.combat[k] = int(cb.get(k, 0))
+	var lr: Dictionary = d.get("last_run", {})
+	if not lr.is_empty():
+		s.last_run = {"dungeon": str(lr["dungeon"]), "result": str(lr["result"]), "depth": int(lr["depth"]), "cause": str(lr.get("cause", ""))}
+	for k in d.get("dungeon_clears", {}):
+		s.dungeon_clears[str(k)] = int(d["dungeon_clears"][k])
+	for k in d.get("research_failures", {}):
+		s.research_failures[str(k)] = int(d["research_failures"][k])
 	var au: Dictionary = d.get("automation", {})
 	if not au.is_empty():
 		s.automation = {"slots": [], "cursor": int(au.get("cursor", 0)), "loop": bool(au.get("loop", false)),
@@ -170,7 +207,7 @@ static func from_dict(d: Dictionary) -> GameState:
 ## World fields a checkpoint stores and a rewind restores. Everything else (story, knowledge, clock, rng, orphans, save
 ## metadata) is the character's own continuity and is never rewound.
 const WORLD_KEYS: Array = ["resources", "upgrades", "flags", "action_counts", "mastery", "relations", "techniques",
-		"realm_id", "age_years", "breakthrough_failures", "life_warned"]
+		"main_technique", "wounds", "dan_grade", "realm_id", "age_years", "breakthrough_failures", "life_warned"]
 
 
 func world_snapshot() -> Dictionary:
@@ -197,6 +234,7 @@ func restore_world(snap: Dictionary) -> void:
 		else:
 			set(k, v)
 	active_action = {}
+	combat = {}
 	automation = GameState.new().automation.duplicate(true)
 
 
